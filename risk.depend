@@ -1,9 +1,11 @@
 # depslib dependency file v1.0
-1495379202 source:d:\stuff\stuffjunkgames\risk\main.cpp
+1497315955 source:d:\stuff\stuffjunkgames\risk\main.cpp
 	<SFML/Graphics.hpp>
 	<SFML/Window.hpp>
 	<cstdlib>
 	<iostream>
+	<list>
+	<SFML/Graphics/ConvexShape.hpp>
 
 1436026680 d:\sfml-selfbuild\sfml-2.3.1\include\sfml\graphics.hpp
 	<SFML/Window.hpp>
