@@ -16,6 +16,7 @@ public:
 
     float Area();
     sf::Vector2f Centroid();
+    bool isInside(sf::Vector2f point);
 };
 
 class Territory
@@ -40,6 +41,7 @@ public:
     void draw(sf::RenderWindow *window);
     ExtendedShape getShape();
     void setFont();
+    bool isInside(sf::Vector2f point);
     bool operator == (const Territory &other);
 
     // find centroid of territory

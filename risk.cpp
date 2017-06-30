@@ -110,6 +110,11 @@ sf::Vector2f ExtendedShape::Centroid()
 
     return sf::Vector2f(Cx, Cy);
 }
+
+bool ExtendedShape::isInside(sf::Vector2f point)
+{
+
+}
 // ExtendedShape
 
 
@@ -178,6 +183,12 @@ void Territory::ChangeOwner(Player *newOwner, unsigned int newArmy)
     owner = newOwner;
     army = newArmy;
     territory.setFillColor(owner->color);
+}
+
+// returns whether point is inside the territory
+bool Territory::isInside(sf::Vector2f point)
+{
+    // just call ExtendedShape.isInside
 }
 
 // Territory class ^

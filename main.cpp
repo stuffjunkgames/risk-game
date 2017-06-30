@@ -1,4 +1,5 @@
 #include "risk.hpp"
+#include "sfvm.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -13,9 +14,6 @@
 #define GAME_RIGHT GAME_LEFT+GAME_WIDTH
 #define GAME_BOTTOM GAME_TOP+GAME_HEIGHT
 
-#define BLOCK_SIZE 20
-#define MAX_LENGTH 100
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,12 +23,21 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(1024, 768), "Risk");
     sf::RectangleShape background = sf::RectangleShape(sf::Vector2f(GAME_WIDTH, GAME_HEIGHT));
-    sf::RectangleShape target = sf::RectangleShape(sf::Vector2f(BLOCK_SIZE, BLOCK_SIZE));
 
     background.setPosition(GAME_LEFT, GAME_TOP);
     background.setFillColor(sf::Color::Green);
 
     World world;
+
+    enum TurnPhase {
+        place,
+        attack,
+        reposition
+    };
+
+    int playerTurn = 1;
+    TurnPhase phase = place;
+    int selectedTerritory = -1;  // index of selected territory.  Negative for none selected
 
     std::srand(std::time(0));
 
@@ -73,6 +80,15 @@ int main()
             window.display();
         }
 
+        // game logic
+        // thread this eventually
+        // get mouse click above
+        // check if click is inside territory
+        // keep track of previous clicks inside territories
+        // make moves based on clicks
+        // turn has 3 parts:  place units -> attack -> relocate
+
+
 
     }
 
@@ -80,3 +96,5 @@ int main()
 } // main
 
 //////////////////////////////////////////////////////////////////////////////////////////
+
+
