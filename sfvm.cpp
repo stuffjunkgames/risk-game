@@ -17,12 +17,12 @@ namespace sfvm
     // 3d cross product of 2d vectors in xy plane
     sf::Vector3f Cross(sf::Vector2f u, sf::Vector2f v)
     {
-        u1 = u.x;
-        u2 = u.y;
-        u3 = 0;
-        v1 = v.x;
-        v2 = v.y;
-        v3 = 0;
+        float u1 = u.x;
+        float u2 = u.y;
+        float u3 = 0;
+        float v1 = v.x;
+        float v2 = v.y;
+        float v3 = 0;
 
         sf::Vector3f w;
 

@@ -1,5 +1,6 @@
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/System/Vector3.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -17,6 +18,8 @@ public:
     float Area();
     sf::Vector2f Centroid();
     bool isInside(sf::Vector2f point);
+
+
 };
 
 class Territory
