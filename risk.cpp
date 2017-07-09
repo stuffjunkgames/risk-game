@@ -1,4 +1,5 @@
 #include "risk.hpp"
+#include "sfvm.hpp"
 #include <string>
 #include <iostream>
 
@@ -113,7 +114,45 @@ sf::Vector2f ExtendedShape::Centroid()
 
 bool ExtendedShape::isInside(sf::Vector2f point)
 {
+    // for each point p in shape
+    // calculate cross product of <p, p+1> and <p, point>
+    // get z component
+    // if z has different sign from previous z, point is not inside shape
 
+    // initialize loop with first cross product
+    sf::Vector2f u = getPoint(1) - getPoint(0);
+    sf::Vector2f v = point - getPoint(0);
+
+    sf::Vector3f last = sfvm::Cross(u,v);
+    sf::Vector3f next;
+
+    for(unsigned int i = 1; i < getPointCount() - 1; i++)
+    {
+        u = getPoint(i + 1) - getPoint(i);
+        v = point - getPoint(i);
+
+        next = sfvm::Cross(u,v);
+
+        if(!(last.z > 0 && next.z > 0) && !(last.z < 0 && next.z < 0))
+        {
+            return false;
+        }
+
+        last = next;
+    }
+
+    // also need to check vector from last point to first point
+    u = getPoint(0) - getPoint(getPointCount() - 1);
+    v = point - getPoint(getPointCount() - 1);
+
+    next = sfvm::Cross(u,v);
+
+    if(!(last.z > 0 && next.z > 0) && !(last.z < 0 && next.z < 0))
+    {
+        return false;
+    }
+
+    return true;
 }
 // ExtendedShape
 
@@ -189,6 +228,7 @@ void Territory::ChangeOwner(Player *newOwner, unsigned int newArmy)
 bool Territory::isInside(sf::Vector2f point)
 {
     // just call ExtendedShape.isInside
+    return territory.isInside(point);
 }
 
 // Territory class ^

@@ -16,6 +16,19 @@
 
 
 
+int getClickedTerritory(World world, sf::Vector2f mousePosition)
+{
+    for(unsigned int i = 0; i < world.territoryNumber(); i++)
+    {
+        if(world.getTerritory(i).isInside(mousePosition))
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 // main
 
@@ -41,6 +54,8 @@ int main()
 
     std::srand(std::time(0));
 
+    sf::Vector2f mousePosition;
+
     sf::Time dt;
     sf::Time t;
     sf::Clock clock;
@@ -57,6 +72,19 @@ int main()
             if(event.type == sf::Event::KeyPressed)
             {
 
+            }
+
+            if(event.type == sf::Event::MouseButtonPressed)
+            {
+                if(event.mouseButton.button == sf::Mouse::Left)
+                {
+                    // left mouse pressed
+                    mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+                    selectedTerritory = getClickedTerritory(world, mousePosition);
+
+                    std::cout << "Selected Territory (index): " << selectedTerritory << std::endl;
+                }
             }
         }
 
