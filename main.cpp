@@ -18,9 +18,9 @@
 
 int getClickedTerritory(World world, sf::Vector2f mousePosition)
 {
-    for(unsigned int i = 0; i < world.territoryNumber(); i++)
+    for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
     {
-        if(world.getTerritory(i).isInside(mousePosition))
+        if(world.GetTerritory(i).isInside(mousePosition))
         {
             return i;
         }
@@ -49,8 +49,11 @@ int main()
     };
 
     int playerTurn = 1;
+    Player currentPlayer = world.GetPlayer(0);
     TurnPhase phase = place;
+    int previousTerritory = -1;
     int selectedTerritory = -1;  // index of selected territory.  Negative for none selected
+    bool mouseDown = false;
 
     std::srand(std::time(0));
 
@@ -62,6 +65,7 @@ int main()
 
     while (window.isOpen())
     {
+        mouseDown = false;
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -79,6 +83,7 @@ int main()
                 if(event.mouseButton.button == sf::Mouse::Left)
                 {
                     // left mouse pressed
+                    mouseDown = true;
                     mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
 
                     selectedTerritory = getClickedTerritory(world, mousePosition);
@@ -98,11 +103,11 @@ int main()
             // draw
             window.clear();
             window.draw(background);
-            for(unsigned int i = 0; i < world.territoryNumber(); i++)
+            for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
-                Territory tmp = world.getTerritory(i);
+                Territory tmp = world.GetTerritory(i);
                 sf::ConvexShape s = tmp.getShape();
-                world.getTerritory(i).draw(&window);
+                world.GetTerritory(i).draw(&window);
                 // draw text for armies
             }
             window.display();
@@ -116,7 +121,26 @@ int main()
         // make moves based on clicks
         // turn has 3 parts:  place units -> attack -> relocate
 
+        currentPlayer = world.GetPlayer(playerTurn);   // change this to base on player ID, not index
 
+        switch(phase)
+        {
+        case place:
+            // get number of armies and place them
+            // for now: +1 army for each territory
+            // later: implement bonuses
+
+            break;
+        case attack:
+            // attack territories
+            break;
+        case reposition:
+            // reposition armies
+            break;
+        default:
+            // something broke...
+            break;
+        }
 
     }
 

@@ -79,6 +79,8 @@ class World
 public:
     World();
 
-    Territory getTerritory(int index);
-    unsigned int territoryNumber();
+    Territory GetTerritory(int index);
+    unsigned int TerritoryNumber();
+    unsigned int PlayerNumber();
+    Player GetPlayer(int index);
 }; // World

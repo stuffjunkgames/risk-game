@@ -315,14 +315,24 @@ World::World()
 
 }
 
-Territory World::getTerritory(int index)
+Territory World::GetTerritory(int index)
 {
     return territoryList.at(index);
 }
 
-unsigned int World::territoryNumber()
+unsigned int World::TerritoryNumber()
 {
      return territoryList.size();
+}
+
+unsigned int World::PlayerNumber()
+{
+    return playerList.size();
+}
+
+Player World::GetPlayer(int index)
+{
+    return playerList.at(index);
 }
 // World
 
