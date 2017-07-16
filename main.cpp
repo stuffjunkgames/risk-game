@@ -109,6 +109,7 @@ int main()
                     if(selectedTerritory >= 0)
                     {
                         world.getTerritory(selectedTerritory)->ChangeOwner(world.getPlayer(0), 5);
+                        world.getTerritory(selectedTerritory)->RefreshText();
                     }
 
                 }

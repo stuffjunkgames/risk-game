@@ -324,7 +324,6 @@ World::World(sf::Font& font)
     t1.RefreshText();
 
     territoryList.push_back(t1);
-    //territoryList[0].Initialize(1, "Territory 1", &playerList[0], 12, font);
 
     t2.setPoint(0, sf::Vector2f(100,0));
     t2.setPoint(1, sf::Vector2f(100,100));
@@ -333,7 +332,6 @@ World::World(sf::Font& font)
     t2.RefreshText();
 
     territoryList.push_back(t2);
-    territoryList[1].Initialize(2, "Territory 2", &playerList[1], 5, font);
 
     t3.setPoint(0, sf::Vector2f(0,100));
     t3.setPoint(1, sf::Vector2f(0,200));
@@ -342,7 +340,6 @@ World::World(sf::Font& font)
     t3.RefreshText();
 
     territoryList.push_back(t3);
-    territoryList[2].Initialize(3, "Territory 3", &playerList[1], 10, font);
 
     t4.setPoint(0, sf::Vector2f(100,100));
     t4.setPoint(1, sf::Vector2f(100,200));
@@ -351,17 +348,6 @@ World::World(sf::Font& font)
     t4.RefreshText();
 
     territoryList.push_back(t4);
-    territoryList[3].Initialize(4, "Territory 4", &playerList[0], 20, font);
-
-//    territoryList[0].Initialize(1, "Territory 1", &playerList[0], 12);
-//    territoryList[1].Initialize(2, "Territory 2", &playerList[1], 5);
-//    territoryList[2].Initialize(3, "Territory 3", &playerList[1], 10);
-//    territoryList[3].Initialize(4, "Territory 4", &playerList[0], 20);
-
-//    for(unsigned int i = 0; i < territoryList.size(); i++)
-//    {
-//        territoryList[i].setFont();
-//    }
 
 }
 
