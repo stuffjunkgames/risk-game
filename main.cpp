@@ -41,7 +41,7 @@ int main()
     background.setFillColor(sf::Color::Green);
 
     World world;
-
+	world.ReadFile();
     enum TurnPhase {
         place,
         attack,
