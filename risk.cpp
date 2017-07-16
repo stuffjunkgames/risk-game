@@ -293,6 +293,7 @@ void Territory::ChangeOwner(Player *newOwner, unsigned int newArmy)
     owner = newOwner;
     army = newArmy;
     this->setFillColor(owner->color);
+	this->RefreshText();
 }
 
 // Territory class ^
@@ -312,6 +313,8 @@ World::World(sf::Font& font)
     playerList.push_back(player1);
     playerList.push_back(player2);
 
+	ReadFile(font);
+	/*
     Territory t1(4, 1, "Territory 1", &playerList[0], 12, font);
     Territory t2(4, 2, "Territory 2", &playerList[1], 5, font);
     Territory t3(4, 3, "Territory 3", &playerList[1], 10, font);
@@ -348,15 +351,16 @@ World::World(sf::Font& font)
     t4.RefreshText();
 
     territoryList.push_back(t4);
+    */
 
 }
 
-void World::ReadFile()
+void World::ReadFile(sf::Font& font)
 {
 	std::ifstream infile("world.txt");
 	std::string line;
 	std::string chunk;
-	while (std::getline(infile, line))
+	for (int n = 0; std::getline(infile, line); n++)
 	{
 		std::istringstream iss(line);
 		//std::cout << line << std::endl;
@@ -367,7 +371,7 @@ void World::ReadFile()
 		int x, y; //coordinates
 		std::vector<std::vector<int> > xyPairs;
 		std::string name;
-		int id;
+		int player;
 		int armies;
 		for (char c : line)
 		{
@@ -401,7 +405,7 @@ void World::ReadFile()
 				break;
 			case 2:
 				if (c == ';') {
-					id = std::stoi(chunk);
+					player = std::stoi(chunk);
 					chunk = "";
 					section = 3;
 					break;
@@ -420,11 +424,15 @@ void World::ReadFile()
 				break;
 			}
 		}
+		territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
 		for (unsigned int i = 0; i < xyPairs.size(); i++) {
 			std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
+			territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
 		}
+		territoryList.back().RefreshText();
 		xyPairs.clear();
-		std::cout << "Name: " << name << std::endl << "ID: " << id << std::endl << "Army Size: " << armies << std::endl << std::endl;
+		std::cout << "Name: " << name << std::endl << "ID: " << player << std::endl << "Army Size: " << armies << std::endl << std::endl;
+
 	}
 }
 
