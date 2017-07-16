@@ -2,6 +2,9 @@
 #include "sfvm.hpp"
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cctype>
 
 class Player;
 class Territory;
@@ -360,6 +363,83 @@ World::World(sf::Font& font)
 //        territoryList[i].setFont();
 //    }
 
+}
+
+void World::ReadFile()
+{
+	std::ifstream infile("world.txt");
+	std::string line;
+	std::string chunk;
+	while (std::getline(infile, line))
+	{
+		std::istringstream iss(line);
+		//std::cout << line << std::endl;
+
+		//parsing
+		chunk = "";
+		char section = 0;// 0:coordinates, 1:name, 2:id, 3:armysize
+		int x, y; //coordinates
+		std::vector<std::vector<int> > xyPairs;
+		std::string name;
+		int id;
+		int armies;
+		for (char c : line)
+		{
+			switch(section)
+			{
+			case 0:
+				if (c == ' ') {
+					x = std::stoi(chunk);
+					chunk = "";
+					break;
+				}
+				else if (c == '|' || c == ';') {
+					y = std::stoi(chunk);
+					// do something with the x and y coordinates
+					xyPairs.push_back({ x, y });
+					chunk = "";
+					if (c == ';')
+						section = 1;
+					break;
+				}
+				chunk += c;
+				break;
+			case 1:
+				if (c == ';') {
+					name = chunk;
+					chunk = "";
+					section = 2;
+					break;
+				}
+				chunk += c;
+				break;
+			case 2:
+				if (c == ';') {
+					id = std::stoi(chunk);
+					chunk = "";
+					section = 3;
+					break;
+				}
+				chunk += c;
+				break;
+			case 3:
+				if (c == ';') {
+					armies = std::stoi(chunk);
+					chunk = "";
+					break;
+				}
+				chunk += c;
+				break;
+			default:
+				break;
+			}
+		}
+		for (unsigned int i = 0; i < xyPairs.size(); i++) {
+			std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
+		}
+		xyPairs.clear();
+		std::cout << "Name: " << name << std::endl << "ID: " << id << std::endl << "Army Size: " << armies << std::endl << std::endl;
+	}
 }
 
 Territory* World::getTerritory(int index)

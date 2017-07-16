@@ -4,6 +4,7 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/System/FileInputStream.hpp>
 #include <list>
 
 class Player;
@@ -86,4 +87,5 @@ public:
     unsigned int TerritoryNumber();
     unsigned int PlayerNumber();
     Player* getPlayer(int index);
+	void ReadFile();
 }; // World

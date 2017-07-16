@@ -51,9 +51,12 @@ int main()
     background.setPosition(GAME_LEFT, GAME_TOP);
     background.setFillColor(sf::Color::Green);
 
+
     sf::Font armyFont = loadFont("arial.ttf");
 
     World world(armyFont);
+
+	world.ReadFile();
 
     enum TurnPhase {
         place,
