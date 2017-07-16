@@ -56,7 +56,7 @@ int main()
 
     World world(armyFont);
 
-	world.ReadFile();
+	//world.ReadFile();
 
     enum TurnPhase {
         place,
@@ -123,7 +123,7 @@ int main()
                     if(tmp >= 0)
                     {
                         sf::Color tmpColor = world.getTerritory(tmp)->getFillColor();
-
+						world.getTerritory(tmp)->ChangeOwner(world.getPlayer(1), 5);
                         std::cout << (int)tmpColor.r << ", " << (int)tmpColor.g << ", " << (int)tmpColor.b << std::endl;
                     }
                 }

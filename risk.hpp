@@ -87,5 +87,5 @@ public:
     unsigned int TerritoryNumber();
     unsigned int PlayerNumber();
     Player* getPlayer(int index);
-	void ReadFile();
+	void ReadFile(sf::Font& font);
 }; // World
