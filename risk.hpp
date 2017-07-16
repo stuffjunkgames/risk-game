@@ -8,6 +8,7 @@
 
 class Player;
 class Territory;
+class ExtendedShape;
 
 class ExtendedShape : public sf::ConvexShape
 {
@@ -22,38 +23,6 @@ public:
 
 };
 
-class Territory
-{
-    // private variables
-    int id;
-    ExtendedShape territory;
-    sf::Text armyDisplay;
-    sf::Font armyFont;
-    std::string name;
-    Player *owner;
-    unsigned int army;  // how many armies player has in territory
-    std::vector<Territory> connected;
-
-public:
-    // constructor
-    Territory(int id, ExtendedShape *shape, std::string name, Player *player, unsigned int army);
-
-    // public functions
-    void addConnection(Territory connection);
-    void ChangeOwner(Player *newOwner, unsigned int newArmy);
-    void draw(sf::RenderWindow *window);
-    ExtendedShape getShape();
-    void setFont();
-    bool isInside(sf::Vector2f point);
-    bool operator == (const Territory &other);
-
-    // find centroid of territory
-    // move armyDisplay to centroid of territory
-    // set armyDisplay number
-    // add function for adding/subtracting armies
-
-}; // Territory
-
 class Player
 {
     int playerNumber;
@@ -64,6 +33,8 @@ public:
     sf::Color color;    // make this private
 
     Player(int number, std::string name, sf::Color color);
+
+    void Initialize(int number, std::string name, sf::Color color);
     void CaptureTerritory(Territory *captured, unsigned int army);
     void LostTerritory(Territory *captured);
     bool operator == (const Player &other);
@@ -71,16 +42,48 @@ public:
 
 }; // Player
 
+class Territory : public ExtendedShape  // if we make a ConcaveShape, inherit from that instead
+{
+    // private variables
+    int id;
+    sf::Text armyDisplay;
+    std::string name;
+    Player* owner;
+    unsigned int army;  // how many armies player has in territory
+    std::vector<Territory> connected;
+
+public:
+    // constructor
+    Territory();
+    Territory(int n);
+    Territory(int n, int id, std::string name, Player* player, unsigned int army, sf::Font& font);
+
+    // public functions
+    void Initialize(int id, std::string name, Player* player, unsigned int army, sf::Font& font);
+
+    void RefreshText();
+    void addConnection(Territory connection);
+    void ChangeOwner(Player *newOwner, unsigned int newArmy);
+    //virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+    void drawTerritory(sf::RenderWindow* window);
+    void setFont();     // should be able to remove this
+
+    bool operator == (const Territory& other);
+
+    // add function for adding/subtracting armies
+
+}; // Territory
+
 class World
 {
     std::vector<Territory> territoryList;
     std::vector<Player> playerList;
 
 public:
-    World();
+    World(sf::Font& font);
 
-    Territory GetTerritory(int index);
+    Territory* getTerritory(int index);
     unsigned int TerritoryNumber();
     unsigned int PlayerNumber();
-    Player GetPlayer(int index);
+    Player* getPlayer(int index);
 }; // World

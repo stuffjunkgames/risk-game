@@ -156,84 +156,6 @@ bool ExtendedShape::isInside(sf::Vector2f point)
 }
 // ExtendedShape
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Territory class definitions
-
-ExtendedShape Territory::getShape()
-{
-    return territory;
-}
-
-bool Territory::operator == (const Territory &other)
-{
-    return this->id == other.id;
-}
-
-Territory::Territory(int id, ExtendedShape *shape, std::string name, Player *player, unsigned int army)
-{
-    this->id = id;
-    territory = *shape;
-    this->name = name;
-    owner = player;
-    this->army = army;
-    territory.setFillColor(owner->color);
-
-    // set text parameters
-    if(!armyFont.loadFromFile("arial.ttf"))
-    {
-        // error
-        exit(EXIT_FAILURE);
-    }
-    armyDisplay.setCharacterSize(12);
-    armyDisplay.setString(std::to_string(army));
-}
-
-// if the territory object is copied, this needs to be called again
-void Territory::setFont()
-{
-    // make sure Text's reference to Font is correct
-    armyDisplay.setFont(armyFont);
-
-    // set text position to center of shape
-    sf::FloatRect bounds = armyDisplay.getGlobalBounds();
-    sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
-    sf::Vector2f centroid = this->territory.Centroid();
-
-    armyDisplay.setPosition(centroid - textShift);
-    armyDisplay.setFillColor(sf::Color::White);
-}
-
-// override Drawable::draw() to make this more consistent with SFML standard
-// setFont MUST be called BEFORE calling draw, or drawing text will not work (probably segfault)
-void Territory::draw(sf::RenderWindow *window)
-{
-    window->draw(territory);
-    window->draw(armyDisplay);
-}
-
-void Territory::addConnection(Territory connection)
-{
-    connected.push_back(connection);
-}
-
-void Territory::ChangeOwner(Player *newOwner, unsigned int newArmy)
-{
-    owner = newOwner;
-    army = newArmy;
-    territory.setFillColor(owner->color);
-}
-
-// returns whether point is inside the territory
-bool Territory::isInside(sf::Vector2f point)
-{
-    // just call ExtendedShape.isInside
-    return territory.isInside(point);
-}
-
-// Territory class ^
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Player class definitions
 
@@ -264,9 +186,119 @@ void Player::LostTerritory(Territory *captured)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// Territory class definitions
+
+bool Territory::operator == (const Territory &other)
+{
+    return this->id == other.id;
+}
+
+Territory::Territory() : ExtendedShape()
+{
+    // call ExtendedShape constructor
+}
+
+Territory::Territory(int n) : ExtendedShape(n)
+{
+    // call ExtendedShape constructor
+}
+
+Territory::Territory(int n, int id, std::string name, Player* player, unsigned int army, sf::Font& font) : ExtendedShape(n)
+{
+    // call ExtendedShape constructor
+
+    this->id = id;
+    this->name = name;
+    this->owner = player;
+    this->army = army;
+    this->setFillColor(owner->color);
+
+
+    // set font
+    armyDisplay.setFont(font);
+
+    // set display text
+    armyDisplay.setCharacterSize(12);
+    armyDisplay.setString(std::to_string(army));
+}
+
+void Territory::Initialize(int id, std::string name, Player* player, unsigned int army, sf::Font& font)
+{
+    this->id = id;
+    this->name = name;
+    this->owner = player;
+    this->army = army;
+    this->setFillColor(owner->color);
+
+    // make sure Text's reference to Font is correct
+    armyDisplay.setFont(font);
+
+    // set display text
+    armyDisplay.setCharacterSize(12);
+    armyDisplay.setString(std::to_string(army));
+
+    // set text position to center of shape
+    sf::FloatRect bounds = armyDisplay.getGlobalBounds();
+    sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
+    sf::Vector2f centroid = this->Centroid();
+
+    armyDisplay.setPosition(centroid - textShift);
+    armyDisplay.setFillColor(sf::Color::White);
+}
+
+// set text number and position
+void Territory::RefreshText()
+{
+    armyDisplay.setString(std::to_string(army));
+
+    // set text position to center of shape
+    sf::FloatRect bounds = armyDisplay.getGlobalBounds();
+    sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
+    sf::Vector2f centroid = this->Centroid();
+
+    armyDisplay.setPosition(centroid - textShift);
+    armyDisplay.setFillColor(sf::Color::White);
+}
+
+// if the territory object is copied, this needs to be called again
+void Territory::setFont()
+{
+    // set text position to center of shape
+    sf::FloatRect bounds = armyDisplay.getGlobalBounds();
+    sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
+    sf::Vector2f centroid = this->Centroid();
+
+    armyDisplay.setPosition(centroid - textShift);
+    armyDisplay.setFillColor(sf::Color::White);
+}
+
+// override Drawable::draw() to make this more consistent with SFML standard
+// setFont MUST be called BEFORE calling draw, or drawing text will not work (probably segfault)
+void Territory::drawTerritory(sf::RenderWindow* window)
+{
+    window->draw(*this);
+    window->draw(armyDisplay);
+}
+
+void Territory::addConnection(Territory connection)
+{
+    connected.push_back(connection);
+}
+
+void Territory::ChangeOwner(Player *newOwner, unsigned int newArmy)
+{
+    owner = newOwner;
+    army = newArmy;
+    this->setFillColor(owner->color);
+}
+
+// Territory class ^
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // World class
 
-World::World()
+World::World(sf::Font& font)
 {
     // make the world.
     // TODO: read in from a file (JSON?) or database (SQL?)
@@ -277,47 +309,62 @@ World::World()
     playerList.push_back(player1);
     playerList.push_back(player2);
 
-    ExtendedShape shape(4);
-    shape.setPointCount(4);
+    Territory t1(4, 1, "Territory 1", &playerList[0], 12, font);
+    Territory t2(4, 2, "Territory 2", &playerList[1], 5, font);
+    Territory t3(4, 3, "Territory 3", &playerList[1], 10, font);
+    Territory t4(4, 4, "Territory 4", &playerList[0], 20, font);
 
-    shape.setPoint(0, sf::Vector2f(0,0));
-    shape.setPoint(1, sf::Vector2f(0,100));
-    shape.setPoint(2, sf::Vector2f(100,100));
-    shape.setPoint(3, sf::Vector2f(100,0));
+    t1.setPoint(0, sf::Vector2f(0,0));
+    t1.setPoint(1, sf::Vector2f(0,100));
+    t1.setPoint(2, sf::Vector2f(100,100));
+    t1.setPoint(3, sf::Vector2f(100,0));
+    t1.RefreshText();
 
-    territoryList.push_back(Territory(1, &shape, "Territory 1", &playerList[0], 12));
+    territoryList.push_back(t1);
+    //territoryList[0].Initialize(1, "Territory 1", &playerList[0], 12, font);
 
-    shape.setPoint(0, sf::Vector2f(100,0));
-    shape.setPoint(1, sf::Vector2f(100,100));
-    shape.setPoint(2, sf::Vector2f(200,100));
-    shape.setPoint(3, sf::Vector2f(200,0));
+    t2.setPoint(0, sf::Vector2f(100,0));
+    t2.setPoint(1, sf::Vector2f(100,100));
+    t2.setPoint(2, sf::Vector2f(200,100));
+    t2.setPoint(3, sf::Vector2f(200,0));
+    t2.RefreshText();
 
-    territoryList.push_back(Territory(2, &shape, "Territory 2", &playerList[1], 5));
+    territoryList.push_back(t2);
+    territoryList[1].Initialize(2, "Territory 2", &playerList[1], 5, font);
 
-    shape.setPoint(0, sf::Vector2f(0,100));
-    shape.setPoint(1, sf::Vector2f(0,200));
-    shape.setPoint(2, sf::Vector2f(100,200));
-    shape.setPoint(3, sf::Vector2f(100,100));
+    t3.setPoint(0, sf::Vector2f(0,100));
+    t3.setPoint(1, sf::Vector2f(0,200));
+    t3.setPoint(2, sf::Vector2f(100,200));
+    t3.setPoint(3, sf::Vector2f(100,100));
+    t3.RefreshText();
 
-    territoryList.push_back(Territory(3, &shape, "Territory 3", &playerList[1], 10));
+    territoryList.push_back(t3);
+    territoryList[2].Initialize(3, "Territory 3", &playerList[1], 10, font);
 
-    shape.setPoint(0, sf::Vector2f(100,100));
-    shape.setPoint(1, sf::Vector2f(100,200));
-    shape.setPoint(2, sf::Vector2f(200,200));
-    shape.setPoint(3, sf::Vector2f(200,100));
+    t4.setPoint(0, sf::Vector2f(100,100));
+    t4.setPoint(1, sf::Vector2f(100,200));
+    t4.setPoint(2, sf::Vector2f(200,200));
+    t4.setPoint(3, sf::Vector2f(200,100));
+    t4.RefreshText();
 
-    territoryList.push_back(Territory(4, &shape, "Territory 4", &playerList[0], 20));
+    territoryList.push_back(t4);
+    territoryList[3].Initialize(4, "Territory 4", &playerList[0], 20, font);
 
-    for(unsigned int i = 0; i < territoryList.size(); i++)
-    {
-        territoryList[i].setFont();
-    }
+//    territoryList[0].Initialize(1, "Territory 1", &playerList[0], 12);
+//    territoryList[1].Initialize(2, "Territory 2", &playerList[1], 5);
+//    territoryList[2].Initialize(3, "Territory 3", &playerList[1], 10);
+//    territoryList[3].Initialize(4, "Territory 4", &playerList[0], 20);
+
+//    for(unsigned int i = 0; i < territoryList.size(); i++)
+//    {
+//        territoryList[i].setFont();
+//    }
 
 }
 
-Territory World::GetTerritory(int index)
+Territory* World::getTerritory(int index)
 {
-    return territoryList.at(index);
+    return &(territoryList.at(index));
 }
 
 unsigned int World::TerritoryNumber()
@@ -330,9 +377,9 @@ unsigned int World::PlayerNumber()
     return playerList.size();
 }
 
-Player World::GetPlayer(int index)
+Player* World::getPlayer(int index)
 {
-    return playerList.at(index);
+    return &(playerList.at(index));
 }
 // World
 

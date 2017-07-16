@@ -15,12 +15,23 @@
 #define GAME_BOTTOM GAME_TOP+GAME_HEIGHT
 
 
+sf::Font loadFont(std::string path)
+{
+    sf::Font font;
+    if(!font.loadFromFile(path))
+    {
+        // error
+        exit(EXIT_FAILURE);
+    }
+
+    return font;
+}
 
 int getClickedTerritory(World world, sf::Vector2f mousePosition)
 {
     for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
     {
-        if(world.GetTerritory(i).isInside(mousePosition))
+        if(world.getTerritory(i)->isInside(mousePosition))
         {
             return i;
         }
@@ -40,7 +51,9 @@ int main()
     background.setPosition(GAME_LEFT, GAME_TOP);
     background.setFillColor(sf::Color::Green);
 
-    World world;
+    sf::Font armyFont = loadFont("arial.ttf");
+
+    World world(armyFont);
 
     enum TurnPhase {
         place,
@@ -49,7 +62,7 @@ int main()
     };
 
     int playerTurn = 1;
-    Player currentPlayer = world.GetPlayer(0);
+    Player* currentPlayer = world.getPlayer(0);
     TurnPhase phase = place;
     int previousTerritory = -1;
     int selectedTerritory = -1;  // index of selected territory.  Negative for none selected
@@ -89,6 +102,27 @@ int main()
                     selectedTerritory = getClickedTerritory(world, mousePosition);
 
                     std::cout << "Selected Territory (index): " << selectedTerritory << std::endl;
+
+                    if(selectedTerritory >= 0)
+                    {
+                        world.getTerritory(selectedTerritory)->ChangeOwner(world.getPlayer(0), 5);
+                    }
+
+                }
+                if(event.mouseButton.button == sf::Mouse::Right)
+                {
+                    // right mouse pressed
+
+                    mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+                    int tmp = getClickedTerritory(world, mousePosition);
+
+                    if(tmp >= 0)
+                    {
+                        sf::Color tmpColor = world.getTerritory(tmp)->getFillColor();
+
+                        std::cout << (int)tmpColor.r << ", " << (int)tmpColor.g << ", " << (int)tmpColor.b << std::endl;
+                    }
                 }
             }
         }
@@ -105,9 +139,8 @@ int main()
             window.draw(background);
             for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
-                Territory tmp = world.GetTerritory(i);
-                sf::ConvexShape s = tmp.getShape();
-                world.GetTerritory(i).draw(&window);
+                //window.draw(*world.getTerritory(i));
+                world.getTerritory(i)->drawTerritory(&window);
                 // draw text for armies
             }
             window.display();
@@ -121,7 +154,7 @@ int main()
         // make moves based on clicks
         // turn has 3 parts:  place units -> attack -> relocate
 
-        currentPlayer = world.GetPlayer(playerTurn);   // change this to base on player ID, not index
+        currentPlayer = world.getPlayer(playerTurn);   // change this to base on player ID, not index
 
         switch(phase)
         {
