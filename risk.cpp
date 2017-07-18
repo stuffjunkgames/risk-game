@@ -215,13 +215,14 @@ Territory::Territory(int n, int id, std::string name, Player* player, unsigned i
     this->owner = player;
     this->army = army;
     this->setFillColor(owner->color);
-
+	setOutlineThickness(-10);
+	setOutlineColor(sf::Color::Black);
 
     // set font
     armyDisplay.setFont(font);
 
     // set display text
-    armyDisplay.setCharacterSize(12);
+    armyDisplay.setCharacterSize(20);
     armyDisplay.setString(std::to_string(army));
 }
 
@@ -294,6 +295,17 @@ void Territory::ChangeOwner(Player *newOwner, unsigned int newArmy)
     army = newArmy;
     this->setFillColor(owner->color);
 	this->RefreshText();
+}
+
+void Territory::AddArmies(int nArmies)
+{
+	army += nArmies;
+	this->RefreshText();
+}
+
+int Territory::GetOwner()
+{
+	return id;
 }
 
 // Territory class ^
@@ -424,7 +436,7 @@ void World::ReadFile(sf::Font& font)
 				break;
 			}
 		}
-		territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
+		territoryList.push_back(Territory(xyPairs.size(), player, name, &playerList[player], armies, font));
 		for (unsigned int i = 0; i < xyPairs.size(); i++) {
 			std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
 			territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));

@@ -68,6 +68,8 @@ public:
     //virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     void drawTerritory(sf::RenderWindow* window);
     void setFont();     // should be able to remove this
+	void AddArmies(int nArmies);
+	int GetOwner();
 
     bool operator == (const Territory& other);
 
