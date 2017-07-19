@@ -66,11 +66,12 @@ int main()
         reposition
     };
 
-    int playerTurn = 1;
-    Player* currentPlayer = world.getPlayer(0);
+    int playerTurn = 0;
+    Player* currentPlayer = world.getPlayer(playerTurn);
     TurnPhase phase = place;
     int previousTerritory = -2;
-    int selectedTerritory = -1;  // index of selected territory.  Negative for none selected
+    int clickedTerritory = -1;  // index of selected territory.  Negative for none selected
+    int activeTerritory = -1;
 
     bool mouseDown = false;
 	int keyPressed = -1;
@@ -165,8 +166,8 @@ int main()
 
 		if (mouseDown)
 		{
-			selectedTerritory = getClickedTerritory(world, mousePosition);
-			std::cout << "Selected Territory (index): " << selectedTerritory << std::endl;
+			clickedTerritory = getClickedTerritory(world, mousePosition);
+			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
 
 		}
 
@@ -176,46 +177,63 @@ int main()
             // get number of armies and place them
             // for now: +1 army for each territory
             // later: implement bonuses
-			if (selectedTerritory >= 0 && world.getTerritory(selectedTerritory)->GetOwner() == playerTurn)//selected is valid and it is the current player's
-			{
-				if (world.getTerritory(selectedTerritory)->getOutlineColor() == sf::Color::Yellow)//crude check to see if it is "active"
-				{
-					//add or remove armies
-					if (keyPressed == 67 || keyPressed == 55) {// + key
-						world.getTerritory(selectedTerritory)->AddArmies(1);
-						keyPressed = KEY_PRESSED_ONCE;
-					}
-					else if (keyPressed == 68 || keyPressed == 56) {// - key
-						world.getTerritory(selectedTerritory)->AddArmies(-1);
-						keyPressed = KEY_PRESSED_ONCE;
-					}
-				}				
 
+            //std::cout << (*(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer) << std::endl;
+
+            // active is valid and owned by current player
+			if (activeTerritory >= 0 && *(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer)
+			{
+                //add or remove armies
+                // FIXME: suggest not using numpad.  May be fine to just add armies when you click
+                if (keyPressed == 67 || keyPressed == 55) // + key
+                {
+                    world.getTerritory(activeTerritory)->AddArmies(1);
+                    keyPressed = KEY_PRESSED_ONCE;
+                }
+                else if (keyPressed == 68 || keyPressed == 56) // - key
+                {
+                    world.getTerritory(activeTerritory)->AddArmies(-1);
+                    keyPressed = KEY_PRESSED_ONCE;
+                }
+			}
+
+			// clicked is valid and owned by current player
+            if(clickedTerritory >= 0 && *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer)
+            {
 				//mouse has been clicked
 				if (mouseDown)
 				{
-					if (selectedTerritory != previousTerritory)//selected is different from the previous
+					if (clickedTerritory != activeTerritory)    //clicked is different from the active
 					{
-						world.getTerritory(selectedTerritory)->setOutlineColor(sf::Color::Yellow);
-						if (previousTerritory >= 0)//previous is valid
-							world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
+						world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
+						if (activeTerritory >= 0)   //previous is valid
+                        {
+                            world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
+                        }
+                        activeTerritory = clickedTerritory;
 					}
 					else
 					{
-						if(world.getTerritory(selectedTerritory)->getOutlineColor() == sf::Color::Black)
-							world.getTerritory(selectedTerritory)->setOutlineColor(sf::Color::Yellow);
+						if(world.getTerritory(clickedTerritory)->getOutlineColor() == sf::Color::Black)
+                        {
+                            world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
+                        }
 						else
-							world.getTerritory(selectedTerritory)->setOutlineColor(sf::Color::Black);
+                        {
+                            world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Black);
+							activeTerritory = -1;
+                        }
+
 					}
 					mouseDown = false;
-				}				
+				}
 			}
-			
-			else//either selected is invalid or it is not the current player's
+			else    //either selected is invalid or it is not the current player's
 			{
-				if (previousTerritory >= 0 && mouseDown)//previous is valid
+				if (activeTerritory >= 0 && mouseDown)//active is valid
 				{
-					world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
+					world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
+					activeTerritory = -1;
 					mouseDown = false;
 				}
 			}
@@ -232,7 +250,8 @@ int main()
             // something broke...
             break;
         }
-		previousTerritory = selectedTerritory;
+
+		previousTerritory = clickedTerritory;
     }
 
     return 0;
