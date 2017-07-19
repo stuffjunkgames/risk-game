@@ -72,6 +72,8 @@ int main()
     int previousTerritory = -2;
     int clickedTerritory = -1;  // index of selected territory.  Negative for none selected
     int activeTerritory = -1;
+    int armyCount = 0;
+    int placedArmies = 0;
 
     bool mouseDown = false;
 	int keyPressed = -1;
@@ -178,7 +180,28 @@ int main()
             // for now: +1 army for each territory
             // later: implement bonuses
 
-            //std::cout << (*(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer) << std::endl;
+            // first time through, count the number of armies player gets
+            if(armyCount == 0)
+            {
+                // FIXME: get rid of these "magic numbers"
+                armyCount = 3 + currentPlayer->getNumTerritories();
+                placedArmies = 0;
+                std::cout << currentPlayer->getNumTerritories() << std::endl;
+            }
+
+            // if they are all placed, move on.
+            if(placedArmies == armyCount)
+            {
+                armyCount = 0;
+                if (activeTerritory >= 0)
+                {
+                    // no more active territory
+                    world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
+                    activeTerritory = -1;
+                }
+                phase = attack;
+                break;
+            }
 
             // active is valid and owned by current player
 			if (activeTerritory >= 0 && *(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer)
@@ -189,11 +212,13 @@ int main()
                 {
                     world.getTerritory(activeTerritory)->AddArmies(1);
                     keyPressed = KEY_PRESSED_ONCE;
+                    placedArmies = placedArmies + 1;
                 }
                 else if (keyPressed == 68 || keyPressed == 56) // - key
                 {
                     world.getTerritory(activeTerritory)->AddArmies(-1);
                     keyPressed = KEY_PRESSED_ONCE;
+                    placedArmies = placedArmies - 1;
                 }
 			}
 
@@ -206,7 +231,7 @@ int main()
 					if (clickedTerritory != activeTerritory)    //clicked is different from the active
 					{
 						world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
-						if (activeTerritory >= 0)   //previous is valid
+						if (activeTerritory >= 0)   //active is valid
                         {
                             world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
                         }

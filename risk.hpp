@@ -28,7 +28,7 @@ class Player
 {
     int playerNumber;
     std::string name;
-    std::list<Territory> territories; // territories owned by this player
+    std::list<Territory*> territories; // territories owned by this player
 
 public:
     sf::Color color;    // make this private
@@ -40,6 +40,7 @@ public:
     void LostTerritory(Territory *captured);
     bool operator == (const Player &other);
     sf::Color getColor();
+    unsigned int getNumTerritories();
 
 }; // Player
 

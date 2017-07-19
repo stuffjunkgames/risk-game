@@ -177,12 +177,17 @@ Player::Player(int number, std::string name, sf::Color color)
 void Player::CaptureTerritory(Territory *captured, unsigned int army)
 {
     captured->ChangeOwner(this, army);
-    territories.push_back(*captured);
+    territories.push_back(captured);
 }
 
 void Player::LostTerritory(Territory *captured)
 {
-    territories.remove(*captured);
+    territories.remove(captured);
+}
+
+unsigned int Player::getNumTerritories()
+{
+    return this->territories.size();
 }
 
 // Player class definitions ^
@@ -239,15 +244,8 @@ void Territory::Initialize(int id, std::string name, Player* player, unsigned in
 
     // set display text
     armyDisplay.setCharacterSize(12);
-    armyDisplay.setString(std::to_string(army));
 
-    // set text position to center of shape
-    sf::FloatRect bounds = armyDisplay.getGlobalBounds();
-    sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
-    sf::Vector2f centroid = this->Centroid();
-
-    armyDisplay.setPosition(centroid - textShift);
-    armyDisplay.setFillColor(sf::Color::White);
+    this->RefreshText();
 }
 
 // set text number and position
@@ -326,44 +324,6 @@ World::World(sf::Font& font)
     playerList.push_back(player2);
 
 	ReadFile(font);
-	/*
-    Territory t1(4, 1, "Territory 1", &playerList[0], 12, font);
-    Territory t2(4, 2, "Territory 2", &playerList[1], 5, font);
-    Territory t3(4, 3, "Territory 3", &playerList[1], 10, font);
-    Territory t4(4, 4, "Territory 4", &playerList[0], 20, font);
-
-    t1.setPoint(0, sf::Vector2f(0,0));
-    t1.setPoint(1, sf::Vector2f(0,100));
-    t1.setPoint(2, sf::Vector2f(100,100));
-    t1.setPoint(3, sf::Vector2f(100,0));
-    t1.RefreshText();
-
-    territoryList.push_back(t1);
-
-    t2.setPoint(0, sf::Vector2f(100,0));
-    t2.setPoint(1, sf::Vector2f(100,100));
-    t2.setPoint(2, sf::Vector2f(200,100));
-    t2.setPoint(3, sf::Vector2f(200,0));
-    t2.RefreshText();
-
-    territoryList.push_back(t2);
-
-    t3.setPoint(0, sf::Vector2f(0,100));
-    t3.setPoint(1, sf::Vector2f(0,200));
-    t3.setPoint(2, sf::Vector2f(100,200));
-    t3.setPoint(3, sf::Vector2f(100,100));
-    t3.RefreshText();
-
-    territoryList.push_back(t3);
-
-    t4.setPoint(0, sf::Vector2f(100,100));
-    t4.setPoint(1, sf::Vector2f(100,200));
-    t4.setPoint(2, sf::Vector2f(200,200));
-    t4.setPoint(3, sf::Vector2f(200,100));
-    t4.RefreshText();
-
-    territoryList.push_back(t4);
-    */
 
 }
 
@@ -437,11 +397,13 @@ void World::ReadFile(sf::Font& font)
 			}
 		}
 		territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
+
 		for (unsigned int i = 0; i < xyPairs.size(); i++) {
 			std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
 			territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
 		}
 		territoryList.back().RefreshText();
+		playerList[player].CaptureTerritory(&territoryList.back(), armies);
 		xyPairs.clear();
 		std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl << std::endl;
 
