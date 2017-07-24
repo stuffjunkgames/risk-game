@@ -92,3 +92,16 @@ public:
     Player* getPlayer(int index);
 	void ReadFile(sf::Font& font);
 }; // World
+
+
+class Arrow : public ExtendedShape
+{
+
+public:
+	// constructor
+	Arrow();
+	Arrow(sf::Vector2f center1, sf::Vector2f center2);
+
+	// public functions
+	void Draw(sf::RenderWindow* window);
+};

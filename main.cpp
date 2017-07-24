@@ -71,9 +71,12 @@ int main()
     TurnPhase phase = place;
     int previousTerritory = -2;
     int clickedTerritory = -1;  // index of selected territory.  Negative for none selected
-    int activeTerritory = -1;
+    int activeTerritory = -1;// doubles as attacking territory
+	int defendingTerritory = -1;
     int armyCount = 0;
     int placedArmies = 0;
+	Arrow attackArrow;
+	int r;
 
     bool mouseDown = false;
 	int keyPressed = -1;
@@ -153,6 +156,10 @@ int main()
                 world.getTerritory(i)->drawTerritory(&window);
                 // draw text for armies
             }
+			if (defendingTerritory >= 0)
+			{
+				attackArrow.Draw(&window);
+			}
             window.display();
         }
 
@@ -168,9 +175,50 @@ int main()
 
 		if (mouseDown)
 		{
+			previousTerritory = clickedTerritory;
 			clickedTerritory = getClickedTerritory(world, mousePosition);
 			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
 
+		}
+		// clicked is valid and owned by current player
+		if (clickedTerritory >= 0 && *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer)
+		{
+			//mouse has been clicked
+			if (mouseDown)
+			{
+				if (clickedTerritory != activeTerritory)    //clicked is different from the active
+				{
+					world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
+					if (activeTerritory >= 0)   //active is valid
+					{
+						world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
+					}
+					activeTerritory = clickedTerritory;
+				}
+				else
+				{
+					if (world.getTerritory(clickedTerritory)->getOutlineColor() == sf::Color::Black)
+					{
+						world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
+					}
+					else
+					{
+						world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Black);
+						activeTerritory = -1;
+					}
+
+				}
+				//mouseDown = false;
+			}
+		}
+		else    //either selected is invalid or it is not the current player's
+		{
+			if (activeTerritory >= 0 && mouseDown)//active is valid
+			{
+				world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
+				activeTerritory = -1;
+				//mouseDown = false;
+			}
 		}
 
         switch(phase)
@@ -196,7 +244,8 @@ int main()
                 if (activeTerritory >= 0)
                 {
                     // no more active territory
-                    world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
+                    world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
+					std::cout << "changing phase" << std::endl;
                     activeTerritory = -1;
                 }
                 phase = attack;
@@ -208,6 +257,7 @@ int main()
 			{
                 //add or remove armies
                 // FIXME: suggest not using numpad.  May be fine to just add armies when you click
+				// FIXME: maybe add/remove to/from a buffer and apply when changing phase, so the territories aren't directly altered
                 if (keyPressed == 67 || keyPressed == 55) // + key
                 {
                     world.getTerritory(activeTerritory)->AddArmies(1);
@@ -221,51 +271,39 @@ int main()
                     placedArmies = placedArmies - 1;
                 }
 			}
-
-			// clicked is valid and owned by current player
-            if(clickedTerritory >= 0 && *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer)
-            {
-				//mouse has been clicked
-				if (mouseDown)
-				{
-					if (clickedTerritory != activeTerritory)    //clicked is different from the active
-					{
-						world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
-						if (activeTerritory >= 0)   //active is valid
-                        {
-                            world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
-                        }
-                        activeTerritory = clickedTerritory;
-					}
-					else
-					{
-						if(world.getTerritory(clickedTerritory)->getOutlineColor() == sf::Color::Black)
-                        {
-                            world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
-                        }
-						else
-                        {
-                            world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Black);
-							activeTerritory = -1;
-                        }
-
-					}
-					mouseDown = false;
-				}
-			}
-			else    //either selected is invalid or it is not the current player's
-			{
-				if (activeTerritory >= 0 && mouseDown)//active is valid
-				{
-					world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
-					activeTerritory = -1;
-					mouseDown = false;
-				}
-			}
             break;
         case attack:
             // attack territories
-
+			if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
+			{
+				if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
+					!(*(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer))
+				{
+					defendingTerritory = clickedTerritory;
+					attackArrow = Arrow(world.getTerritory(previousTerritory)->Centroid(), world.getTerritory(clickedTerritory)->Centroid());
+				}
+			}
+			if (defendingTerritory >= 0)
+			{
+				if (keyPressed == 57)
+				{
+					// FIXME: code to determine the winner
+					r = rand();
+					if (r > RAND_MAX / 2)
+					{
+						// attacking player wins
+						world.getTerritory(defendingTerritory)->AddArmies(-1);
+					}
+					else
+					{
+						// defending player wins
+						world.getTerritory(previousTerritory)->AddArmies(-1);
+					}
+					
+					keyPressed = KEY_PRESSED_ONCE;
+					defendingTerritory = -1;
+				}
+			}
 
             break;
         case reposition:
@@ -275,8 +313,7 @@ int main()
             // something broke...
             break;
         }
-
-		previousTerritory = clickedTerritory;
+		mouseDown = false;
     }
 
     return 0;

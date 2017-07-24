@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <cctype>
+#include <cmath>
 
 class Player;
 class Territory;
@@ -430,5 +431,51 @@ Player* World::getPlayer(int index)
     return &(playerList.at(index));
 }
 // World
+////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Arrow class definitions
+
+Arrow::Arrow() : ExtendedShape()
+{
+
+}
+
+Arrow::Arrow(sf::Vector2f center1, sf::Vector2f center2) : ExtendedShape(3)
+{
+	int dx = (center2.x - center1.x);
+	int dy = (center2.y - center1.y);
+	// length
+	float l = sqrt(dx * dx + dy * dy);
+	// angle, theta
+	float t = atan2(dy, dx);
+	float pi = 3.1415926535897;
+	float scale = sqrt(l);
+
+	this->setPoint(0, center1 + sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
+	this->setPoint(1, center2);
+	this->setPoint(2, center1 - sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
+	
+	/* 
+	// This isn't going to work because it is a concave shape (and I think the math is wrong)
+	this->setPoint(0, center1 + sf::Vector2f(0.1f * l * cos(pi / 2 - t), 0.1f * l * sin(pi / 2 - t)));
+	this->setPoint(1, this->getPoint(0) + sf::Vector2f(0.8 * l * cos(t), 0.8 * l * sin(t)));
+	this->setPoint(2, this->getPoint(1) + sf::Vector2f(0.2f * l * cos(pi / 2 - t), 0.2f * l * sin(pi / 2 - t)));
+	this->setPoint(3, center2);
+
+	this->setPoint(6, center1 - sf::Vector2f(0.1f * l * cos(pi / 2 - t), 0.1f * l * sin(pi / 2 - t)));
+	this->setPoint(5, this->getPoint(6) + sf::Vector2f(0.8 * l * cos(t), 0.8 * l * sin(t)));
+	this->setPoint(4, this->getPoint(5) - sf::Vector2f(0.2f * l * cos(pi / 2 - t), 0.2f * l * sin(pi / 2 - t)));
+	*/
+	this->setFillColor(sf::Color::Yellow);
+	setOutlineThickness(-2);
+	setOutlineColor(sf::Color::Black);
+}
+
+void Arrow::Draw(sf::RenderWindow* window)
+{
+	window->draw(*this);
+}
+
+// Arrow
 ////////////////////////////////////////////////////////////////////////////////////////////
