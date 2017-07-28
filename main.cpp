@@ -4,13 +4,15 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 
 #define GAME_TOP 0
 #define GAME_LEFT 0
-#define GAME_WIDTH 1024
-#define GAME_HEIGHT 768
+#define GAME_WIDTH 1600
+#define GAME_HEIGHT 1200
 #define GAME_RIGHT GAME_LEFT+GAME_WIDTH
 #define GAME_BOTTOM GAME_TOP+GAME_HEIGHT
 #define NO_KEY_PRESSED -1
@@ -47,7 +49,7 @@ int getClickedTerritory(World world, sf::Vector2f mousePosition)
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1024, 768), "Risk");
+    sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Risk");
     sf::RectangleShape background = sf::RectangleShape(sf::Vector2f(GAME_WIDTH, GAME_HEIGHT));
 
     background.setPosition(GAME_LEFT, GAME_TOP);
@@ -77,6 +79,24 @@ int main()
     int placedArmies = 0;
 	Arrow attackArrow;
 	int r;
+	
+	sf::Texture texture;
+	if (!texture.loadFromFile("map.jpg"))
+		return EXIT_FAILURE;
+	sf::Sprite map(texture);
+	map.setScale(1.5, 1.5);
+
+	/////////////////////////////////////////////
+	// Only for making better map, delete after
+
+	std::ofstream myfile;
+	std::string line;
+	std::string chunk;
+	sf::Vector2f pos(0, 0);
+
+	myfile.open("world2.txt");
+
+	/////////////////////////////////////////////
 
     bool mouseDown = false;
 	int keyPressed = -1;
@@ -135,9 +155,15 @@ int main()
                         sf::Color tmpColor = world.getTerritory(tmp)->getFillColor();
 						//world.getTerritory(tmp)->ChangeOwner(world.getPlayer(1), 5);
                         std::cout << (int)tmpColor.r << ", " << (int)tmpColor.g << ", " << (int)tmpColor.b << std::endl;
+						std::cout << event.mouseButton.x << ", " << event.mouseButton.y << std::endl;
                     }
                 }
             }
+			if (event.type == sf::Event::MouseMoved)
+			{
+				pos.x = event.mouseMove.x;
+				pos.y = event.mouseMove.y;
+			}
         }
 
         // draw
@@ -150,6 +176,7 @@ int main()
             // draw
             window.clear();
             window.draw(background);
+			window.draw(map);
             for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
                 //window.draw(*world.getTerritory(i));
@@ -159,7 +186,7 @@ int main()
 			if (defendingTerritory >= 0)
 			{
 				attackArrow.Draw(&window);
-			}
+			}			
             window.display();
         }
 
@@ -285,7 +312,7 @@ int main()
 			}
 			if (defendingTerritory >= 0)
 			{
-				if (keyPressed == 57)
+				if (keyPressed == 57) // spacebar key
 				{
 					// FIXME: code to determine the winner
 					r = rand();
@@ -313,12 +340,23 @@ int main()
             // something broke...
             break;
         }
+
+		if (keyPressed == 57) // spacebar key
+		{
+			myfile << pos.x << " " << pos.y << "|";
+			keyPressed = KEY_PRESSED_ONCE;
+		}
+		if (keyPressed == 58)
+		{
+			myfile << std::endl;
+			keyPressed = KEY_PRESSED_ONCE;
+		}
+
 		mouseDown = false;
     }
-
+	myfile.close();
     return 0;
 } // main
 
 //////////////////////////////////////////////////////////////////////////////////////////
-
 
