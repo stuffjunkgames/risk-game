@@ -307,6 +307,21 @@ Player* Territory::GetOwner()
 	return owner;
 }
 
+bool Territory::isConnected(Territory *t)
+{
+    std::vector<Territory>::iterator iter;
+    for(iter = connected.begin(); iter < connected.end(); iter++)
+    {
+        if(*iter == *t)
+        {
+            return true;
+        }
+    }
+
+    return false;
+
+}
+
 // Territory class ^
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -330,9 +345,13 @@ World::World(sf::Font& font)
 
 void World::ReadFile(sf::Font& font)
 {
+    // FIXME: this would be way easier to implement with streams than trying ot use characters.
+
 	std::ifstream infile("world.txt");
 	std::string line;
 	std::string chunk;
+
+	// read territories
 	for (int n = 0; std::getline(infile, line); n++)
 	{
 		std::istringstream iss(line);
@@ -340,17 +359,46 @@ void World::ReadFile(sf::Font& font)
 
 		//parsing
 		chunk = "";
-		char section = 0;// 0:coordinates, 1:name, 2:id, 3:armysize
+		int section = 0;// 0:line identifier (t=territory, c=connection)
+                         // 1:coordinates, 2:name, 3:id, 4:armysize
+                         // -1: territory, -2: connected
+        char id;
+
 		int x, y; //coordinates
 		std::vector<std::vector<int> > xyPairs;
 		std::string name;
 		int player;
 		int armies;
+
+		int terr;
+		std::vector<int> connections;
+
 		for (char c : line)
 		{
 			switch(section)
 			{
-			case 0:
+            case 0:
+                if(c == 't')
+                {
+                    id = 't';
+                }
+                else if(c== 'c')
+                {
+                    id = 'c';
+                }
+                else if(c == ';')
+                {
+                    if(id == 't')
+                    {
+                        section = 1;
+                    }
+                    else if(id == 'c')
+                    {
+                        section = -1;
+                    }
+                }
+                break;
+			case 1:
 				if (c == ' ') {
 					x = std::stoi(chunk);
 					chunk = "";
@@ -362,23 +410,14 @@ void World::ReadFile(sf::Font& font)
 					xyPairs.push_back({ x, y });
 					chunk = "";
 					if (c == ';')
-						section = 1;
-					break;
-				}
-				chunk += c;
-				break;
-			case 1:
-				if (c == ';') {
-					name = chunk;
-					chunk = "";
-					section = 2;
+						section = 2;
 					break;
 				}
 				chunk += c;
 				break;
 			case 2:
 				if (c == ';') {
-					player = std::stoi(chunk);
+					name = chunk;
 					chunk = "";
 					section = 3;
 					break;
@@ -387,28 +426,80 @@ void World::ReadFile(sf::Font& font)
 				break;
 			case 3:
 				if (c == ';') {
+					player = std::stoi(chunk);
+					chunk = "";
+					section = 4;
+					break;
+				}
+				chunk += c;
+				break;
+			case 4:
+				if (c == ';') {
 					armies = std::stoi(chunk);
 					chunk = "";
 					break;
 				}
 				chunk += c;
 				break;
+            case -1:
+                if(c == ';')
+                {
+                    terr = std::stoi(chunk);
+                    section--;
+                    chunk = "";
+                    break;
+                }
+                chunk += c;
+                break;
+            case -2:
+                if(c == ' ')
+                {
+                    connections.push_back(std::stoi(chunk));
+                    chunk = "";
+                    break;
+                }
+                else if(c == ';')
+                {
+                    connections.push_back(std::stoi(chunk));
+                    section--;
+                    break;
+                }
+
+                chunk += c;
+                break;
 			default:
 				break;
 			}
 		}
-		territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
+		if(id == 't')
+        {
+            // add territory
+            territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
 
-		for (unsigned int i = 0; i < xyPairs.size(); i++) {
-			std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
-			territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
-		}
-		territoryList.back().RefreshText();
-		playerList[player].CaptureTerritory(&territoryList.back(), armies);
-		xyPairs.clear();
-		std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl << std::endl;
+            for (unsigned int i = 0; i < xyPairs.size(); i++) {
+                std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
+                territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
+            }
+            territoryList.back().RefreshText();
+            playerList[player].CaptureTerritory(&territoryList.back(), armies);
+            xyPairs.clear();
+            std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl << std::endl;
+        }
+        else if(id == 'c')
+        {
+            std::cout << terr << " ";
+            // add connection
+            while(connections.size() > 0)
+            {
+                (territoryList.at(terr)).addConnection(territoryList.at(connections.back()));
+                std::cout << connections.back() << " ";
+                connections.pop_back();
+            }
+            std::cout << std::endl;
+        }
 
 	}
+
 }
 
 Territory* World::getTerritory(int index)
@@ -455,8 +546,8 @@ Arrow::Arrow(sf::Vector2f center1, sf::Vector2f center2) : ExtendedShape(3)
 	this->setPoint(0, center1 + sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
 	this->setPoint(1, center2);
 	this->setPoint(2, center1 - sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
-	
-	/* 
+
+	/*
 	// This isn't going to work because it is a concave shape (and I think the math is wrong)
 	this->setPoint(0, center1 + sf::Vector2f(0.1f * l * cos(pi / 2 - t), 0.1f * l * sin(pi / 2 - t)));
 	this->setPoint(1, this->getPoint(0) + sf::Vector2f(0.8 * l * cos(t), 0.8 * l * sin(t)));

@@ -79,7 +79,7 @@ int main()
     int placedArmies = 0;
 	Arrow attackArrow;
 	int r;
-	
+
 	sf::Texture texture;
 	if (!texture.loadFromFile("map.jpg"))
 		return EXIT_FAILURE;
@@ -186,7 +186,7 @@ int main()
 			if (defendingTerritory >= 0)
 			{
 				attackArrow.Draw(&window);
-			}			
+			}
             window.display();
         }
 
@@ -301,36 +301,38 @@ int main()
             break;
         case attack:
             // attack territories
-			if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
-			{
-				if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
-					!(*(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer))
-				{
-					defendingTerritory = clickedTerritory;
-					attackArrow = Arrow(world.getTerritory(previousTerritory)->Centroid(), world.getTerritory(clickedTerritory)->Centroid());
-				}
-			}
-			if (defendingTerritory >= 0)
-			{
-				if (keyPressed == 57) // spacebar key
-				{
-					// FIXME: code to determine the winner
-					r = rand();
-					if (r > RAND_MAX / 2)
-					{
-						// attacking player wins
-						world.getTerritory(defendingTerritory)->AddArmies(-1);
-					}
-					else
-					{
-						// defending player wins
-						world.getTerritory(previousTerritory)->AddArmies(-1);
-					}
-					
-					keyPressed = KEY_PRESSED_ONCE;
-					defendingTerritory = -1;
-				}
-			}
+
+                if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
+                {
+                    if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
+                        !(*(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer) &&
+                        world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
+                    {
+                        defendingTerritory = clickedTerritory;
+                        attackArrow = Arrow(world.getTerritory(previousTerritory)->Centroid(), world.getTerritory(clickedTerritory)->Centroid());
+                    }
+                }
+                if (defendingTerritory >= 0)
+                {
+                    if (keyPressed == 57) // spacebar key
+                    {
+                        // FIXME: code to determine the winner
+                        r = rand();
+                        if (r > RAND_MAX / 2)
+                        {
+                            // attacking player wins
+                            world.getTerritory(defendingTerritory)->AddArmies(-1);
+                        }
+                        else
+                        {
+                            // defending player wins
+                            world.getTerritory(previousTerritory)->AddArmies(-1);
+                        }
+
+                        keyPressed = KEY_PRESSED_ONCE;
+                        defendingTerritory = -1;
+                    }
+                }
 
             break;
         case reposition:

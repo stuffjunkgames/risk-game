@@ -71,6 +71,7 @@ public:
     void setFont();     // should be able to remove this
 	void AddArmies(int nArmies);
 	Player* GetOwner();
+	bool isConnected(Territory* t);
 
     bool operator == (const Territory& other);
 
