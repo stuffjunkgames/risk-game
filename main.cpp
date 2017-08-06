@@ -314,14 +314,20 @@ int main()
                 }
                 if (defendingTerritory >= 0)
                 {
-                    if (keyPressed == 57) // spacebar key
+                    if (keyPressed == 57 && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
                     {
                         // FIXME: code to determine the winner
                         r = rand();
                         if (r > RAND_MAX / 2)
                         {
                             // attacking player wins
+
                             world.getTerritory(defendingTerritory)->AddArmies(-1);
+                            if(world.getTerritory(defendingTerritory)->GetArmies() <= 0)
+                            {
+                                currentPlayer->CaptureTerritory(world.getTerritory(defendingTerritory), 1);
+                                world.getTerritory(previousTerritory)->AddArmies(-1);
+                            }
                         }
                         else
                         {

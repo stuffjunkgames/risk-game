@@ -322,6 +322,11 @@ bool Territory::isConnected(Territory *t)
 
 }
 
+unsigned int Territory::GetArmies()
+{
+    return army;
+}
+
 // Territory class ^
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

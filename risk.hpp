@@ -70,8 +70,10 @@ public:
     void drawTerritory(sf::RenderWindow* window);
     void setFont();     // should be able to remove this
 	void AddArmies(int nArmies);
+
 	Player* GetOwner();
 	bool isConnected(Territory* t);
+	unsigned int GetArmies();
 
     bool operator == (const Territory& other);
 
