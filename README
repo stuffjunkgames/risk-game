@@ -1,0 +1,5 @@
+Needed Changes:
+- Prevent removing more armies than a territory started with in place phase
+- Finish reposition phase code
+- Track which armies have moved so they cannot move multiple times in a single turn
+- Improve control scheme (make orders more intuitive)

@@ -75,6 +75,7 @@ int main()
     int clickedTerritory = -1;  // index of selected territory.  Negative for none selected
     int activeTerritory = -1;// doubles as attacking territory
 	int defendingTerritory = -1;
+    int targetTerritory = -1;
     int armyCount = 0;
     int placedArmies = 0;
 	Arrow attackArrow;
@@ -183,7 +184,7 @@ int main()
                 world.getTerritory(i)->drawTerritory(&window);
                 // draw text for armies
             }
-			if (defendingTerritory >= 0)
+			if (defendingTerritory >= 0 || targetTerritory >= 0)
 			{
 				attackArrow.Draw(&window);
 			}
@@ -250,112 +251,160 @@ int main()
 
         switch(phase)
         {
-        case place:
-            // get number of armies and place them
-            // for now: +1 army for each territory
-            // later: implement bonuses
-
-            // first time through, count the number of armies player gets
-            if(armyCount == 0)
+            case place:
             {
-                // FIXME: get rid of these "magic numbers"
-                armyCount = 3 + currentPlayer->getNumTerritories();
-                placedArmies = 0;
-                std::cout << currentPlayer->getNumTerritories() << std::endl;
-            }
+                // get number of armies and place them
+                // for now: +1 army for each territory
+                // later: implement bonuses
 
-            // if they are all placed, move on.
-            if(placedArmies == armyCount)
-            {
-                armyCount = 0;
-                if (activeTerritory >= 0)
+                // first time through, count the number of armies player gets
+                if(armyCount == 0)
                 {
-                    // no more active territory
-                    world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
-					std::cout << "changing phase" << std::endl;
-                    activeTerritory = -1;
+                    // FIXME: get rid of these "magic numbers"
+                    armyCount = 3 + currentPlayer->getNumTerritories();
+                    placedArmies = 0;
+                    std::cout << currentPlayer->getNumTerritories() << std::endl;
                 }
-                phase = attack;
+
+                // if they are all placed, move on.
+                if(placedArmies == armyCount)
+                {
+                    armyCount = 0;
+                    if (activeTerritory >= 0)
+                    {
+                        // no more active territory
+                        world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
+    					std::cout << "changing phase" << std::endl;
+                        activeTerritory = -1;
+                    }
+                    phase = attack;
+                    break;
+                }
+
+                // active is valid and owned by current player
+    			if (activeTerritory >= 0 && *(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer)
+    			{
+                    //add or remove armies
+                    // FIXME: suggest not using numpad.  May be fine to just add armies when you click
+    				// FIXME: maybe add/remove to/from a buffer and apply when changing phase, so the territories aren't directly altered
+                    if (keyPressed == 67 || keyPressed == 55) // + key
+                    {
+                        world.getTerritory(activeTerritory)->AddArmies(1);
+                        keyPressed = KEY_PRESSED_ONCE;
+                        placedArmies = placedArmies + 1;
+                    }
+                    else if (keyPressed == 68 || keyPressed == 56) // - key
+                    {
+                        world.getTerritory(activeTerritory)->AddArmies(-1);
+                        keyPressed = KEY_PRESSED_ONCE;
+                        placedArmies = placedArmies - 1;
+                    }
+    			}
                 break;
             }
+            case attack:
+            {
+                // attack territories
 
-            // active is valid and owned by current player
-			if (activeTerritory >= 0 && *(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer)
-			{
-                //add or remove armies
-                // FIXME: suggest not using numpad.  May be fine to just add armies when you click
-				// FIXME: maybe add/remove to/from a buffer and apply when changing phase, so the territories aren't directly altered
-                if (keyPressed == 67 || keyPressed == 55) // + key
-                {
-                    world.getTerritory(activeTerritory)->AddArmies(1);
-                    keyPressed = KEY_PRESSED_ONCE;
-                    placedArmies = placedArmies + 1;
-                }
-                else if (keyPressed == 68 || keyPressed == 56) // - key
-                {
-                    world.getTerritory(activeTerritory)->AddArmies(-1);
-                    keyPressed = KEY_PRESSED_ONCE;
-                    placedArmies = placedArmies - 1;
-                }
-			}
-            break;
-        case attack:
-            // attack territories
+                    if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
+                    {
+                        if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
+                            !(*(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer) &&
+                            world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
+                        {
+                            defendingTerritory = clickedTerritory;
+                            attackArrow = Arrow(world.getTerritory(previousTerritory)->Centroid(), world.getTerritory(clickedTerritory)->Centroid());
+                        }
+                    }
+                    if (defendingTerritory >= 0)
+                    {
+                        if (keyPressed == 57 && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
+                        {
+                            // FIXME: code to determine the winner
+                            r = rand();
+                            if (r > RAND_MAX / 2)
+                            {
+                                // attacking player wins
+
+                                world.getTerritory(defendingTerritory)->AddArmies(-1);
+                                if(world.getTerritory(defendingTerritory)->GetArmies() <= 0)
+                                {
+                                    currentPlayer->CaptureTerritory(world.getTerritory(defendingTerritory), 1);
+                                    world.getTerritory(previousTerritory)->AddArmies(-1);
+                                }
+                            }
+                            else
+                            {
+                                // defending player wins
+                                world.getTerritory(previousTerritory)->AddArmies(-1);
+                            }
+
+                            keyPressed = KEY_PRESSED_ONCE;
+                            defendingTerritory = -1;
+                        }
+                    }
+
+                    if(keyPressed == sf::Keyboard::Return)
+                    {
+                        std::cout << "Ending attack phase and entering reposition" << std::endl;
+                        phase = reposition;
+                        defendingTerritory = -1;
+                    }
+
+                break;
+            }
+            case reposition:
+            {
+                // reposition armies
+
+                // need to track which armies have moved so they can't move again in this phase
+
+                // make copy of world object for initial states (maybe just copy territory vector)
+                // When unit moves:
+                  // move unit in real world
+                  // remove unit from initial state copy
+                  // if initial state is at 1, can't move any more from that territory
+
+                // enter key exits reposition phase and starts next player's turn
+
+                World initialWorld = world;
 
                 if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
                 {
                     if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
-                        !(*(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer) &&
+                        *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer &&
                         world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
                     {
-                        defendingTerritory = clickedTerritory;
+                        targetTerritory = clickedTerritory;
                         attackArrow = Arrow(world.getTerritory(previousTerritory)->Centroid(), world.getTerritory(clickedTerritory)->Centroid());
+
                     }
-                }
-                if (defendingTerritory >= 0)
-                {
-                    if (keyPressed == 57 && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
+                    else
                     {
-                        // FIXME: code to determine the winner
-                        r = rand();
-                        if (r > RAND_MAX / 2)
-                        {
-                            // attacking player wins
-
-                            world.getTerritory(defendingTerritory)->AddArmies(-1);
-                            if(world.getTerritory(defendingTerritory)->GetArmies() <= 0)
-                            {
-                                currentPlayer->CaptureTerritory(world.getTerritory(defendingTerritory), 1);
-                                world.getTerritory(previousTerritory)->AddArmies(-1);
-                            }
-                        }
-                        else
-                        {
-                            // defending player wins
-                            world.getTerritory(previousTerritory)->AddArmies(-1);
-                        }
-
-                        keyPressed = KEY_PRESSED_ONCE;
-                        defendingTerritory = -1;
+                        targetTerritory = -1;
                     }
                 }
-
-                if(keyPressed == sf::Keyboard::Return)
+                else if(mouseDown)
                 {
-                    std::cout << "Ending attack phase and entering reposition" << std::endl;
-                    phase = reposition;
-
+                    targetTerritory = -1;
                 }
 
-            break;
-        case reposition:
-            // reposition armies
+                if(keyPressed == 57 // spacebar pressed
+                    && targetTerritory >= 0 // target territory exists
+                    && initialWorld.getTerritory(previousTerritory)->GetArmies() > 1)  // source territory has unmoved armies
+                {
+                    world.getTerritory(previousTerritory)->AddArmies(-1);   // remove army from source
+                    world.getTerritory(targetTerritory)->AddArmies(1);      // add army to target
+                    initialWorld.getTerritory(previousTerritory)->AddArmies(-1);    // remove army from initial distribution
+                }
 
-            // need to track which armies have moved so they can't move again in this phase
-            break;
-        default:
-            // something broke...
-            break;
+                break;
+            }
+            default:
+            {
+                // something broke...
+                break;
+            }
         }
 
 		if (keyPressed == 57) // spacebar key
@@ -376,4 +425,3 @@ int main()
 } // main
 
 //////////////////////////////////////////////////////////////////////////////////////////
-
