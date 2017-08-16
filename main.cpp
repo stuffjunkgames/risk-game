@@ -340,9 +340,18 @@ int main()
                     }
                 }
 
+                if(keyPressed == sf::Keyboard::Return)
+                {
+                    std::cout << "Ending attack phase and entering reposition" << std::endl;
+                    phase = reposition;
+
+                }
+
             break;
         case reposition:
             // reposition armies
+
+            // need to track which armies have moved so they can't move again in this phase
             break;
         default:
             // something broke...
