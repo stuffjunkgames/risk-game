@@ -11,8 +11,8 @@
 
 #define GAME_TOP 0
 #define GAME_LEFT 0
-#define GAME_WIDTH 1600
-#define GAME_HEIGHT 1200
+#define GAME_WIDTH 1800
+#define GAME_HEIGHT 1012
 #define GAME_RIGHT GAME_LEFT+GAME_WIDTH
 #define GAME_BOTTOM GAME_TOP+GAME_HEIGHT
 #define NO_KEY_PRESSED -1
@@ -82,7 +82,7 @@ int main()
 	int r;
 
 	sf::Texture texture;
-	if (!texture.loadFromFile("map.jpg"))
+	if (!texture.loadFromFile("new_map.png"))
 		return EXIT_FAILURE;
 	sf::Sprite map(texture);
 	map.setScale(1.5, 1.5);
