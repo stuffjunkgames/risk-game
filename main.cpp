@@ -60,6 +60,8 @@ int main()
 
     World world(armyFont);
 
+    World initialWorld(world);
+
 	//world.ReadFile();
 
     enum TurnPhase {
@@ -349,6 +351,7 @@ int main()
                         std::cout << "Ending attack phase and entering reposition" << std::endl;
                         phase = reposition;
                         defendingTerritory = -1;
+                        initialWorld = world;
                     }
 
                 break;
@@ -367,8 +370,10 @@ int main()
 
                 // enter key exits reposition phase and starts next player's turn
 
-                World initialWorld = world;
+                // track which armies have moved
 
+
+                // valid territories have been clicked on... Draw arrows
                 if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
                 {
                     if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
@@ -384,7 +389,7 @@ int main()
                         targetTerritory = -1;
                     }
                 }
-                else if(mouseDown)
+                else if(mouseDown)  // invalid territory.  Clear target
                 {
                     targetTerritory = -1;
                 }
