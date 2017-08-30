@@ -87,6 +87,37 @@ int main()
 	sf::Sprite map(texture);
 	map.setScale(1.5, 1.5);
 
+	// Using image files
+	std::vector<sf::Texture> borderTextures;
+	std::vector<sf::Sprite> borderSprites;
+
+	std::vector<sf::Texture> territoryTextures;
+	std::vector<sf::Sprite> territorySprites;
+	std::vector<sf::Image> territoryImages;
+
+	// For all 42 territories
+	for (int i = 0; i < 42; i++) {
+		borderTextures.push_back(sf::Texture());
+		territoryTextures.push_back(sf::Texture());
+	}
+	// TODO: code to load each of the border images
+	for (int i = 0; i < 42; i++) {
+		borderSprites.push_back(sf::Sprite(borderTextures.at(i)));
+		territorySprites.push_back(sf::Sprite(territoryTextures.at(i)));
+		territoryImages.push_back(territoryTextures.at(i).copyToImage());
+	}
+
+	sf::Texture selectedTex;
+	if (!selectedTex.loadFromFile("selected/westernUS_s.png"))
+		return EXIT_FAILURE;
+	sf::Sprite selectedSprite(selectedTex);
+	selectedSprite.setScale(1.5, 1.5);
+
+	sf::Texture controlledTex;
+	if (!controlledTex.loadFromFile("controlled/westernUS_c.png"))
+		return EXIT_FAILURE;
+	sf::Image controlledImage = controlledTex.copyToImage();
+
 	/////////////////////////////////////////////
 	// Only for making better map, delete after
 
@@ -178,12 +209,13 @@ int main()
             window.clear();
             window.draw(background);
 			window.draw(map);
-            for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
+			window.draw(selectedSprite);
+            /*for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
                 //window.draw(*world.getTerritory(i));
                 world.getTerritory(i)->drawTerritory(&window);
                 // draw text for armies
-            }
+            }*/
 			if (defendingTerritory >= 0 || targetTerritory >= 0)
 			{
 				attackArrow.Draw(&window);
@@ -204,7 +236,13 @@ int main()
 		if (mouseDown)
 		{
 			previousTerritory = clickedTerritory;
-			clickedTerritory = getClickedTerritory(world, mousePosition);
+			//clickedTerritory = getClickedTerritory(world, mousePosition);
+			sf::Color pxColor = controlledImage.getPixel(mousePosition.x / 1.5, mousePosition.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+			if (pxColor.a > 0) {
+				clickedTerritory = 1;
+			}else{
+				clickedTerritory = 0;
+			}
 			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
 
 		}
