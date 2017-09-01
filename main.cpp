@@ -111,6 +111,12 @@ int main()
 	sf::Sprite map(texture);
 	map.setScale(1.5, 1.5);
 
+	sf::Texture normalBordersTexture;
+	if (!normalBordersTexture.loadFromFile("normal_borders.png"))
+		return EXIT_FAILURE;
+	sf::Sprite normalBordersSprite(normalBordersTexture);
+	normalBordersSprite.setScale(1.5, 1.5);
+
 	// Using image files
 	std::vector<sf::Texture> borderTextures;
 	std::vector<sf::Sprite> borderSprites;
@@ -128,6 +134,7 @@ int main()
 		borderSprites.push_back(sf::Sprite(borderTextures.at(i)));
 		borderSprites.back().setScale(1.5, 1.5);
 		territorySprites.push_back(sf::Sprite(territoryTextures.at(i)));
+		territorySprites.back().setScale(1.5, 1.5);
 		territoryImages.push_back(territoryTextures.at(i).copyToImage());
 	}
 
@@ -211,8 +218,21 @@ int main()
                 world.getTerritory(i)->drawTerritory(&window);
                 // draw text for armies
             }*/
-			for (int i = 0; i < borderSprites.size(); i++) {
-				window.draw(borderSprites.at(i));
+			for (int i = 0; i < territorySprites.size(); i++) {
+				if (world.getTerritory(i)->GetOwner() == world.getPlayer(0)) {
+					// make the territory red
+					territorySprites.at(i).setColor(sf::Color::Red);
+					window.draw(territorySprites.at(i));
+				} else if (world.getTerritory(i)->GetOwner() == world.getPlayer(1)) {
+					// make the territory blue
+					territorySprites.at(i).setColor(sf::Color::Blue);
+					window.draw(territorySprites.at(i));
+				}
+			}
+			window.draw(normalBordersSprite);
+
+			if (activeTerritory >= 0 && activeTerritory < borderSprites.size()) {
+				window.draw(borderSprites.at(activeTerritory));
 			}
 
 			if (defendingTerritory >= 0 || targetTerritory >= 0)
@@ -263,6 +283,7 @@ int main()
 					if (activeTerritory >= 0)   //active is valid
 					{
 						world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
+
 					}
 					activeTerritory = clickedTerritory;
 				}
