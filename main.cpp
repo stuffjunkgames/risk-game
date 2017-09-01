@@ -44,6 +44,28 @@ int getClickedTerritory(World world, sf::Vector2f mousePosition)
     return -1;
 }
 
+bool loadImages(std::vector<sf::Texture> *borders, std::vector<sf::Texture> *territories)
+{
+	std::string filename{ "" };
+	std::ifstream file("borderImagesList.txt");
+
+	while (file >> filename) {
+		borders->push_back(sf::Texture());
+		if (!borders->back().loadFromFile(filename))
+			return 0;
+	}
+
+	file = std::ifstream("territoryImagesList.txt");
+
+	while (file >> filename) {
+		territories->push_back(sf::Texture());
+		if (!territories->back().loadFromFile(filename))
+			return 0;
+	}
+
+	return 1;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 // main
 
@@ -89,17 +111,25 @@ int main()
 	sf::Sprite map(texture);
 	map.setScale(1.5, 1.5);
 
-	/////////////////////////////////////////////
-	// Only for making better map, delete after
+	// Using image files
+	std::vector<sf::Texture> borderTextures;
+	std::vector<sf::Sprite> borderSprites;
 
-	std::ofstream myfile;
-	std::string line;
-	std::string chunk;
-	sf::Vector2f pos(0, 0);
+	std::vector<sf::Texture> territoryTextures;
+	std::vector<sf::Sprite> territorySprites;
+	std::vector<sf::Image> territoryImages;
 
-	myfile.open("world2.txt");
+	// TODO: code to load each of the border images
+	if (!loadImages(&borderTextures, &territoryTextures)) {
+		return EXIT_FAILURE;
+	}
 
-	/////////////////////////////////////////////
+	for (int i = 0; i < borderTextures.size(); i++) {
+		borderSprites.push_back(sf::Sprite(borderTextures.at(i)));
+		borderSprites.back().setScale(1.5, 1.5);
+		territorySprites.push_back(sf::Sprite(territoryTextures.at(i)));
+		territoryImages.push_back(territoryTextures.at(i).copyToImage());
+	}
 
     bool mouseDown = false;
 	int keyPressed = -1;
@@ -162,11 +192,6 @@ int main()
                     }
                 }
             }
-			if (event.type == sf::Event::MouseMoved)
-			{
-				pos.x = event.mouseMove.x;
-				pos.y = event.mouseMove.y;
-			}
         }
 
         // draw
@@ -180,12 +205,16 @@ int main()
             window.clear();
             window.draw(background);
 			window.draw(map);
-            for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
+            /*for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
                 //window.draw(*world.getTerritory(i));
                 world.getTerritory(i)->drawTerritory(&window);
                 // draw text for armies
-            }
+            }*/
+			for (int i = 0; i < borderSprites.size(); i++) {
+				window.draw(borderSprites.at(i));
+			}
+
 			if (defendingTerritory >= 0 || targetTerritory >= 0)
 			{
 				attackArrow.Draw(&window);
@@ -206,7 +235,19 @@ int main()
 		if (mouseDown)
 		{
 			previousTerritory = clickedTerritory;
-			clickedTerritory = getClickedTerritory(world, mousePosition);
+			//clickedTerritory = getClickedTerritory(world, mousePosition);
+
+			sf::Color pxColor;
+			clickedTerritory = -1;
+			for (int i = 0; i < territoryImages.size() && clickedTerritory == -1; i++) {
+				pxColor = territoryImages.at(i).getPixel(mousePosition.x / 1.5, mousePosition.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+				if (pxColor.a > 0) {
+					clickedTerritory = i;
+				}
+				else {
+					clickedTerritory = -1;
+				}
+			}
 			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
 
 		}
@@ -263,7 +304,8 @@ int main()
                 if(armyCount == 0)
                 {
                     // FIXME: get rid of these "magic numbers"
-                    armyCount = 3 + currentPlayer->getNumTerritories();
+                    //armyCount = 3 + currentPlayer->getNumTerritories();
+					armyCount = 3;
                     placedArmies = 0;
                     std::cout << currentPlayer->getNumTerritories() << std::endl;
                 }
@@ -412,20 +454,8 @@ int main()
             }
         }
 
-		if (keyPressed == 57) // spacebar key
-		{
-			myfile << pos.x << " " << pos.y << "|";
-			keyPressed = KEY_PRESSED_ONCE;
-		}
-		if (keyPressed == 58)
-		{
-			myfile << std::endl;
-			keyPressed = KEY_PRESSED_ONCE;
-		}
-
 		mouseDown = false;
     }
-	myfile.close();
     return 0;
 } // main
 
