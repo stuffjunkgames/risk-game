@@ -1,5 +1,21 @@
-Needed Changes:
-- Prevent removing more armies than a territory started with in place phase
-- Finish reposition phase code
-- Track which armies have moved so they cannot move multiple times in a single turn
-- Improve control scheme (make orders more intuitive)
+Needed Gameplay Changes:
+Prevent removing more armies than a territory started with in place phase
+Finish reposition phase code
+Track which armies have attacked so they cannot move multiple times in a single turn
+Improve control scheme (make orders more intuitive)
+Enable multiple attacks without re-clicking on territories
+Change player turn at end of reposition
+Implement territory bonuses
+Allow for more player colors
+Null player for initializing territories
+Pre-game UI
+Networking
+
+
+Needed Graphical Changes:
+Put labels and/or army-count on territories
+Maybe display label when clicking territory (or hovering)
+Display attacking arrow
+Translucent arrows pointing to all legal attacks and then make opaque when selecting enemy territory
+Change background gradients to grey
+Add label for player income(# of armies gained per turn)

@@ -219,7 +219,11 @@ int main()
                 // draw text for armies
             }*/
 			for (int i = 0; i < territorySprites.size(); i++) {
-				if (world.getTerritory(i)->GetOwner() == world.getPlayer(0)) {
+
+				territorySprites[i].setColor(world.getTerritory(i)->GetOwner()->getColor());
+				window.draw(territorySprites[i]);
+
+				/*if (world.getTerritory(i)->GetOwner() == world.getPlayer(0)) {
 					// make the territory red
 					territorySprites.at(i).setColor(sf::Color::Red);
 					window.draw(territorySprites.at(i));
@@ -227,7 +231,7 @@ int main()
 					// make the territory blue
 					territorySprites.at(i).setColor(sf::Color::Blue);
 					window.draw(territorySprites.at(i));
-				}
+				}*/
 			}
 			window.draw(normalBordersSprite);
 
