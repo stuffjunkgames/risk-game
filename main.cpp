@@ -82,6 +82,8 @@ int main()
 
     World world(armyFont);
 
+    World initialWorld(world);
+
 	//world.ReadFile();
 
     enum TurnPhase {
@@ -220,6 +222,16 @@ int main()
 
 				territorySprites.at(i).setColor(world.getTerritory(i)->GetOwner()->getColor());
 				window.draw(territorySprites.at(i));
+
+				/*if (world.getTerritory(i)->GetOwner() == world.getPlayer(0)) {
+					// make the territory red
+					territorySprites.at(i).setColor(sf::Color::Red);
+					window.draw(territorySprites.at(i));
+				} else if (world.getTerritory(i)->GetOwner() == world.getPlayer(1)) {
+					// make the territory blue
+					territorySprites.at(i).setColor(sf::Color::Blue);
+					window.draw(territorySprites.at(i));
+				}*/
 			}
 			window.draw(normalBordersSprite);
 
@@ -406,6 +418,7 @@ int main()
                         std::cout << "Ending attack phase and entering reposition" << std::endl;
                         phase = reposition;
                         defendingTerritory = -1;
+                        initialWorld = world;
                     }
 
                 break;
@@ -424,8 +437,10 @@ int main()
 
                 // enter key exits reposition phase and starts next player's turn
 
-                World initialWorld = world;
+                // track which armies have moved
 
+
+                // valid territories have been clicked on... Draw arrows
                 if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
                 {
                     if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
@@ -441,7 +456,7 @@ int main()
                         targetTerritory = -1;
                     }
                 }
-                else if(mouseDown)
+                else if(mouseDown)  // invalid territory.  Clear target
                 {
                     targetTerritory = -1;
                 }

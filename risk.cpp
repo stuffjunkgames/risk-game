@@ -193,7 +193,7 @@ unsigned int Player::getNumTerritories()
 
 sf::Color Player::getColor()
 {
-	return this->color;
+    return this->color;
 }
 
 // Player class definitions ^
@@ -345,9 +345,13 @@ World::World(sf::Font& font)
 
     Player player1(1, "Player 1", sf::Color::Blue);
     Player player2(2, "Player 2", sf::Color::Red);
+	Player player3(2, "Player 3", sf::Color::Green);
+	Player player4(2, "Player 4", sf::Color(255, 165, 0, 255));
 
     playerList.push_back(player1);
     playerList.push_back(player2);
+	playerList.push_back(player3);
+	playerList.push_back(player4);
 
 	ReadFile(font);
 
