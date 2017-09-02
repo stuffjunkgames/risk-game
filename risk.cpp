@@ -191,6 +191,11 @@ unsigned int Player::getNumTerritories()
     return this->territories.size();
 }
 
+sf::Color Player::getColor()
+{
+	return this->color;
+}
+
 // Player class definitions ^
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
