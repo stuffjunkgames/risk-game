@@ -104,6 +104,7 @@ int main()
     int placedArmies = 0;
 	Arrow attackArrow;
 	int r;
+	Label territoryLabel(armyFont);
 
 	sf::Texture texture;
 	if (!texture.loadFromFile("new_map.png"))
@@ -144,6 +145,7 @@ int main()
     std::srand(std::time(0));
 
     sf::Vector2f mousePosition;
+	sf::Vector2f mouseHover;
 
     sf::Time dt;
     sf::Time t;
@@ -199,6 +201,10 @@ int main()
                     }
                 }
             }
+			if (event.type == sf::Event::MouseMoved)
+			{
+				mouseHover = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+			}
         }
 
         // draw
@@ -243,7 +249,18 @@ int main()
 			{
 				attackArrow.Draw(&window);
 			}
-            window.display();
+
+			sf::Color pxColor;
+			for (int i = 0; i < territoryImages.size(); i++) {
+				pxColor = territoryImages.at(i).getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+				if (pxColor.a > 0) {
+					territoryLabel.setText(world.getTerritory(i)->getName(), mouseHover.x, mouseHover.y);
+					territoryLabel.Draw(&window);
+					//std::cout << "drawing label over Territory " << i << std::endl;
+					break;
+				}
+			}
+			window.display();
         }
 
         // game logic

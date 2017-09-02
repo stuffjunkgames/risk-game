@@ -6,6 +6,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/FileInputStream.hpp>
 #include <list>
+#include <string>
 
 class Player;
 class Territory;
@@ -70,6 +71,7 @@ public:
     void drawTerritory(sf::RenderWindow* window);
     void setFont();     // should be able to remove this
 	void AddArmies(int nArmies);
+	std::string getName();
 
 	Player* GetOwner();
 	bool isConnected(Territory* t);
@@ -107,4 +109,18 @@ public:
 
 	// public functions
 	void Draw(sf::RenderWindow* window);
+};
+
+class Label : public sf::Text
+{
+	ExtendedShape rect;
+	int offset;
+
+public:
+	// constructor
+	Label(sf::Font& font);
+
+	// public functions
+	void Draw(sf::RenderWindow* window);
+	void setText(std::string text, int xPos, int yPos);
 };

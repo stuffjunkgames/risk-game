@@ -332,6 +332,11 @@ unsigned int Territory::GetArmies()
     return army;
 }
 
+std::string Territory::getName()
+{
+	return this->name;
+}
+
 // Territory class ^
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -583,4 +588,43 @@ void Arrow::Draw(sf::RenderWindow* window)
 }
 
 // Arrow
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Label class definitions
+
+Label::Label(sf::Font& font)
+{
+	rect = ExtendedShape(4);
+	rect.setFillColor(sf::Color(0, 0, 0, 127));
+
+	this->setFont(font);
+	this->setCharacterSize(20);
+	this->setFillColor(sf::Color::White);
+
+	offset = 10;
+}
+
+void Label::Draw(sf::RenderWindow* window)
+{
+	sf::FloatRect bounds = getGlobalBounds();
+
+	rect.setPoint(0, sf::Vector2f(bounds.left - offset, bounds.top - offset));
+	rect.setPoint(1, sf::Vector2f(bounds.left - offset, bounds.top + bounds.height + offset));
+	rect.setPoint(2, sf::Vector2f(bounds.left + bounds.width + offset, bounds.top + bounds.height + offset));
+	rect.setPoint(3, sf::Vector2f(bounds.left + bounds.width + offset, bounds.top - offset));
+	
+	window->draw(rect);
+	window->draw(*this);
+}
+
+void Label::setText(std::string text, int xPos, int yPos)
+{
+	this->setString(text);
+
+	sf::FloatRect bounds = getGlobalBounds();
+	this->setPosition(sf::Vector2f(xPos - (bounds.width / 2), yPos - bounds.height - offset));
+}
+// Label
 ////////////////////////////////////////////////////////////////////////////////////////////
