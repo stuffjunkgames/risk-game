@@ -210,7 +210,7 @@ int main()
         // draw
         dt = clock.restart();
         t += dt;
-        if(t.asMilliseconds() >= 100){
+        if(t.asMilliseconds() >= 16){
 
             t = sf::Time::Zero;
 

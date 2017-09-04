@@ -1,21 +1,28 @@
-Needed Gameplay Changes:
-Prevent removing more armies than a territory started with in place phase
-Finish reposition phase code
-Track which armies have attacked so they cannot move multiple times in a single turn
-Improve control scheme (make orders more intuitive)
+Needed Gameplay Changes - Mark, mostly:
+5. Track which armies have attacked so they cannot move multiple times in a single turn
+1. Finish reposition phase code
+1. Change player turn at end of reposition
+4. Decide how to handle attacking (odds, graphics, etc.)
+3. Improve control scheme (make orders more intuitive)
 Enable multiple attacks without re-clicking on territories
-Change player turn at end of reposition
-Implement territory bonuses
-Allow for more player colors
-Null player for initializing territories
-Pre-game UI
-Networking
+2. Implement territory bonuses
+9. Null player for initializing territories
+10. Pre-game UI
+Variable number of players
+Choose colors
+9999. Networking
 
 
-Needed Graphical Changes:
-Put labels and/or army-count on territories
-Maybe display label when clicking territory (or hovering)
-Display attacking arrow
-Translucent arrows pointing to all legal attacks and then make opaque when selecting enemy territory
-Change background gradients to grey
-Add label for player income(# of armies gained per turn)
+Needed Graphical Changes - Sean, mostly:
+1. Put labels and/or army-count on territories
+1. Put sprites into territory class including draw step
+1. Determine Territory centers points
+3. Display attacking arrow
+2. Translucent arrows pointing to all legal attacks and then make opaque when selecting enemy territory
+3. Display how armies are transferred between territories in reposition phase
+4. Add label for player income(# of armies gained per turn)
+
+
+Priorities 1-3 due 9/9/17
+Discuss attacking on 9/9/17
+Priority 4 due 9/16/17
