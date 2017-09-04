@@ -4,13 +4,17 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/FileInputStream.hpp>
 #include <list>
 #include <string>
 
 class Player;
 class Territory;
+class World;
 class ExtendedShape;
+class Arrow;
+class Label;
 
 class ExtendedShape : public sf::ConvexShape
 {
@@ -53,7 +57,8 @@ class Territory : public ExtendedShape  // if we make a ConcaveShape, inherit fr
     std::string name;
     Player* owner;
     unsigned int army;  // how many armies player has in territory
-    std::vector<Territory> connected;
+    std::vector<Territory*> connected;
+	std::vector<Arrow> attackArrows;
 
 public:
     // constructor
@@ -65,19 +70,30 @@ public:
     void Initialize(int id, std::string name, Player* player, unsigned int army, sf::Font& font);
 
     void RefreshText();
-    void addConnection(Territory connection);
+    void addConnection(Territory *connection);
     void ChangeOwner(Player *newOwner, unsigned int newArmy);
     //virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     void drawTerritory(sf::RenderWindow* window);
     void setFont();     // should be able to remove this
 	void AddArmies(int nArmies);
+	void makeArrows();
+	void drawArrows(sf::RenderWindow* window);
 	std::string getName();
 
 	Player* GetOwner();
 	bool isConnected(Territory* t);
 	unsigned int GetArmies();
+	void setCenter(sf::Vector2f pos);
 
     bool operator == (const Territory& other);
+	sf::Vector2f centerPos;
+	sf::Texture territoryTexture;
+	sf::Texture borderTexture;
+
+	sf::Sprite territorySprite;
+	sf::Sprite borderSprite;
+
+	sf::Image territoryImage;
 
     // add function for adding/subtracting armies
 
@@ -96,6 +112,7 @@ public:
     unsigned int PlayerNumber();
     Player* getPlayer(int index);
 	void ReadFile(sf::Font& font);
+	int getSize();
 }; // World
 
 
@@ -109,6 +126,7 @@ public:
 
 	// public functions
 	void Draw(sf::RenderWindow* window);
+	void setActive();
 };
 
 class Label : public sf::Text
