@@ -262,10 +262,13 @@ void Territory::RefreshText()
     // set text position to center of shape
     sf::FloatRect bounds = armyDisplay.getGlobalBounds();
     sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
-    sf::Vector2f centroid = this->Centroid();
+    //sf::Vector2f centroid = this->Centroid();
 
-    armyDisplay.setPosition(centroid - textShift);
+    //armyDisplay.setPosition(centroid - textShift);
+	armyDisplay.setPosition(centerPos - textShift);
     armyDisplay.setFillColor(sf::Color::White);
+	armyDisplay.setOutlineColor(sf::Color::Black);
+	armyDisplay.setOutlineThickness(3);
 }
 
 // if the territory object is copied, this needs to be called again
@@ -274,21 +277,24 @@ void Territory::setFont()
     // set text position to center of shape
     sf::FloatRect bounds = armyDisplay.getGlobalBounds();
     sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
-    sf::Vector2f centroid = this->Centroid();
+    //sf::Vector2f centroid = this->Centroid();
 
-    armyDisplay.setPosition(centroid - textShift);
+    //armyDisplay.setPosition(centroid - textShift);
+	armyDisplay.setPosition(centerPos - textShift);
     armyDisplay.setFillColor(sf::Color::White);
+	armyDisplay.setOutlineColor(sf::Color::Black);
 }
 
 // override Drawable::draw() to make this more consistent with SFML standard
 // setFont MUST be called BEFORE calling draw, or drawing text will not work (probably segfault)
 void Territory::drawTerritory(sf::RenderWindow* window)
 {
-    window->draw(*this);
+	this->territorySprite.setColor(this->owner->getColor());
+	window->draw(this->territorySprite);
     window->draw(armyDisplay);
 }
 
-void Territory::addConnection(Territory connection)
+void Territory::addConnection(Territory *connection)
 {
     connected.push_back(connection);
 }
@@ -314,10 +320,10 @@ Player* Territory::GetOwner()
 
 bool Territory::isConnected(Territory *t)
 {
-    std::vector<Territory>::iterator iter;
+    std::vector<Territory*>::iterator iter;
     for(iter = connected.begin(); iter < connected.end(); iter++)
     {
-        if(*iter == *t)
+        if(*iter == t)
         {
             return true;
         }
@@ -335,6 +341,27 @@ unsigned int Territory::GetArmies()
 std::string Territory::getName()
 {
 	return this->name;
+}
+
+void Territory::setCenter(sf::Vector2f pos)
+{
+	this->centerPos = pos;
+}
+
+void Territory::makeArrows()
+{
+	for(int i = 0; i < connected.size(); i++)
+	{
+		attackArrows.push_back(Arrow(centerPos, connected.at(i)->centerPos));
+	}
+}
+
+void Territory::drawArrows(sf::RenderWindow* window)
+{
+	for (int i = 0; i < attackArrows.size(); i++)
+	{
+		window->draw(attackArrows.at(i));
+	}
 }
 
 // Territory class ^
@@ -497,7 +524,8 @@ void World::ReadFile(sf::Font& font)
 
             for (unsigned int i = 0; i < xyPairs.size(); i++) {
                 std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
-                territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
+                //territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
+				territoryList.back().setCenter(sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
             }
             territoryList.back().RefreshText();
             playerList[player].CaptureTerritory(&territoryList.back(), armies);
@@ -510,11 +538,12 @@ void World::ReadFile(sf::Font& font)
             // add connection
             while(connections.size() > 0)
             {
-                (territoryList.at(terr)).addConnection(territoryList.at(connections.back()));
+                (territoryList.at(terr)).addConnection(&territoryList.at(connections.back()));
                 std::cout << connections.back() << " ";
                 connections.pop_back();
             }
             std::cout << std::endl;
+			territoryList.at(terr).makeArrows();
         }
 
 	}
@@ -540,6 +569,11 @@ Player* World::getPlayer(int index)
 {
     return &(playerList.at(index));
 }
+
+int World::getSize()
+{
+	return territoryList.size();
+}
 // World
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -555,36 +589,35 @@ Arrow::Arrow(sf::Vector2f center1, sf::Vector2f center2) : ExtendedShape(3)
 {
 	int dx = (center2.x - center1.x);
 	int dy = (center2.y - center1.y);
+	sf::Vector2f newCenter1 = center1 + sf::Vector2f((2.0 / 5.0) * dx, (2.0 / 5.0) * dy);
+	sf::Vector2f newCenter2 = center2 - sf::Vector2f((1.0 / 5.0) * dx, (1.0 / 5.0) * dy);
+	dx = (newCenter2.x - newCenter1.x);
+	dy = (newCenter2.y - newCenter1.y);
 	// length
 	float l = sqrt(dx * dx + dy * dy);
 	// angle, theta
 	float t = atan2(dy, dx);
 	float pi = 3.1415926535897;
-	float scale = sqrt(l);
+	float scale = 2 * sqrt(l);
 
-	this->setPoint(0, center1 + sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
-	this->setPoint(1, center2);
-	this->setPoint(2, center1 - sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
+	this->setPoint(0, newCenter1 + sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
+	this->setPoint(1, newCenter2);
+	this->setPoint(2, newCenter1 - sf::Vector2f(scale * cos(-(pi / 2 - t)), scale * sin(-(pi / 2 - t))));
 
-	/*
-	// This isn't going to work because it is a concave shape (and I think the math is wrong)
-	this->setPoint(0, center1 + sf::Vector2f(0.1f * l * cos(pi / 2 - t), 0.1f * l * sin(pi / 2 - t)));
-	this->setPoint(1, this->getPoint(0) + sf::Vector2f(0.8 * l * cos(t), 0.8 * l * sin(t)));
-	this->setPoint(2, this->getPoint(1) + sf::Vector2f(0.2f * l * cos(pi / 2 - t), 0.2f * l * sin(pi / 2 - t)));
-	this->setPoint(3, center2);
-
-	this->setPoint(6, center1 - sf::Vector2f(0.1f * l * cos(pi / 2 - t), 0.1f * l * sin(pi / 2 - t)));
-	this->setPoint(5, this->getPoint(6) + sf::Vector2f(0.8 * l * cos(t), 0.8 * l * sin(t)));
-	this->setPoint(4, this->getPoint(5) - sf::Vector2f(0.2f * l * cos(pi / 2 - t), 0.2f * l * sin(pi / 2 - t)));
-	*/
-	this->setFillColor(sf::Color::Yellow);
-	setOutlineThickness(-2);
-	setOutlineColor(sf::Color::Black);
+	this->setFillColor(sf::Color(255, 0, 0, 127));
+	setOutlineThickness(-4);
+	setOutlineColor(sf::Color(255, 255, 0, 127));
 }
 
 void Arrow::Draw(sf::RenderWindow* window)
 {
 	window->draw(*this);
+}
+
+void Arrow::setActive()
+{
+	setFillColor(sf::Color(255, 0, 0, 255));
+	setOutlineColor(sf::Color(255, 255, 0, 255));
 }
 
 // Arrow
@@ -624,7 +657,8 @@ void Label::setText(std::string text, int xPos, int yPos)
 	this->setString(text);
 
 	sf::FloatRect bounds = getGlobalBounds();
-	this->setPosition(sf::Vector2f(xPos - (bounds.width / 2), yPos - (bounds.height + offset)));
+
+	this->setPosition(sf::Vector2f(xPos - (bounds.width / 2), yPos - bounds.height - 2 * offset));
 }
 // Label
 ////////////////////////////////////////////////////////////////////////////////////////////

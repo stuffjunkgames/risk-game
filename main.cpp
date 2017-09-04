@@ -44,27 +44,28 @@ int getClickedTerritory(World world, sf::Vector2f mousePosition)
     return -1;
 }
 
-bool loadImages(std::vector<sf::Texture> *borders, std::vector<sf::Texture> *territories)
+bool loadImages(World *world)
 {
 	std::string filename{ "" };
 	std::ifstream file("borderImagesList.txt");
 
-	while (file >> filename) {
-		borders->push_back(sf::Texture());
-		if (!borders->back().loadFromFile(filename))
+	for (int i = 0; file >> filename; i++) {
+		world->getTerritory(i)->borderTexture = sf::Texture();
+		if (!world->getTerritory(i)->borderTexture.loadFromFile(filename))
 			return 0;
 	}
 
 	file = std::ifstream("territoryImagesList.txt");
 
-	while (file >> filename) {
-		territories->push_back(sf::Texture());
-		if (!territories->back().loadFromFile(filename))
+	for (int i = 0; file >> filename; i++) {
+		world->getTerritory(i)->territoryTexture = sf::Texture();
+		if (!world->getTerritory(i)->territoryTexture.loadFromFile(filename))
 			return 0;
 	}
 
 	return 1;
 }
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // main
@@ -83,8 +84,6 @@ int main()
     World world(armyFont);
 
     World initialWorld(world);
-
-	//world.ReadFile();
 
     enum TurnPhase {
         place,
@@ -118,25 +117,16 @@ int main()
 	sf::Sprite normalBordersSprite(normalBordersTexture);
 	normalBordersSprite.setScale(1.5, 1.5);
 
-	// Using image files
-	std::vector<sf::Texture> borderTextures;
-	std::vector<sf::Sprite> borderSprites;
-
-	std::vector<sf::Texture> territoryTextures;
-	std::vector<sf::Sprite> territorySprites;
-	std::vector<sf::Image> territoryImages;
-
 	// TODO: code to load each of the border images
-	if (!loadImages(&borderTextures, &territoryTextures)) {
+	if (!loadImages(&world)) {
 		return EXIT_FAILURE;
 	}
-
-	for (int i = 0; i < borderTextures.size(); i++) {
-		borderSprites.push_back(sf::Sprite(borderTextures.at(i)));
-		borderSprites.back().setScale(1.5, 1.5);
-		territorySprites.push_back(sf::Sprite(territoryTextures.at(i)));
-		territorySprites.back().setScale(1.5, 1.5);
-		territoryImages.push_back(territoryTextures.at(i).copyToImage());
+	for (int i = 0; i < world.TerritoryNumber(); i++) {
+		world.getTerritory(i)->borderSprite = sf::Sprite(world.getTerritory(i)->borderTexture);
+		world.getTerritory(i)->borderSprite.setScale(1.5, 1.5);
+		world.getTerritory(i)->territorySprite = sf::Sprite(world.getTerritory(i)->territoryTexture);
+		world.getTerritory(i)->territorySprite.setScale(1.5, 1.5);
+		world.getTerritory(i)->territoryImage = world.getTerritory(i)->territoryTexture.copyToImage();
 	}
 
     bool mouseDown = false;
@@ -190,15 +180,7 @@ int main()
 
                     mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
 
-                    int tmp = getClickedTerritory(world, mousePosition);
-
-                    if(tmp >= 0)
-                    {
-                        sf::Color tmpColor = world.getTerritory(tmp)->getFillColor();
-						//world.getTerritory(tmp)->ChangeOwner(world.getPlayer(1), 5);
-                        std::cout << (int)tmpColor.r << ", " << (int)tmpColor.g << ", " << (int)tmpColor.b << std::endl;
-						std::cout << event.mouseButton.x << ", " << event.mouseButton.y << std::endl;
-                    }
+					std::cout << event.mouseButton.x << ", " << event.mouseButton.y << std::endl;
                 }
             }
 			if (event.type == sf::Event::MouseMoved)
@@ -210,7 +192,8 @@ int main()
         // draw
         dt = clock.restart();
         t += dt;
-        if(t.asMilliseconds() >= 16){
+        if(t.asMilliseconds() >= 16)
+        {
 
             t = sf::Time::Zero;
 
@@ -218,45 +201,35 @@ int main()
             window.clear();
             window.draw(background);
 			window.draw(map);
-            /*for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
+            for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
-                //window.draw(*world.getTerritory(i));
                 world.getTerritory(i)->drawTerritory(&window);
-                // draw text for armies
-            }*/
-			for (int i = 0; i < territorySprites.size(); i++) {
-
-				territorySprites.at(i).setColor(world.getTerritory(i)->GetOwner()->getColor());
-				window.draw(territorySprites.at(i));
-
-				/*if (world.getTerritory(i)->GetOwner() == world.getPlayer(0)) {
-					// make the territory red
-					territorySprites.at(i).setColor(sf::Color::Red);
-					window.draw(territorySprites.at(i));
-				} else if (world.getTerritory(i)->GetOwner() == world.getPlayer(1)) {
-					// make the territory blue
-					territorySprites.at(i).setColor(sf::Color::Blue);
-					window.draw(territorySprites.at(i));
-				}*/
-			}
+            }
 			window.draw(normalBordersSprite);
 
-			if (activeTerritory >= 0 && activeTerritory < borderSprites.size()) {
-				window.draw(borderSprites.at(activeTerritory));
+			if (activeTerritory >= 0 && activeTerritory < world.TerritoryNumber()) {
+				window.draw(world.getTerritory(activeTerritory)->borderSprite);
 			}
 
-			if (defendingTerritory >= 0 || targetTerritory >= 0)
+			if (phase == attack)
 			{
-				attackArrow.Draw(&window);
+				if (defendingTerritory >= 0 || targetTerritory >= 0)
+				{
+					window.draw(attackArrow);
+				}
+				if(activeTerritory >= 0)
+				{
+					world.getTerritory(activeTerritory)->drawArrows(&window);
+				}
+
 			}
 
 			sf::Color pxColor;
-			for (int i = 0; i < territoryImages.size(); i++) {
-				pxColor = territoryImages.at(i).getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+			for (int i = 0; i < world.TerritoryNumber(); i++) {
+				pxColor = world.getTerritory(i)->territoryImage.getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
 				if (pxColor.a > 0) {
-					territoryLabel.setText(world.getTerritory(i)->getName(), mouseHover.x, mouseHover.y);
+					territoryLabel.setText(world.getTerritory(i)->getName() + " " + std::to_string(i), mouseHover.x, mouseHover.y);
 					territoryLabel.Draw(&window);
-					//std::cout << "drawing label over Territory " << i << std::endl;
 					break;
 				}
 			}
@@ -280,8 +253,8 @@ int main()
 
 			sf::Color pxColor;
 			clickedTerritory = -1;
-			for (int i = 0; i < territoryImages.size() && clickedTerritory == -1; i++) {
-				pxColor = territoryImages.at(i).getPixel(mousePosition.x / 1.5, mousePosition.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+			for (int i = 0; i < world.TerritoryNumber() && clickedTerritory == -1; i++) {
+				pxColor = world.getTerritory(i)->territoryImage.getPixel(mousePosition.x / 1.5, mousePosition.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
 				if (pxColor.a > 0) {
 					clickedTerritory = i;
 				}
@@ -399,7 +372,8 @@ int main()
                             world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
                         {
                             defendingTerritory = clickedTerritory;
-                            attackArrow = Arrow(world.getTerritory(previousTerritory)->Centroid(), world.getTerritory(clickedTerritory)->Centroid());
+                            attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
+							attackArrow.setActive();
                         }
                     }
                     if (defendingTerritory >= 0)
