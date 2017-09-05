@@ -91,8 +91,7 @@ int main()
         reposition
     };
 
-    int playerTurn = 0;
-    Player* currentPlayer = world.getPlayer(playerTurn);
+    Player* currentPlayer = world.getNextPlayer();
     TurnPhase phase = place;
     int previousTerritory = -2;
     int clickedTerritory = -1;  // index of selected territory.  Negative for none selected
@@ -213,7 +212,7 @@ int main()
 
 			if (phase == attack)
 			{
-				if (defendingTerritory >= 0 || targetTerritory >= 0)
+				if (defendingTerritory >= 0)
 				{
 					window.draw(attackArrow);
 				}
@@ -223,6 +222,17 @@ int main()
 				}
 
 			}
+			else if (phase == reposition)
+            {
+                if(targetTerritory >= 0)
+                {
+                    window.draw(attackArrow);
+                }
+                else if(activeTerritory >= 0)
+                {
+                    world.getTerritory(activeTerritory)->drawArrows(&window);
+                }
+            }
 
 			sf::Color pxColor;
 			for (int i = 0; i < world.TerritoryNumber(); i++) {
@@ -243,8 +253,6 @@ int main()
         // keep track of previous clicks inside territories
         // make moves based on clicks
         // turn has 3 parts:  place units -> attack -> relocate
-
-        currentPlayer = world.getPlayer(playerTurn);   // change this to base on player ID, not index
 
 		if (mouseDown)
 		{
@@ -375,6 +383,14 @@ int main()
                             attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
 							attackArrow.setActive();
                         }
+                        else
+                        {
+                            defendingTerritory = -1;
+                        }
+                    }
+                    else if(mouseDown)
+                    {
+                        defendingTerritory = -1;
                     }
                     if (defendingTerritory >= 0)
                     {
@@ -391,6 +407,7 @@ int main()
                                 {
                                     currentPlayer->CaptureTerritory(world.getTerritory(defendingTerritory), 1);
                                     world.getTerritory(previousTerritory)->AddArmies(-1);
+                                    defendingTerritory = -1;
                                 }
                             }
                             else
@@ -400,6 +417,9 @@ int main()
                             }
 
                             keyPressed = KEY_PRESSED_ONCE;
+                        }
+                        else if(world.getTerritory(previousTerritory)->GetArmies() <= 1)
+                        {
                             defendingTerritory = -1;
                         }
                     }
@@ -410,6 +430,7 @@ int main()
                         phase = reposition;
                         defendingTerritory = -1;
                         initialWorld = world;
+                        targetTerritory = -1;
                     }
 
                 break;
@@ -439,8 +460,8 @@ int main()
                         world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
                     {
                         targetTerritory = clickedTerritory;
-                        attackArrow = Arrow(world.getTerritory(previousTerritory)->Centroid(), world.getTerritory(clickedTerritory)->Centroid());
-
+                        attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
+                        attackArrow.setActive();
                     }
                     else
                     {
@@ -459,6 +480,12 @@ int main()
                     world.getTerritory(previousTerritory)->AddArmies(-1);   // remove army from source
                     world.getTerritory(targetTerritory)->AddArmies(1);      // add army to target
                     initialWorld.getTerritory(previousTerritory)->AddArmies(-1);    // remove army from initial distribution
+                    keyPressed = KEY_PRESSED_ONCE;
+                }
+                else if(keyPressed == sf::Keyboard::Return)
+                {
+                    currentPlayer = world.getNextPlayer();
+                    phase = place;
                 }
 
                 break;

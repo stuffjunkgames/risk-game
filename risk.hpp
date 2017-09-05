@@ -41,11 +41,13 @@ public:
     Player(int number, std::string name, sf::Color color);
 
     void Initialize(int number, std::string name, sf::Color color);
+    void AddTerritory(Territory* captured, unsigned int army);
     void CaptureTerritory(Territory *captured, unsigned int army);
     void LostTerritory(Territory *captured);
     bool operator == (const Player &other);
     sf::Color getColor();
     unsigned int getNumTerritories();
+    int getID();
 
 }; // Player
 
@@ -53,8 +55,8 @@ class Territory : public ExtendedShape  // if we make a ConcaveShape, inherit fr
 {
     // private variables
     int id;
-    sf::Text armyDisplay;
     std::string name;
+    sf::Text armyDisplay;
     Player* owner;
     unsigned int army;  // how many armies player has in territory
     std::vector<Territory*> connected;
@@ -71,6 +73,7 @@ public:
 
     void RefreshText();
     void addConnection(Territory *connection);
+    void SetOwner(Player *newOwner, unsigned int newArmy);
     void ChangeOwner(Player *newOwner, unsigned int newArmy);
     //virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     void drawTerritory(sf::RenderWindow* window);
@@ -79,6 +82,7 @@ public:
 	void makeArrows();
 	void drawArrows(sf::RenderWindow* window);
 	std::string getName();
+	int getID();
 
 	Player* GetOwner();
 	bool isConnected(Territory* t);
@@ -103,6 +107,7 @@ class World
 {
     std::vector<Territory> territoryList;
     std::vector<Player> playerList;
+    int playerTurn;
 
 public:
     World(sf::Font& font);
@@ -111,6 +116,8 @@ public:
     unsigned int TerritoryNumber();
     unsigned int PlayerNumber();
     Player* getPlayer(int index);
+    Player* getPlayerID(int id);
+    Player* getNextPlayer();
 	void ReadFile(sf::Font& font);
 	int getSize();
 }; // World

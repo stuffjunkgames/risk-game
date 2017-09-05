@@ -175,6 +175,17 @@ Player::Player(int number, std::string name, sf::Color color)
     this->color = color;
 }
 
+void Player::AddTerritory(Territory* captured, unsigned int army)
+{
+    captured->SetOwner(this, army);
+    territories.push_back(captured);
+
+//    for(std::list<Territory*>::iterator it = territories.begin(); it != territories.end(); ++it)
+//    {
+//        std::cout << (*it)->getID() << std::endl;
+//    }
+}
+
 void Player::CaptureTerritory(Territory *captured, unsigned int army)
 {
     captured->ChangeOwner(this, army);
@@ -183,6 +194,14 @@ void Player::CaptureTerritory(Territory *captured, unsigned int army)
 
 void Player::LostTerritory(Territory *captured)
 {
+//    std::cout << "ID: " << captured->getID() << std::endl;
+//    std::cout << "Name: " << captured->getName() << std::endl;
+//    std::cout << "Owner: " << captured->GetOwner()->getID() << std::endl;
+//    std::cout << "This: " << this->getID() << std::endl;
+//    for(std::list<Territory*>::iterator it = territories.begin(); it != territories.end(); ++it)
+//    {
+//        std::cout << (*it)->getID() << std::endl;
+//    }
     territories.remove(captured);
 }
 
@@ -194,6 +213,11 @@ unsigned int Player::getNumTerritories()
 sf::Color Player::getColor()
 {
     return this->color;
+}
+
+int Player::getID()
+{
+    return this->playerNumber;
 }
 
 // Player class definitions ^
@@ -301,6 +325,15 @@ void Territory::addConnection(Territory *connection)
 
 void Territory::ChangeOwner(Player *newOwner, unsigned int newArmy)
 {
+    owner->LostTerritory(this);
+    owner = newOwner;
+    army = newArmy;
+    this->setFillColor(owner->color);
+	this->RefreshText();
+}
+
+void Territory::SetOwner(Player *newOwner, unsigned int newArmy)
+{
     owner = newOwner;
     army = newArmy;
     this->setFillColor(owner->color);
@@ -316,6 +349,11 @@ void Territory::AddArmies(int nArmies)
 Player* Territory::GetOwner()
 {
 	return owner;
+}
+
+int Territory::getID()
+{
+    return id;
 }
 
 bool Territory::isConnected(Territory *t)
@@ -375,10 +413,10 @@ World::World(sf::Font& font)
     // make the world.
     // TODO: read in from a file (JSON?) or database (SQL?)
 
-    Player player1(1, "Player 1", sf::Color::Blue);
-    Player player2(2, "Player 2", sf::Color::Red);
+    Player player1(0, "Player 1", sf::Color::Blue);
+    Player player2(1, "Player 2", sf::Color::Red);
 	Player player3(2, "Player 3", sf::Color::Green);
-	Player player4(2, "Player 4", sf::Color(255, 165, 0, 255));
+	Player player4(3, "Player 4", sf::Color(255,165,0,255));
 
     playerList.push_back(player1);
     playerList.push_back(player2);
@@ -387,6 +425,7 @@ World::World(sf::Font& font)
 
 	ReadFile(font);
 
+    playerTurn = -1;
 }
 
 void World::ReadFile(sf::Font& font)
@@ -528,7 +567,7 @@ void World::ReadFile(sf::Font& font)
 				territoryList.back().setCenter(sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
             }
             territoryList.back().RefreshText();
-            playerList[player].CaptureTerritory(&territoryList.back(), armies);
+            playerList[player].AddTerritory(&territoryList.back(), armies);
             xyPairs.clear();
             std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl << std::endl;
         }
@@ -568,6 +607,37 @@ unsigned int World::PlayerNumber()
 Player* World::getPlayer(int index)
 {
     return &(playerList.at(index));
+}
+
+Player* World::getPlayerID(int id)
+{
+    for(int i = 0; i < this->playerList.size(); i++)
+    {
+        if(this->playerList[i].getID() == id)
+        {
+            return &(this->playerList[i]);
+        }
+    }
+
+    // FIXME: return null player here
+    return &(playerList[0]);
+}
+
+// This assumes player numbers are 0-indexed and do not skip numbers
+Player* World::getNextPlayer()
+{
+    if(playerTurn < 0)
+    {
+        // initialize to first player
+        playerTurn = 0;
+    }
+
+    int tempTurn = playerTurn;
+
+    //FIXME: account for null player (playerList.size() will be too high)
+    playerTurn = (playerTurn + 1) % playerList.size();
+
+    return getPlayerID(tempTurn);
 }
 
 int World::getSize()
