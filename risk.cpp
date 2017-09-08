@@ -178,31 +178,18 @@ Player::Player(int number, std::string name, sf::Color color)
 void Player::AddTerritory(Territory* captured, unsigned int army)
 {
     captured->SetOwner(this, army);
-    territories.push_back(captured);
-
-//    for(std::list<Territory*>::iterator it = territories.begin(); it != territories.end(); ++it)
-//    {
-//        std::cout << (*it)->getID() << std::endl;
-//    }
+    territories.push_back(captured->getID());
 }
 
 void Player::CaptureTerritory(Territory *captured, unsigned int army)
 {
     captured->ChangeOwner(this, army);
-    territories.push_back(captured);
+    territories.push_back(captured->getID());
 }
 
 void Player::LostTerritory(Territory *captured)
 {
-//    std::cout << "ID: " << captured->getID() << std::endl;
-//    std::cout << "Name: " << captured->getName() << std::endl;
-//    std::cout << "Owner: " << captured->GetOwner()->getID() << std::endl;
-//    std::cout << "This: " << this->getID() << std::endl;
-//    for(std::list<Territory*>::iterator it = territories.begin(); it != territories.end(); ++it)
-//    {
-//        std::cout << (*it)->getID() << std::endl;
-//    }
-    territories.remove(captured);
+    territories.remove(captured->getID());
 }
 
 unsigned int Player::getNumTerritories()
@@ -388,7 +375,7 @@ void Territory::setCenter(sf::Vector2f pos)
 
 void Territory::makeArrows()
 {
-	for(int i = 0; i < connected.size(); i++)
+	for(unsigned int i = 0; i < connected.size(); i++)
 	{
 		attackArrows.push_back(Arrow(centerPos, connected.at(i)->centerPos));
 	}
@@ -396,7 +383,7 @@ void Territory::makeArrows()
 
 void Territory::drawArrows(sf::RenderWindow* window)
 {
-	for (int i = 0; i < attackArrows.size(); i++)
+	for (unsigned int i = 0; i < attackArrows.size(); i++)
 	{
 		window->draw(attackArrows.at(i));
 	}
@@ -611,7 +598,7 @@ Player* World::getPlayer(int index)
 
 Player* World::getPlayerID(int id)
 {
-    for(int i = 0; i < this->playerList.size(); i++)
+    for(unsigned int i = 0; i < this->playerList.size(); i++)
     {
         if(this->playerList[i].getID() == id)
         {

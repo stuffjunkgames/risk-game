@@ -33,7 +33,7 @@ class Player
 {
     int playerNumber;
     std::string name;
-    std::list<Territory*> territories; // territories owned by this player
+    std::list<int> territories; // territory ids owned by this player
 
 public:
     sf::Color color;    // make this private

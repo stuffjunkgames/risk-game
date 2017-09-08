@@ -117,10 +117,12 @@ int main()
 	normalBordersSprite.setScale(1.5, 1.5);
 
 	// TODO: code to load each of the border images
-	if (!loadImages(&world)) {
+	if (!loadImages(&world))
+    {
 		return EXIT_FAILURE;
 	}
-	for (int i = 0; i < world.TerritoryNumber(); i++) {
+	for (int i = 0; i < world.TerritoryNumber(); i++)
+	{
 		world.getTerritory(i)->borderSprite = sf::Sprite(world.getTerritory(i)->borderTexture);
 		world.getTerritory(i)->borderSprite.setScale(1.5, 1.5);
 		world.getTerritory(i)->territorySprite = sf::Sprite(world.getTerritory(i)->territoryTexture);
@@ -235,7 +237,8 @@ int main()
             }
 
 			sf::Color pxColor;
-			for (int i = 0; i < world.TerritoryNumber(); i++) {
+			for (int i = 0; i < world.TerritoryNumber(); i++)
+            {
 				pxColor = world.getTerritory(i)->territoryImage.getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
 				if (pxColor.a > 0) {
 					territoryLabel.setText(world.getTerritory(i)->getName() + " " + std::to_string(i), mouseHover.x, mouseHover.y);
