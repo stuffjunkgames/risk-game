@@ -268,7 +268,6 @@ int main()
 		if (mouseDown)
 		{
 			previousTerritory = clickedTerritory;
-			//clickedTerritory = getClickedTerritory(world, mousePosition);
 
 			sf::Color pxColor;
 			clickedTerritory = -1;
@@ -281,49 +280,22 @@ int main()
 					clickedTerritory = -1;
 				}
 			}
-			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
-
-		}
-		// clicked is valid and owned by current player
-		if (clickedTerritory >= 0 && *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer)
-		{
-			//mouse has been clicked
-			if (mouseDown)
+			if (clickedTerritory >= 0 && *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer)
 			{
-				if (clickedTerritory != activeTerritory)    //clicked is different from the active
+				if (clickedTerritory != activeTerritory)
 				{
-					world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
-					if (activeTerritory >= 0)   //active is valid
-					{
-						world.getTerritory(previousTerritory)->setOutlineColor(sf::Color::Black);
-
-					}
 					activeTerritory = clickedTerritory;
 				}
 				else
 				{
-					if (world.getTerritory(clickedTerritory)->getOutlineColor() == sf::Color::Black)
-					{
-						world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Yellow);
-					}
-					else
-					{
-						world.getTerritory(clickedTerritory)->setOutlineColor(sf::Color::Black);
-						activeTerritory = -1;
-					}
-
+					activeTerritory = -1;
 				}
-				//mouseDown = false;
 			}
-		}
-		else    //either selected is invalid or it is not the current player's
-		{
-			if (activeTerritory >= 0 && mouseDown)//active is valid
+			else
 			{
-				world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
 				activeTerritory = -1;
-				//mouseDown = false;
 			}
+			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
 		}
 
         switch(phase)
@@ -444,6 +416,7 @@ int main()
                         defendingTerritory = -1;
                         initialWorld = world;
                         targetTerritory = -1;
+						activeTerritory = -1;
 						clickedTerritory = -1;
 						previousTerritory = -1;
                     }
@@ -479,6 +452,7 @@ int main()
 							if (transfers.at(i).donor == previousTerritory && transfers.at(i).receiver == clickedTerritory) {
 								activeTransfer = &transfers.at(i);
 								std::cout << "found a match, from " << activeTransfer->donor << " to " << activeTransfer->receiver << std::endl;
+								break;
 							}
 							else
 							{
@@ -532,6 +506,7 @@ int main()
                     currentPlayer = world.getNextPlayer();
                     phase = place;
 					clickedTerritory = -1;
+					activeTerritory = -1;
 					previousTerritory = -1;
 					activeTransfer = nullptr;
                 }
