@@ -59,6 +59,7 @@ class Territory : public ExtendedShape  // if we make a ConcaveShape, inherit fr
     sf::Text armyDisplay;
     Player* owner;
     unsigned int army;  // how many armies player has in territory
+    int bonus;
     std::vector<Territory*> connected;
 	std::vector<Arrow> attackArrows;
 
@@ -81,8 +82,10 @@ public:
 	void AddArmies(int nArmies);
 	void makeArrows();
 	void drawArrows(sf::RenderWindow* window);
+	void SetBonus(int b);
 	std::string getName();
 	int getID();
+	int GetBonus();
 
 	Player* GetOwner();
 	bool isConnected(Territory* t);
@@ -103,10 +106,32 @@ public:
 
 }; // Territory
 
+class Bonus
+{
+    int id;
+    std::string name;
+    std::vector<int> territories;   // list of territory ids in this bonus
+    int bonus;  // bonus armies per turn for owning
+
+public:
+    Bonus();
+    Bonus(int id, int bonus, std::string name);
+
+    void AddTerritory(int id);
+    void SetBonus(int n);
+    void SetName(std::string name);
+    std::string GetName();
+    void SetID(int id);
+    int GetID();
+    std::vector<int> GetTerritories();
+    int GetBonus();
+};  // Bonus
+
 class World
 {
     std::vector<Territory> territoryList;
     std::vector<Player> playerList;
+    std::vector<Bonus> bonusList;
     int playerTurn;
 
 public:
@@ -120,6 +145,11 @@ public:
     Player* getNextPlayer();
 	void ReadFile(sf::Font& font);
 	int getSize();
+	int GetBonus(int pNumber);
+	std::string GetBonusName(Territory* t);
+	std::string GetBonusName(int tid);
+	int GetBonusIncome(Territory* t);
+	int GetBonusIncome(int tid);
 }; // World
 
 

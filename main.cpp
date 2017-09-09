@@ -121,7 +121,7 @@ int main()
     {
 		return EXIT_FAILURE;
 	}
-	for (int i = 0; i < world.TerritoryNumber(); i++)
+	for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
 	{
 		world.getTerritory(i)->borderSprite = sf::Sprite(world.getTerritory(i)->borderTexture);
 		world.getTerritory(i)->borderSprite.setScale(1.5, 1.5);
@@ -208,7 +208,7 @@ int main()
             }
 			window.draw(normalBordersSprite);
 
-			if (activeTerritory >= 0 && activeTerritory < world.TerritoryNumber()) {
+			if (activeTerritory >= 0 && activeTerritory < (int)world.TerritoryNumber()) {
 				window.draw(world.getTerritory(activeTerritory)->borderSprite);
 			}
 
@@ -237,11 +237,13 @@ int main()
             }
 
 			sf::Color pxColor;
-			for (int i = 0; i < world.TerritoryNumber(); i++)
+			for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
 				pxColor = world.getTerritory(i)->territoryImage.getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
 				if (pxColor.a > 0) {
-					territoryLabel.setText(world.getTerritory(i)->getName() + " " + std::to_string(i), mouseHover.x, mouseHover.y);
+					territoryLabel.setText(world.getTerritory(i)->getName() + " " + std::to_string(i) +
+                            "\n" + world.GetBonusName(i) + " " + std::to_string(world.GetBonusIncome(i)),
+                            mouseHover.x, mouseHover.y);
 					territoryLabel.Draw(&window);
 					break;
 				}
@@ -264,7 +266,7 @@ int main()
 
 			sf::Color pxColor;
 			clickedTerritory = -1;
-			for (int i = 0; i < world.TerritoryNumber() && clickedTerritory == -1; i++) {
+			for (unsigned int i = 0; i < world.TerritoryNumber() && clickedTerritory == -1; i++) {
 				pxColor = world.getTerritory(i)->territoryImage.getPixel(mousePosition.x / 1.5, mousePosition.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
 				if (pxColor.a > 0) {
 					clickedTerritory = i;
@@ -331,9 +333,9 @@ int main()
                 {
                     // FIXME: get rid of these "magic numbers"
                     //armyCount = 3 + currentPlayer->getNumTerritories();
-					armyCount = 3;
+					armyCount = 3 + world.GetBonus(currentPlayer->getID());
                     placedArmies = 0;
-                    std::cout << currentPlayer->getNumTerritories() << std::endl;
+                    std::cout << "Placeable count: " << armyCount << std::endl;
                 }
 
                 // if they are all placed, move on.

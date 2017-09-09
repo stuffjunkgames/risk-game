@@ -389,7 +389,71 @@ void Territory::drawArrows(sf::RenderWindow* window)
 	}
 }
 
+void Territory::SetBonus(int b)
+{
+    this->bonus = b;
+}
+
+int Territory::GetBonus()
+{
+    return this->bonus;
+}
+
 // Territory class ^
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Bonus class
+
+Bonus::Bonus(){}
+Bonus::Bonus(int id, int bonus, std::string name)
+{
+    this->id = id;
+    this->bonus = bonus;
+    this->name = name;
+}
+
+void Bonus::AddTerritory(int id)
+{
+    this->territories.push_back(id);
+}
+
+void Bonus::SetBonus(int n)
+{
+    this->bonus = n;
+}
+
+void Bonus::SetName(std::string name)
+{
+    this->name = name;
+}
+
+std::string Bonus::GetName()
+{
+    return this->name;
+}
+
+void Bonus::SetID(int id)
+{
+    this->id = id;
+}
+
+int Bonus::GetID()
+{
+    return this->id;
+}
+
+int Bonus::GetBonus()
+{
+    return this->bonus;
+}
+
+std::vector<int> Bonus::GetTerritories()
+{
+    return this->territories;
+}
+
+// Bonus class ^
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -417,23 +481,26 @@ World::World(sf::Font& font)
 
 void World::ReadFile(sf::Font& font)
 {
-    // FIXME: this would be way easier to implement with streams than trying ot use characters.
+    // FIXME: this would be way easier to implement with streams than trying to use characters.
+    // FIXME: also might be nicer to have a more standard format like JSON
 
 	std::ifstream infile("world.txt");
 	std::string line;
 	std::string chunk;
 
 	// read territories
-	for (int n = 0; std::getline(infile, line); n++)
+	int n = 0;
+	while(std::getline(infile, line))
 	{
 		std::istringstream iss(line);
 		//std::cout << line << std::endl;
 
 		//parsing
 		chunk = "";
-		int section = 0;// 0:line identifier (t=territory, c=connection)
-                         // 1:coordinates, 2:name, 3:id, 4:armysize
+		int section = 0;// 0:line identifier (t=territory, c=connection, b=bonus)
+                         // 1:coordinates, 2:name, 3:id, 4:armysize, 5: bonus
                          // -1: territory, -2: connected
+                         // 11: bonus id, 12: name, 13: bonus income
         char id;
 
 		int x, y; //coordinates
@@ -441,6 +508,11 @@ void World::ReadFile(sf::Font& font)
 		std::string name;
 		int player;
 		int armies;
+		int bonus;
+
+		int bonusID;
+		std::string bonusName;
+		int bonusIncome;
 
 		int terr;
 		std::vector<int> connections;
@@ -458,6 +530,10 @@ void World::ReadFile(sf::Font& font)
                 {
                     id = 'c';
                 }
+                else if(c == 'b')
+                {
+                    id = 'b';
+                }
                 else if(c == ';')
                 {
                     if(id == 't')
@@ -467,6 +543,10 @@ void World::ReadFile(sf::Font& font)
                     else if(id == 'c')
                     {
                         section = -1;
+                    }
+                    else if(id == 'b')
+                    {
+                        section = 11;
                     }
                 }
                 break;
@@ -509,10 +589,53 @@ void World::ReadFile(sf::Font& font)
 				if (c == ';') {
 					armies = std::stoi(chunk);
 					chunk = "";
+					section = 5;
 					break;
 				}
 				chunk += c;
 				break;
+            case 5:
+                // bonus
+                if(c == ';')
+                {
+                    bonus = std::stoi(chunk);
+                    chunk = "";
+                    break;
+                }
+                chunk += c;
+                break;
+            case 11:
+                // bonus id
+                if(c == ';')
+                {
+                    bonusID = std::stoi(chunk);
+                    chunk = "";
+                    section = 12;
+                    break;
+                }
+                chunk += c;
+                break;
+            case 12:
+                // bonus name
+                if(c == ';')
+                {
+                    bonusName = chunk;
+                    chunk = "";
+                    section = 13;
+                    break;
+                }
+                chunk += c;
+                break;
+            case 13:
+                // bonus income
+                if(c == ';')
+                {
+                    bonusIncome = std::stoi(chunk);
+                    chunk = "";
+                    break;
+                }
+                chunk += c;
+                break;
             case -1:
                 if(c == ';')
                 {
@@ -555,8 +678,12 @@ void World::ReadFile(sf::Font& font)
             }
             territoryList.back().RefreshText();
             playerList[player].AddTerritory(&territoryList.back(), armies);
+            bonusList[bonus].AddTerritory(n);
+            territoryList.back().SetBonus(bonus);
             xyPairs.clear();
-            std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl << std::endl;
+            std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl;
+            std::cout << "Bonus: " << bonusList[bonus].GetName() << std::endl << std::endl;
+            n++;
         }
         else if(id == 'c')
         {
@@ -570,6 +697,13 @@ void World::ReadFile(sf::Font& font)
             }
             std::cout << std::endl;
 			territoryList.at(terr).makeArrows();
+        }
+        else if(id == 'b')
+        {
+            // add bonus
+            bonusList.push_back(Bonus(bonusID, bonusIncome, bonusName));
+
+            std::cout << "Bonus: " << bonusName << std::endl << "ID: " << bonusID << std::endl << "Income: " << bonusIncome << std::endl << std::endl;
         }
 
 	}
@@ -631,6 +765,77 @@ int World::getSize()
 {
 	return territoryList.size();
 }
+
+int World::GetBonus(int pNumber)
+{
+    int bonus = 0;
+    for(unsigned int i = 0; i < bonusList.size(); i++)
+    {
+        std::vector<int> bonusTList = bonusList[i].GetTerritories();
+        bool owned = 1;
+        for(unsigned int j = 0; j < bonusTList.size(); j++)
+        {
+            if(pNumber != getTerritory(bonusTList[j])->GetOwner()->getID())
+            {
+                owned = 0;
+                break;
+            }
+        }
+        if(owned)
+        {
+            bonus += bonusList[i].GetBonus();
+        }
+    }
+
+    return bonus;
+}
+
+std::string World::GetBonusName(Territory* t)
+{
+    int id = t->GetBonus();
+    std::string name = "";
+
+    for(unsigned int i = 0; i < bonusList.size(); i++)
+    {
+        if(id == bonusList[i].GetID())
+        {
+            name = bonusList[i].GetName();
+            break;
+        }
+    }
+
+    return name;
+}
+
+std::string World::GetBonusName(int tid)
+{
+    // FIXME: use territory id instead of index
+    return GetBonusName(getTerritory(tid));
+}
+
+int World::GetBonusIncome(Territory* t)
+{
+    int id = t->GetBonus();
+    int income = 0;
+
+    for(unsigned int i = 0; i < bonusList.size(); i++)
+    {
+        if(id == bonusList[i].GetID())
+        {
+            income = bonusList[i].GetBonus();
+            break;
+        }
+    }
+
+    return income;
+}
+
+int World::GetBonusIncome(int tid)
+{
+    // FIXME: use territory id instead of index
+    return GetBonusIncome(getTerritory(tid));
+}
+
 // World
 ////////////////////////////////////////////////////////////////////////////////////////////
 
