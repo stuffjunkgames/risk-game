@@ -227,19 +227,13 @@ int main()
 			}
 			else if (phase == reposition)
             {
-				/*for (unsigned int i = 0; i < transfers.size(); i++)
-				{
-					transfers.at(i).Draw(&window);
-					//std::cout << "transfer's amount: " << std::string(transfers.at(i).transferLabel.getString()) << std::endl;
-					window.draw(transfers.at(i).transferLabel);
-				}*/
 				for (Transfer t : transfers)
 				{
 					t.Draw(&window);
 				}
                 if(targetTerritory >= 0)
                 {
-                    //window.draw(attackArrow);
+                    window.draw(attackArrow);
                 }
                 else if(activeTerritory >= 0)
                 {
@@ -475,9 +469,11 @@ int main()
                         *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer &&
                         world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
                     {
-						transfers.push_back(Transfer(armyFont, 1, world.getTerritory(previousTerritory), world.getTerritory(clickedTerritory), currentPlayer));
-                        //attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
-                        //attackArrow.setActive();
+                        attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
+                        attackArrow.setActive();
+						transfers.push_back(Transfer(armyFont, previousTerritory, clickedTerritory, attackArrow));
+						targetTerritory = clickedTerritory;
+						activeTerritory = -1;
                     }
                     else
                     {

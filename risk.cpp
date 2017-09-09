@@ -945,26 +945,30 @@ Label::Label(sf::Font& font)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Transfer class definitions
 
-Transfer::Transfer(sf::Font font, int amount, Territory* donor, Territory* receiver, Player* owner)
+Transfer::Transfer(sf::Font& font, int donor, int receiver, Arrow arrow)
 {
 	transferLabel.setFont(font);
-	this->amount = amount;
+	this->amount = 0;
 	this->donor = donor;
 	this->receiver = receiver;
-	this->owner = owner;
-	this->transferArrow = Arrow(donor->centerPos, receiver->centerPos);
+	this->transferArrow = arrow;
 
 	transferArrow.setActive();
 	transferLabel.setString(std::to_string(amount));
-	transferLabel.setPosition(transferArrow.getPosition());
+
+	sf::FloatRect bounds = transferLabel.getGlobalBounds();
+	sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
+	transferLabel.setPosition(transferArrow.Centroid() - textShift);
 }
 
 void Transfer::Draw(sf::RenderWindow* window)
 {
-	transferLabel.setString(std::to_string(amount));
-
 	window->draw(transferArrow);
-	window->draw(transferLabel);
+	if (this->amount > 0) {
+		transferLabel.setString(std::to_string(amount));
+		
+		window->draw(transferLabel);
+	}		
 }
 
 void Transfer::setAmount(int amount)

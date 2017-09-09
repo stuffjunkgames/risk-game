@@ -199,11 +199,10 @@ class Transfer
 	Label transferLabel;
 	sf::Vector2f position;
 	int amount;
-	Territory* donor,* receiver;
-	Player* owner;
+	int donor, receiver;
 public:
 	// constructor
-	Transfer(sf::Font font, int amount, Territory* donor, Territory* receiver, Player* owner);
+	Transfer(sf::Font& font, int donor, int receiver, Arrow arrow);
 
 	// public functions
 	void Draw(sf::RenderWindow* window);
