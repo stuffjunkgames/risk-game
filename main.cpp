@@ -101,8 +101,9 @@ int main()
     int armyCount = 0;
     int placedArmies = 0;
 	Arrow attackArrow;
+	std::vector<Transfer> transfers;
 	int r;
-	Label territoryLabel(armyFont);
+	HoverText territoryHoverText(armyFont);
 
 	sf::Texture texture;
 	if (!texture.loadFromFile("new_map.png"))
@@ -226,9 +227,19 @@ int main()
 			}
 			else if (phase == reposition)
             {
+				/*for (unsigned int i = 0; i < transfers.size(); i++)
+				{
+					transfers.at(i).Draw(&window);
+					//std::cout << "transfer's amount: " << std::string(transfers.at(i).transferLabel.getString()) << std::endl;
+					window.draw(transfers.at(i).transferLabel);
+				}*/
+				for (Transfer t : transfers)
+				{
+					t.Draw(&window);
+				}
                 if(targetTerritory >= 0)
                 {
-                    window.draw(attackArrow);
+                    //window.draw(attackArrow);
                 }
                 else if(activeTerritory >= 0)
                 {
@@ -241,8 +252,8 @@ int main()
             {
 				pxColor = world.getTerritory(i)->territoryImage.getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
 				if (pxColor.a > 0) {
-					territoryLabel.setText(world.getTerritory(i)->getName() + " " + std::to_string(i), mouseHover.x, mouseHover.y);
-					territoryLabel.Draw(&window);
+					territoryHoverText.setText(world.getTerritory(i)->getName() + " " + std::to_string(i), mouseHover.x, mouseHover.y);
+					territoryHoverText.Draw(&window);
 					break;
 				}
 			}
@@ -462,9 +473,9 @@ int main()
                         *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer &&
                         world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
                     {
-                        targetTerritory = clickedTerritory;
-                        attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
-                        attackArrow.setActive();
+						transfers.push_back(Transfer(armyFont, 1, world.getTerritory(previousTerritory), world.getTerritory(clickedTerritory), currentPlayer));
+                        //attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
+                        //attackArrow.setActive();
                     }
                     else
                     {

@@ -277,9 +277,6 @@ void Territory::RefreshText()
 
     //armyDisplay.setPosition(centroid - textShift);
 	armyDisplay.setPosition(centerPos - textShift);
-    armyDisplay.setFillColor(sf::Color::White);
-	armyDisplay.setOutlineColor(sf::Color::Black);
-	armyDisplay.setOutlineThickness(3);
 }
 
 // if the territory object is copied, this needs to be called again
@@ -289,11 +286,9 @@ void Territory::setFont()
     sf::FloatRect bounds = armyDisplay.getGlobalBounds();
     sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
     //sf::Vector2f centroid = this->Centroid();
-
+	
     //armyDisplay.setPosition(centroid - textShift);
 	armyDisplay.setPosition(centerPos - textShift);
-    armyDisplay.setFillColor(sf::Color::White);
-	armyDisplay.setOutlineColor(sf::Color::Black);
 }
 
 // override Drawable::draw() to make this more consistent with SFML standard
@@ -682,9 +677,9 @@ void Arrow::setActive()
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Label class definitions
+// HoverText class definitions
 
-Label::Label(sf::Font& font)
+HoverText::HoverText(sf::Font& font)
 {
 	rect = ExtendedShape(4);
 	rect.setFillColor(sf::Color(0, 0, 0, 127));
@@ -696,7 +691,7 @@ Label::Label(sf::Font& font)
 	offset = 10;
 }
 
-void Label::Draw(sf::RenderWindow* window)
+void HoverText::Draw(sf::RenderWindow* window)
 {
 	sf::FloatRect bounds = getGlobalBounds();
 
@@ -709,7 +704,7 @@ void Label::Draw(sf::RenderWindow* window)
 	window->draw(*this);
 }
 
-void Label::setText(std::string text, int xPos, int yPos)
+void HoverText::setText(std::string text, int xPos, int yPos)
 {
 	this->setString(text);
 
@@ -717,5 +712,70 @@ void Label::setText(std::string text, int xPos, int yPos)
 
 	this->setPosition(sf::Vector2f(xPos - (bounds.width / 2), yPos - bounds.height - 2 * offset));
 }
+// HoverText
+////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Label class definitions
+
+Label::Label()
+{
+	this->setCharacterSize(20);
+	this->setFillColor(sf::Color::White);
+	this->setOutlineColor(sf::Color::Black);
+	this->setOutlineThickness(3);
+}
+
+Label::Label(sf::Font& font)
+{
+	this->setFont(font);
+	this->setCharacterSize(20);
+	this->setFillColor(sf::Color::White);
+	this->setOutlineColor(sf::Color::Black);
+	this->setOutlineThickness(3);
+}
 // Label
+////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Transfer class definitions
+
+Transfer::Transfer(sf::Font font, int amount, Territory* donor, Territory* receiver, Player* owner)
+{
+	transferLabel.setFont(font);
+	this->amount = amount;
+	this->donor = donor;
+	this->receiver = receiver;
+	this->owner = owner;
+	this->transferArrow = Arrow(donor->centerPos, receiver->centerPos);
+
+	transferArrow.setActive();
+	transferLabel.setString(std::to_string(amount));
+	transferLabel.setPosition(transferArrow.getPosition());
+}
+
+void Transfer::Draw(sf::RenderWindow* window)
+{
+	transferLabel.setString(std::to_string(amount));
+
+	window->draw(transferArrow);
+	window->draw(transferLabel);
+}
+
+void Transfer::setAmount(int amount)
+{
+	this->amount = amount;
+}
+
+void Transfer::increaseAmount(int inc)
+{
+	this->amount += inc;
+}
+
+int Transfer::getAmount()
+{
+	return this->amount;
+}
+
+// Transfer
 ////////////////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,9 @@ class Territory;
 class World;
 class ExtendedShape;
 class Arrow;
+class HoverText;
 class Label;
+class Transfer;
 
 class ExtendedShape : public sf::ConvexShape
 {
@@ -27,6 +29,31 @@ public:
     bool isInside(sf::Vector2f point);
 
 
+};
+
+class HoverText : public sf::Text
+{
+	ExtendedShape rect;
+	int offset;
+
+public:
+	// constructor
+	HoverText(sf::Font& font);
+
+	// public functions
+	void Draw(sf::RenderWindow* window);
+	void setText(std::string text, int xPos, int yPos);
+};
+
+class Label : public sf::Text
+{
+
+public:
+	// constructor
+	Label();
+	Label(sf::Font& font);
+
+	// public functions
 };
 
 class Player
@@ -56,7 +83,7 @@ class Territory : public ExtendedShape  // if we make a ConcaveShape, inherit fr
     // private variables
     int id;
     std::string name;
-    sf::Text armyDisplay;
+    Label armyDisplay;
     Player* owner;
     unsigned int army;  // how many armies player has in territory
     std::vector<Territory*> connected;
@@ -136,16 +163,21 @@ public:
 	void setActive();
 };
 
-class Label : public sf::Text
+class Transfer
 {
-	ExtendedShape rect;
-	int offset;
-
+	Arrow transferArrow;
+	Label transferLabel;
+	sf::Vector2f position;
+	int amount;
+	Territory* donor,* receiver;
+	Player* owner;
 public:
 	// constructor
-	Label(sf::Font& font);
+	Transfer(sf::Font font, int amount, Territory* donor, Territory* receiver, Player* owner);
 
 	// public functions
 	void Draw(sf::RenderWindow* window);
-	void setText(std::string text, int xPos, int yPos);
+	void setAmount(int amount);
+	void increaseAmount(int inc);
+	int getAmount();
 };
