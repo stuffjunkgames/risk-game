@@ -964,11 +964,9 @@ Transfer::Transfer(sf::Font& font, int donor, int receiver, Arrow arrow)
 void Transfer::Draw(sf::RenderWindow* window)
 {
 	window->draw(transferArrow);
-	if (this->amount > 0) {
-		transferLabel.setString(std::to_string(amount));
-		
-		window->draw(transferLabel);
-	}		
+	transferLabel.setString(std::to_string(amount));
+	
+	window->draw(transferLabel);	
 }
 
 void Transfer::setAmount(int amount)
@@ -986,5 +984,9 @@ int Transfer::getAmount()
 	return this->amount;
 }
 
+bool Transfer::operator == (const Transfer &other)
+{
+	return (this->donor == other.donor && this->receiver == other.receiver);
+}
 // Transfer
 ////////////////////////////////////////////////////////////////////////////////////////////

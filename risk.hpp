@@ -199,7 +199,6 @@ class Transfer
 	Label transferLabel;
 	sf::Vector2f position;
 	int amount;
-	int donor, receiver;
 public:
 	// constructor
 	Transfer(sf::Font& font, int donor, int receiver, Arrow arrow);
@@ -209,4 +208,8 @@ public:
 	void setAmount(int amount);
 	void increaseAmount(int inc);
 	int getAmount();
+	bool operator == (const Transfer &other);
+
+	int donor;
+	int receiver;
 };

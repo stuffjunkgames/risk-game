@@ -102,6 +102,7 @@ int main()
     int placedArmies = 0;
 	Arrow attackArrow;
 	std::vector<Transfer> transfers;
+	Transfer* activeTransfer = nullptr;
 	int r;
 	HoverText territoryHoverText(armyFont);
 
@@ -233,7 +234,7 @@ int main()
 				}
                 if(targetTerritory >= 0)
                 {
-                    window.draw(attackArrow);
+                    //window.draw(attackArrow);
                 }
                 else if(activeTerritory >= 0)
                 {
@@ -355,6 +356,8 @@ int main()
                         activeTerritory = -1;
                     }
                     phase = attack;
+					clickedTerritory = -1;
+					previousTerritory = -1;
                     break;
                 }
 
@@ -441,6 +444,8 @@ int main()
                         defendingTerritory = -1;
                         initialWorld = world;
                         targetTerritory = -1;
+						clickedTerritory = -1;
+						previousTerritory = -1;
                     }
 
                 break;
@@ -469,19 +474,42 @@ int main()
                         *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer &&
                         world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
                     {
-                        attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
-                        attackArrow.setActive();
-						transfers.push_back(Transfer(armyFont, previousTerritory, clickedTerritory, attackArrow));
+						for (int i = 0; i < transfers.size(); i++)
+						{
+							if (transfers.at(i).donor == previousTerritory && transfers.at(i).receiver == clickedTerritory) {
+								activeTransfer = &transfers.at(i);
+								std::cout << "found a match, from " << activeTransfer->donor << " to " << activeTransfer->receiver << std::endl;
+							}
+							else
+							{
+								activeTransfer = nullptr;
+							}
+						}
+						if (activeTransfer == nullptr) {
+							attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
+							attackArrow.setActive();
+							transfers.push_back(Transfer(armyFont, previousTerritory, clickedTerritory, attackArrow));
+							activeTransfer = &transfers.back();
+						}
+
 						targetTerritory = clickedTerritory;
 						activeTerritory = -1;
+						clickedTerritory = -1;
                     }
                     else
                     {
                         targetTerritory = -1;
+						activeTransfer = nullptr;
                     }
                 }
                 else if(mouseDown)  // invalid territory.  Clear target
                 {
+					if (transfers.size() > 0) {
+						if (transfers.back().getAmount() <= 0) {
+							transfers.erase(transfers.end() - 1);
+						}
+					}
+					activeTransfer = nullptr;
                     targetTerritory = -1;
                 }
 
@@ -489,15 +517,23 @@ int main()
                     && targetTerritory >= 0 // target territory exists
                     && initialWorld.getTerritory(previousTerritory)->GetArmies() > 1)  // source territory has unmoved armies
                 {
-                    world.getTerritory(previousTerritory)->AddArmies(-1);   // remove army from source
-                    world.getTerritory(targetTerritory)->AddArmies(1);      // add army to target
                     initialWorld.getTerritory(previousTerritory)->AddArmies(-1);    // remove army from initial distribution
+					activeTransfer->increaseAmount(1);
                     keyPressed = KEY_PRESSED_ONCE;
                 }
                 else if(keyPressed == sf::Keyboard::Return)
                 {
+					for (Transfer t : transfers)
+					{
+						world.getTerritory(t.donor)->AddArmies(-t.getAmount());		// remove army from source
+						world.getTerritory(t.receiver)->AddArmies(t.getAmount());	// add army to target
+					}
+					transfers.clear();
                     currentPlayer = world.getNextPlayer();
                     phase = place;
+					clickedTerritory = -1;
+					previousTerritory = -1;
+					activeTransfer = nullptr;
                 }
 
                 break;
