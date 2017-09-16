@@ -207,6 +207,11 @@ int Player::getID()
     return this->playerNumber;
 }
 
+std::string Player::getName()
+{
+	return this->name;
+}
+
 // Player class definitions ^
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -459,10 +464,10 @@ World::World(sf::Font& font)
     // make the world.
     // TODO: read in from a file (JSON?) or database (SQL?)
 
-    Player player1(0, "Player 1", sf::Color::Blue);
-    Player player2(1, "Player 2", sf::Color::Red);
-	Player player3(2, "Player 3", sf::Color::Green);
-	Player player4(3, "Player 4", sf::Color(255,165,0,255));
+    Player player1(0, "Blue Goo", sf::Color(59, 160, 176, 255));// blue
+    Player player2(1, "Red Dread", sf::Color(176, 59, 110, 255));// red
+	Player player3(2, "Green Spleen", sf::Color(114, 181, 60, 255));// green
+	Player player4(3, "Brown Town", sf::Color(176, 90, 59, 255)); // orange
 
     playerList.push_back(player1);
     playerList.push_back(player2);
@@ -989,4 +994,69 @@ bool Transfer::operator == (const Transfer &other)
 	return (this->donor == other.donor && this->receiver == other.receiver);
 }
 // Transfer
+////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Button class definitions
+
+Button::Button(sf::Font& font, std::string string, sf::Vector2f position) : ExtendedShape(4)// position is the top left of the border
+{
+	padding = 3;
+	setFillColor(sf::Color(255, 255, 255, 127));
+	setOutlineColor(sf::Color::Black);
+	setOutlineThickness(-5);
+
+	setPoint(0, position);
+	setPoint(1, position + sf::Vector2f(0, defaultHeight));
+	setPoint(2, position + sf::Vector2f(defaultWidth, defaultHeight));
+	setPoint(3, position + sf::Vector2f(defaultWidth, 0));
+	
+	text.setFont(font);
+	text.setString(string);
+	sf::FloatRect bounds = text.getLocalBounds();
+	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
+	text.setPosition(position + sf::Vector2f((defaultWidth / 2), (defaultHeight / 2)));
+}
+
+Button::Button(sf::Font& font, std::string string, sf::Vector2f position, int w, int h) : ExtendedShape(4)// position is the top left of the border
+{
+	padding = 3;
+	setFillColor(sf::Color(255, 255, 255, 127));
+	setOutlineColor(sf::Color::Black);
+	setOutlineThickness(-5);
+
+	setPoint(0, position);
+	setPoint(1, position + sf::Vector2f(0, h));
+	setPoint(2, position + sf::Vector2f(w, h));
+	setPoint(3, position + sf::Vector2f(w, 0));
+
+	text.setFont(font);
+	text.setString(string);
+	sf::FloatRect bounds = text.getLocalBounds();
+	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
+	text.setPosition(position + sf::Vector2f((w / 2), (h / 2)));
+}
+
+void Button::Draw(sf::RenderWindow* window)
+{
+	isActive = true;
+
+	window->draw(*this);
+	window->draw(text);
+}
+
+void Button::moveToPosition(sf::Vector2f newPosition)
+{
+	//setPosition(newPosition); // this doesn't actually change the points, which are needed for the isInside function
+	sf::FloatRect size = getLocalBounds();
+	setPoint(0, newPosition);
+	setPoint(1, newPosition + sf::Vector2f(0, size.height));
+	setPoint(2, newPosition + sf::Vector2f(size.width, size.height));
+	setPoint(3, newPosition + sf::Vector2f(size.width, 0));
+
+	sf::FloatRect bounds = text.getLocalBounds();
+	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
+	text.setPosition(newPosition + sf::Vector2f((size.width / 2), (size.height / 2)));
+}
+// Button
 ////////////////////////////////////////////////////////////////////////////////////////////

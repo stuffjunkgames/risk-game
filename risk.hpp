@@ -17,6 +17,7 @@ class Arrow;
 class HoverText;
 class Label;
 class Transfer;
+class Button;
 
 class ExtendedShape : public sf::ConvexShape
 {
@@ -67,7 +68,6 @@ public:
 
     Player(int number, std::string name, sf::Color color);
 
-    void Initialize(int number, std::string name, sf::Color color);
     void AddTerritory(Territory* captured, unsigned int army);
     void CaptureTerritory(Territory *captured, unsigned int army);
     void LostTerritory(Territory *captured);
@@ -75,6 +75,7 @@ public:
     sf::Color getColor();
     unsigned int getNumTerritories();
     int getID();
+	std::string getName();
 
 }; // Player
 
@@ -83,7 +84,7 @@ class Territory : public ExtendedShape  // if we make a ConcaveShape, inherit fr
     // private variables
     int id;
     std::string name;
-    Label armyDisplay;
+    
     Player* owner;
     unsigned int army;  // how many armies player has in territory
     int bonus;
@@ -120,6 +121,9 @@ public:
 	void setCenter(sf::Vector2f pos);
 
     bool operator == (const Territory& other);
+
+	Label armyDisplay;
+
 	sf::Vector2f centerPos;
 	sf::Texture territoryTexture;
 	sf::Texture borderTexture;
@@ -212,4 +216,23 @@ public:
 
 	int donor;
 	int receiver;
+};
+
+class Button : public ExtendedShape
+{
+	Label text;
+	int padding;
+	int defaultWidth = 30;
+	int defaultHeight = 30;
+
+public:
+	// constructor
+	Button(sf::Font& font, std::string string, sf::Vector2f position);
+	Button(sf::Font& font, std::string string, sf::Vector2f position, int w, int h);
+
+	// public functions
+	void Draw(sf::RenderWindow* window);
+	void moveToPosition(sf::Vector2f newPosition);
+
+	bool isActive = false;
 };

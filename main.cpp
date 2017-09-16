@@ -17,6 +17,10 @@
 #define GAME_BOTTOM GAME_TOP+GAME_HEIGHT
 #define NO_KEY_PRESSED -1
 #define KEY_PRESSED_ONCE -2
+#define NO_BUTTON_PRESSED -1
+#define BUTTON_PLUS 1
+#define BUTTON_MINUS 2
+#define BUTTON_ATTACK 3
 
 
 sf::Font loadFont(std::string path)
@@ -66,6 +70,83 @@ bool loadImages(World *world)
 	return 1;
 }
 
+sf::Color compliment(sf::Color color)
+{
+	sf::Color comp;
+	double rp, gp, bp, Cmax, Cmin, delta, H, S, V, compH, C, X, m;
+
+	rp = color.r / 255.0;
+	gp = color.g / 255.0;
+	bp = color.b / 255.0;
+	Cmax = std::max(rp, std::max(gp, bp));
+	Cmin = std::min(rp, std::max(gp, bp));
+	delta = Cmax - Cmin;
+	
+	if (delta == 0) {
+		H = 0;
+	}
+	else if (Cmax == rp) {
+		H = 60.0 * (int((gp - bp) / delta) % 6);
+	}
+	else if (Cmax == gp) {
+		H = 60.0 * (((bp - rp) / delta) + 2);
+	}
+	else if (Cmax == bp) {
+		H = 60.0 * (((rp - gp) / delta) + 4);
+	}
+
+	if (Cmax == 0) {
+		S = 0;
+	}
+	else {
+		S = delta / Cmax;
+	}
+
+	V = Cmax;
+
+	compH = int(H + 180) % 360;
+
+	C = V * S;
+	X = C * (1 - std::abs(int(compH / 60) % 2 - 1));
+	m = V - C;
+	if (compH >= 0 && compH < 60) {
+		rp = C;
+		gp = X;
+		bp = 0;
+	}
+	else if (compH >= 60 && compH < 120) {
+		rp = X;
+		gp = C;
+		bp = 0;
+	}
+	else if (compH >= 120 && compH < 180) {
+		rp = 0;
+		gp = C;
+		bp = X;
+	}
+	else if (compH >= 180 && compH < 240) {
+		rp = 0;
+		gp = X;
+		bp = C;
+	}
+	else if (compH >= 240 && compH < 300) {
+		rp = X;
+		gp = 0;
+		bp = C;
+	}
+	else if (compH >= 300 && compH < 360) {
+		rp = C;
+		gp = 0;
+		bp = X;
+	}
+
+	comp.r = (rp + m) * 255;
+	comp.g = (gp + m) * 255;
+	comp.b = (bp + m) * 255;
+	
+	return comp;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // main
@@ -105,6 +186,27 @@ int main()
 	Transfer* activeTransfer = nullptr;
 	int r;
 	HoverText territoryHoverText(armyFont);
+	std::vector<Label> playerLabels;
+	for (unsigned int i = 0; i < world.PlayerNumber(); i++) {
+		playerLabels.push_back(Label(armyFont));
+		playerLabels.at(i).setFillColor(world.getPlayer(i)->getColor());
+		playerLabels.at(i).setOutlineThickness(3);
+		playerLabels.at(i).setCharacterSize(30);
+		playerLabels.at(i).setString(world.getPlayer(i)->getName() + ":");
+		playerLabels.at(i).setPosition(sf::Vector2f(GAME_WIDTH - 300, 40 * i));
+	}
+	/*sf::ConvexShape playerBorder = sf::ConvexShape(4);
+	playerBorder.setPoint(0, sf::Vector2f(GAME_WIDTH - 300, 0));
+	playerBorder.setPoint(1, sf::Vector2f(GAME_WIDTH - 300, 40));
+	playerBorder.setPoint(2, sf::Vector2f(GAME_WIDTH, 40));
+	playerBorder.setPoint(3, sf::Vector2f(GAME_WIDTH, 0));
+	playerBorder.setFillColor(sf::Color(0, 0, 0, 0));
+	playerBorder.setOutlineColor(sf::Color(255, 255, 255, 255));
+	playerBorder.setOutlineThickness(-3);*/
+	Button buttonPlus(armyFont, "+", sf::Vector2f(0, 0));
+	Button buttonMinus(armyFont, "-", sf::Vector2f(0, 0));
+	Button buttonAttack(armyFont, "Attack", sf::Vector2f(0, 0), 80, 30);
+	int buttonPressed = -1;
 
 	sf::Texture texture;
 	if (!texture.loadFromFile("new_map.png"))
@@ -133,7 +235,7 @@ int main()
 	}
 
     bool mouseDown = false;
-	int keyPressed = -1;
+	int keyPressed = NO_KEY_PRESSED;
 
     std::srand(std::time(0));
 
@@ -176,6 +278,23 @@ int main()
                     // left mouse pressed
                     mouseDown = true;
                     mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+					// Deal with buttons
+					if (buttonPlus.isInside(mousePosition) && buttonPlus.isActive)
+					{
+						buttonPressed = BUTTON_PLUS;
+						mouseDown = false;
+					}
+					if (buttonMinus.isInside(mousePosition) && buttonMinus.isActive)
+					{
+						buttonPressed = BUTTON_MINUS;
+						mouseDown = false;
+					}
+					if (buttonAttack.isInside(mousePosition) && buttonAttack.isActive)
+					{
+						buttonPressed = BUTTON_ATTACK;
+						mouseDown = false;
+					}
                 }
                 if(event.mouseButton.button == sf::Mouse::Right)
                 {
@@ -204,6 +323,12 @@ int main()
             window.clear();
             window.draw(background);
 			window.draw(map);
+			//window.draw(playerBorder);
+			for (int i = 0; i < playerLabels.size(); i++)
+			{
+				playerLabels.at(i).setString(world.getPlayer(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
+				window.draw(playerLabels.at(i));
+			}
             for(unsigned int i = 0; i < world.TerritoryNumber(); i++)
             {
                 world.getTerritory(i)->drawTerritory(&window);
@@ -214,11 +339,29 @@ int main()
 				window.draw(world.getTerritory(activeTerritory)->borderSprite);
 			}
 
-			if (phase == attack)
+			if (phase == place)
+			{
+				if (activeTerritory >= 0)
+				{
+					buttonPlus.Draw(&window);
+					buttonMinus.Draw(&window);
+				}
+				else
+				{
+					buttonPlus.isActive = false;
+					buttonMinus.isActive = false;
+				}
+			}
+			else if (phase == attack)
 			{
 				if (defendingTerritory >= 0)
 				{
 					window.draw(attackArrow);
+					buttonAttack.Draw(&window);
+				}
+				else
+				{
+					buttonAttack.isActive = false;
 				}
 				if(activeTerritory >= 0)
 				{
@@ -232,14 +375,24 @@ int main()
 				{
 					t.Draw(&window);
 				}
-                if(targetTerritory >= 0)
-                {
-                    //window.draw(attackArrow);
-                }
-                else if(activeTerritory >= 0)
-                {
-                    world.getTerritory(activeTerritory)->drawArrows(&window);
-                }
+				if (targetTerritory >= 0)
+				{
+					//window.draw(attackArrow);
+					buttonPlus.Draw(&window);
+					buttonMinus.Draw(&window);
+				}
+				else if (activeTerritory >= 0)
+				{
+					world.getTerritory(activeTerritory)->drawArrows(&window);
+					buttonPlus.isActive = false;
+					buttonMinus.isActive = false;
+				}
+				else
+				{
+					buttonPlus.isActive = false;
+					buttonMinus.isActive = false;
+				}
+				
             }
 
 			sf::Color pxColor;
@@ -254,6 +407,7 @@ int main()
 					break;
 				}
 			}
+			
 			window.display();
         }
 
@@ -269,6 +423,7 @@ int main()
 		{
 			previousTerritory = clickedTerritory;
 
+			// Check the territory images for non-zero alpha value at mousePosition
 			sf::Color pxColor;
 			clickedTerritory = -1;
 			for (unsigned int i = 0; i < world.TerritoryNumber() && clickedTerritory == -1; i++) {
@@ -330,25 +485,37 @@ int main()
                     phase = attack;
 					clickedTerritory = -1;
 					previousTerritory = -1;
+					buttonPlus.isActive = false;
+					buttonMinus.isActive = false;
                     break;
                 }
 
                 // active is valid and owned by current player
     			if (activeTerritory >= 0 && *(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer)
     			{
+					buttonPlus.moveToPosition(world.getTerritory(activeTerritory)->centerPos + sf::Vector2f(30, -25));
+					buttonMinus.moveToPosition(world.getTerritory(activeTerritory)->centerPos + sf::Vector2f(30, 7));
                     //add or remove armies
                     // FIXME: suggest not using numpad.  May be fine to just add armies when you click
     				// FIXME: maybe add/remove to/from a buffer and apply when changing phase, so the territories aren't directly altered
-                    if (keyPressed == 67 || keyPressed == 55) // + key
+                    if (keyPressed == 67 || keyPressed == 55 || buttonPressed == BUTTON_PLUS) // + key
                     {
                         world.getTerritory(activeTerritory)->AddArmies(1);
-                        keyPressed = KEY_PRESSED_ONCE;
+						if (buttonPressed == BUTTON_PLUS)
+							keyPressed = NO_KEY_PRESSED;
+						else
+							keyPressed = KEY_PRESSED_ONCE;
+						buttonPressed = NO_BUTTON_PRESSED;
                         placedArmies = placedArmies + 1;
                     }
-                    else if (keyPressed == 68 || keyPressed == 56) // - key
+                    else if (keyPressed == 68 || keyPressed == 56 || buttonPressed == BUTTON_MINUS) // - key
                     {
                         world.getTerritory(activeTerritory)->AddArmies(-1);
-                        keyPressed = KEY_PRESSED_ONCE;
+						if (buttonPressed == BUTTON_MINUS)
+							keyPressed = NO_KEY_PRESSED;
+						else
+							keyPressed = KEY_PRESSED_ONCE;
+						buttonPressed = NO_BUTTON_PRESSED;
                         placedArmies = placedArmies - 1;
                     }
     			}
@@ -367,6 +534,7 @@ int main()
                             defendingTerritory = clickedTerritory;
                             attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
 							attackArrow.setActive();
+							buttonAttack.moveToPosition(attackArrow.Centroid());
                         }
                         else
                         {
@@ -379,7 +547,7 @@ int main()
                     }
                     if (defendingTerritory >= 0)
                     {
-                        if (keyPressed == 57 && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
+                        if ((keyPressed == 57 || buttonPressed == BUTTON_ATTACK) && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
                         {
                             // FIXME: code to determine the winner
                             r = rand();
@@ -401,7 +569,11 @@ int main()
                                 world.getTerritory(previousTerritory)->AddArmies(-1);
                             }
 
-                            keyPressed = KEY_PRESSED_ONCE;
+							if (buttonPressed == BUTTON_ATTACK)
+								keyPressed = NO_KEY_PRESSED;
+							else
+								keyPressed = KEY_PRESSED_ONCE;
+							buttonPressed = NO_BUTTON_PRESSED;
                         }
                         else if(world.getTerritory(previousTerritory)->GetArmies() <= 1)
                         {
@@ -419,6 +591,7 @@ int main()
 						activeTerritory = -1;
 						clickedTerritory = -1;
 						previousTerritory = -1;
+						buttonAttack.isActive = false;
                     }
 
                 break;
@@ -462,6 +635,8 @@ int main()
 						if (activeTransfer == nullptr) {
 							attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
 							attackArrow.setActive();
+							buttonPlus.moveToPosition(attackArrow.Centroid() + sf::Vector2f(30, -25));
+							buttonMinus.moveToPosition(attackArrow.Centroid() + sf::Vector2f(30, 7));
 							transfers.push_back(Transfer(armyFont, previousTerritory, clickedTerritory, attackArrow));
 							activeTransfer = &transfers.back();
 						}
@@ -487,13 +662,18 @@ int main()
                     targetTerritory = -1;
                 }
 
-                if(keyPressed == 57 // spacebar pressed
+                if((keyPressed == 57 || buttonPressed == BUTTON_PLUS) // spacebar pressed
                     && targetTerritory >= 0 // target territory exists
                     && initialWorld.getTerritory(previousTerritory)->GetArmies() > 1)  // source territory has unmoved armies
                 {
                     initialWorld.getTerritory(previousTerritory)->AddArmies(-1);    // remove army from initial distribution
 					activeTransfer->increaseAmount(1);
-                    keyPressed = KEY_PRESSED_ONCE;
+					if (buttonPressed == BUTTON_PLUS)
+						keyPressed = NO_KEY_PRESSED;
+					else
+						keyPressed = KEY_PRESSED_ONCE;
+					buttonPressed = NO_BUTTON_PRESSED;
+					buttonPressed = false;
                 }
                 else if(keyPressed == sf::Keyboard::Return)
                 {
@@ -508,6 +688,8 @@ int main()
 					clickedTerritory = -1;
 					activeTerritory = -1;
 					previousTerritory = -1;
+					buttonPlus.isActive = false;
+					buttonMinus.isActive = false;
 					activeTransfer = nullptr;
                 }
 
