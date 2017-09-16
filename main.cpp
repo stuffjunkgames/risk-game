@@ -633,10 +633,22 @@ int main()
                         *(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer &&
                         world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
                     {
+                        for (std::vector<Transfer>::iterator it = transfers.begin(); it != transfers.end(); it++)
+                        {
+                            if(it->getAmount() <= 0)
+                            {
+                                transfers.erase(it);
+                            }
+                        }
 						for (int i = 0; i < transfers.size(); i++)
 						{
 							if (transfers.at(i).donor == previousTerritory && transfers.at(i).receiver == clickedTerritory) {
 								activeTransfer = &transfers.at(i);
+
+								Arrow tmpArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
+								buttonPlus.moveToPosition(tmpArrow.Centroid() + sf::Vector2f(30, -25));
+                                buttonMinus.moveToPosition(tmpArrow.Centroid() + sf::Vector2f(30, 7));
+
 								std::cout << "found a match, from " << activeTransfer->donor << " to " << activeTransfer->receiver << std::endl;
 								break;
 							}
@@ -666,11 +678,14 @@ int main()
                 }
                 else if(mouseDown)  // invalid territory.  Clear target
                 {
-					if (transfers.size() > 0) {
-						if (transfers.back().getAmount() <= 0) {
-							transfers.erase(transfers.end() - 1);
-						}
-					}
+					for (std::vector<Transfer>::iterator it = transfers.begin(); it != transfers.end(); it++)
+                    {
+                        if(it->getAmount() <= 0)
+                        {
+                            transfers.erase(it);
+                            it--;
+                        }
+                    }
 					activeTransfer = nullptr;
                     targetTerritory = -1;
                 }
