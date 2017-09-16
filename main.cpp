@@ -488,6 +488,7 @@ int main()
 					previousTerritory = -1;
 					buttonPlus.isActive = false;
 					buttonMinus.isActive = false;
+					buttonPressed = NO_BUTTON_PRESSED;
                     break;
                 }
 
@@ -499,7 +500,7 @@ int main()
                     //add or remove armies
                     // FIXME: suggest not using numpad.  May be fine to just add armies when you click
     				// FIXME: maybe add/remove to/from a buffer and apply when changing phase, so the territories aren't directly altered
-                    if (keyPressed == 67 || keyPressed == 55 || buttonPressed == BUTTON_PLUS) // + key
+                    if (keyPressed == sf::Keyboard::Add || keyPressed == sf::Keyboard::Equal || buttonPressed == BUTTON_PLUS) // + key
                     {
                         world.getTerritory(activeTerritory)->AddArmies(1);
 						if (buttonPressed == BUTTON_PLUS)
@@ -509,7 +510,7 @@ int main()
 						buttonPressed = NO_BUTTON_PRESSED;
                         placedArmies = placedArmies + 1;
                     }
-                    else if (keyPressed == 68 || keyPressed == 56 || buttonPressed == BUTTON_MINUS) // - key
+                    else if (keyPressed == sf::Keyboard::Subtract || keyPressed == sf::Keyboard::Dash || buttonPressed == BUTTON_MINUS) // - key
                     {
 
 						if (buttonPressed == BUTTON_MINUS)
@@ -558,7 +559,7 @@ int main()
                     }
                     if (defendingTerritory >= 0)
                     {
-                        if ((keyPressed == 57 || buttonPressed == BUTTON_ATTACK) && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
+                        if ((keyPressed == sf::Keyboard::Space || buttonPressed == BUTTON_ATTACK) && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
                         {
                             // FIXME: code to determine the winner
                             r = rand();
@@ -603,6 +604,7 @@ int main()
 						clickedTerritory = -1;
 						previousTerritory = -1;
 						buttonAttack.isActive = false;
+						buttonPressed = NO_BUTTON_PRESSED;
                     }
 
                 break;
@@ -673,7 +675,7 @@ int main()
                     targetTerritory = -1;
                 }
 
-                if((keyPressed == 57 || buttonPressed == BUTTON_PLUS) // spacebar pressed
+                if((keyPressed == sf::Keyboard::Add || keyPressed == sf::Keyboard::Equal || buttonPressed == BUTTON_PLUS) // + pressed
                     && targetTerritory >= 0 // target territory exists
                     && initialWorld.getTerritory(previousTerritory)->GetArmies() > 1)  // source territory has unmoved armies
                 {
@@ -683,8 +685,21 @@ int main()
 						keyPressed = NO_KEY_PRESSED;
 					else
 						keyPressed = KEY_PRESSED_ONCE;
+
 					buttonPressed = NO_BUTTON_PRESSED;
-					buttonPressed = false;
+                }
+                if((keyPressed == sf::Keyboard::Dash || keyPressed == sf::Keyboard::Subtract || buttonPressed == BUTTON_MINUS) // + pressed
+                    && targetTerritory >= 0 // target territory exists
+                    && activeTransfer->getAmount() > 0)  // a transfer has been commanded
+                {
+                    initialWorld.getTerritory(previousTerritory)->AddArmies(1);    // remove army from initial distribution
+					activeTransfer->increaseAmount(-1);
+					if (buttonPressed == BUTTON_MINUS)
+						keyPressed = NO_KEY_PRESSED;
+					else
+						keyPressed = KEY_PRESSED_ONCE;
+
+					buttonPressed = NO_BUTTON_PRESSED;
                 }
                 else if(keyPressed == sf::Keyboard::Return)
                 {
@@ -702,6 +717,7 @@ int main()
 					buttonPlus.isActive = false;
 					buttonMinus.isActive = false;
 					activeTransfer = nullptr;
+					buttonPressed = NO_BUTTON_PRESSED;
                 }
 
                 break;
