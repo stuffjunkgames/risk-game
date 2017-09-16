@@ -81,7 +81,7 @@ sf::Color compliment(sf::Color color)
 	Cmax = std::max(rp, std::max(gp, bp));
 	Cmin = std::min(rp, std::max(gp, bp));
 	delta = Cmax - Cmin;
-	
+
 	if (delta == 0) {
 		H = 0;
 	}
@@ -143,7 +143,7 @@ sf::Color compliment(sf::Color color)
 	comp.r = (rp + m) * 255;
 	comp.g = (gp + m) * 255;
 	comp.b = (bp + m) * 255;
-	
+
 	return comp;
 }
 
@@ -392,7 +392,7 @@ int main()
 					buttonPlus.isActive = false;
 					buttonMinus.isActive = false;
 				}
-				
+
             }
 
 			sf::Color pxColor;
@@ -407,7 +407,7 @@ int main()
 					break;
 				}
 			}
-			
+
 			window.display();
         }
 
@@ -466,6 +466,7 @@ int main()
                 {
                     // FIXME: get rid of these "magic numbers"
                     //armyCount = 3 + currentPlayer->getNumTerritories();
+                    initialWorld = world;
 					armyCount = 3 + world.GetBonus(currentPlayer->getID());
                     placedArmies = 0;
                     std::cout << "Placeable count: " << armyCount << std::endl;
@@ -510,13 +511,23 @@ int main()
                     }
                     else if (keyPressed == 68 || keyPressed == 56 || buttonPressed == BUTTON_MINUS) // - key
                     {
-                        world.getTerritory(activeTerritory)->AddArmies(-1);
+
 						if (buttonPressed == BUTTON_MINUS)
-							keyPressed = NO_KEY_PRESSED;
+                        {
+                            keyPressed = NO_KEY_PRESSED;
+                        }
 						else
-							keyPressed = KEY_PRESSED_ONCE;
+                        {
+                            keyPressed = KEY_PRESSED_ONCE;
+                        }
+
+                        if(world.getTerritory(activeTerritory)->GetArmies() > initialWorld.getTerritory(activeTerritory)->GetArmies())
+						{
+						    world.getTerritory(activeTerritory)->AddArmies(-1);
+                            placedArmies = placedArmies - 1;
+						}
+
 						buttonPressed = NO_BUTTON_PRESSED;
-                        placedArmies = placedArmies - 1;
                     }
     			}
                 break;
