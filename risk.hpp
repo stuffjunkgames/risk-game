@@ -233,6 +233,9 @@ public:
 	// public functions
 	void Draw(sf::RenderWindow* window);
 	void moveToPosition(sf::Vector2f newPosition);
+	void setString(std::string str);
+	void setCharacterSize(int charSize);
+	Label* getLabel();
 
 	bool isActive = false;
 };

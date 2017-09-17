@@ -21,6 +21,7 @@
 #define BUTTON_PLUS 1
 #define BUTTON_MINUS 2
 #define BUTTON_ATTACK 3
+#define BUTTON_CHANGE_PHASE 4
 
 
 sf::Font loadFont(std::string path)
@@ -195,17 +196,15 @@ int main()
 		playerLabels.at(i).setString(world.getPlayer(i)->getName() + ":");
 		playerLabels.at(i).setPosition(sf::Vector2f(GAME_WIDTH - 300, 40 * i));
 	}
-	/*sf::ConvexShape playerBorder = sf::ConvexShape(4);
-	playerBorder.setPoint(0, sf::Vector2f(GAME_WIDTH - 300, 0));
-	playerBorder.setPoint(1, sf::Vector2f(GAME_WIDTH - 300, 40));
-	playerBorder.setPoint(2, sf::Vector2f(GAME_WIDTH, 40));
-	playerBorder.setPoint(3, sf::Vector2f(GAME_WIDTH, 0));
-	playerBorder.setFillColor(sf::Color(0, 0, 0, 0));
-	playerBorder.setOutlineColor(sf::Color(255, 255, 255, 255));
-	playerBorder.setOutlineThickness(-3);*/
 	Button buttonPlus(armyFont, "+", sf::Vector2f(0, 0));
 	Button buttonMinus(armyFont, "-", sf::Vector2f(0, 0));
 	Button buttonAttack(armyFont, "Attack", sf::Vector2f(0, 0), 80, 30);
+	Button buttonPhase(armyFont, "PLACE", sf::Vector2f(0, 0), 275, 60);
+	buttonPhase.setCharacterSize(40);
+	Button buttonChangePhase(armyFont, ">", sf::Vector2f(0, 0), 60, 60);
+	buttonChangePhase.setCharacterSize(40);
+	buttonChangePhase.moveToPosition(sf::Vector2f(275, 0));
+
 	int buttonPressed = -1;
 
 	sf::Texture texture;
@@ -295,6 +294,11 @@ int main()
 						buttonPressed = BUTTON_ATTACK;
 						mouseDown = false;
 					}
+					if (buttonChangePhase.isInside(mousePosition) && buttonChangePhase.isActive)
+					{
+						buttonPressed = BUTTON_CHANGE_PHASE;
+						mouseDown = false;
+					}
                 }
                 if(event.mouseButton.button == sf::Mouse::Right)
                 {
@@ -338,6 +342,9 @@ int main()
 			if (activeTerritory >= 0 && activeTerritory < (int)world.TerritoryNumber()) {
 				window.draw(world.getTerritory(activeTerritory)->borderSprite);
 			}
+
+			buttonPhase.Draw(&window);
+			buttonChangePhase.Draw(&window);
 
 			if (phase == place)
 			{
@@ -484,6 +491,7 @@ int main()
                         activeTerritory = -1;
                     }
                     phase = attack;
+					buttonPhase.setString("ATTACK");
 					clickedTerritory = -1;
 					previousTerritory = -1;
 					buttonPlus.isActive = false;
@@ -504,9 +512,13 @@ int main()
                     {
                         world.getTerritory(activeTerritory)->AddArmies(1);
 						if (buttonPressed == BUTTON_PLUS)
+						{
 							keyPressed = NO_KEY_PRESSED;
+						}
 						else
+						{
 							keyPressed = KEY_PRESSED_ONCE;
+						}
 						buttonPressed = NO_BUTTON_PRESSED;
                         placedArmies = placedArmies + 1;
                     }
@@ -582,9 +594,13 @@ int main()
                             }
 
 							if (buttonPressed == BUTTON_ATTACK)
+							{
 								keyPressed = NO_KEY_PRESSED;
+							}
 							else
+							{
 								keyPressed = KEY_PRESSED_ONCE;
+							}
 							buttonPressed = NO_BUTTON_PRESSED;
                         }
                         else if(world.getTerritory(previousTerritory)->GetArmies() <= 1)
@@ -593,10 +609,11 @@ int main()
                         }
                     }
 
-                    if(keyPressed == sf::Keyboard::Return)
+                    if(keyPressed == sf::Keyboard::Return || buttonPressed == BUTTON_CHANGE_PHASE)
                     {
                         std::cout << "Ending attack phase and entering reposition" << std::endl;
                         phase = reposition;
+						buttonPhase.setString("REPOSITION");
                         defendingTerritory = -1;
                         initialWorld = world;
                         targetTerritory = -1;
@@ -697,10 +714,13 @@ int main()
                     initialWorld.getTerritory(previousTerritory)->AddArmies(-1);    // remove army from initial distribution
 					activeTransfer->increaseAmount(1);
 					if (buttonPressed == BUTTON_PLUS)
+					{
 						keyPressed = NO_KEY_PRESSED;
+					}
 					else
+					{
 						keyPressed = KEY_PRESSED_ONCE;
-
+					}
 					buttonPressed = NO_BUTTON_PRESSED;
                 }
                 if((keyPressed == sf::Keyboard::Dash || keyPressed == sf::Keyboard::Subtract || buttonPressed == BUTTON_MINUS) // + pressed
@@ -710,13 +730,16 @@ int main()
                     initialWorld.getTerritory(previousTerritory)->AddArmies(1);    // remove army from initial distribution
 					activeTransfer->increaseAmount(-1);
 					if (buttonPressed == BUTTON_MINUS)
+					{
 						keyPressed = NO_KEY_PRESSED;
+					}
 					else
+					{
 						keyPressed = KEY_PRESSED_ONCE;
-
+					}
 					buttonPressed = NO_BUTTON_PRESSED;
                 }
-                else if(keyPressed == sf::Keyboard::Return)
+                else if(keyPressed == sf::Keyboard::Return || buttonPressed == BUTTON_CHANGE_PHASE)
                 {
 					for (Transfer t : transfers)
 					{
@@ -726,6 +749,7 @@ int main()
 					transfers.clear();
                     currentPlayer = world.getNextPlayer();
                     phase = place;
+					buttonPhase.setString("PLACE");
 					clickedTerritory = -1;
 					activeTerritory = -1;
 					previousTerritory = -1;

@@ -1058,5 +1058,30 @@ void Button::moveToPosition(sf::Vector2f newPosition)
 	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
 	text.setPosition(newPosition + sf::Vector2f((size.width / 2), (size.height / 2)));
 }
+
+void Button::setString(std::string str)
+{
+	sf::FloatRect size = getLocalBounds();
+
+	text.setString(str);
+	sf::FloatRect bounds = text.getLocalBounds();
+	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
+	text.setPosition(getPosition() + sf::Vector2f((size.width / 2), (size.height / 2)));
+}
+
+void Button::setCharacterSize(int charSize)
+{
+	sf::FloatRect size = getLocalBounds();
+
+	text.setCharacterSize(charSize);
+	sf::FloatRect bounds = text.getLocalBounds();
+	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
+	text.setPosition(getPosition() + sf::Vector2f((size.width / 2), (size.height / 2)));
+}
+
+Label* Button::getLabel()
+{
+	return &text;
+}
 // Button
 ////////////////////////////////////////////////////////////////////////////////////////////
