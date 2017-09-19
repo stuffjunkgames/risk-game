@@ -468,6 +468,12 @@ int main()
                 // for now: +1 army for each territory
                 // later: implement bonuses
 
+                if(currentPlayer->getNumTerritories() <= 0)
+                {
+                    currentPlayer = world.getNextPlayer();
+                    break;
+                }
+
                 // first time through, count the number of armies player gets
                 if(armyCount == 0)
                 {
