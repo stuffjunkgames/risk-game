@@ -1021,7 +1021,7 @@ Button::Button(sf::Font& font, std::string string, sf::Vector2f position) : Exte
 Button::Button(sf::Font& font, std::string string, sf::Vector2f position, int w, int h) : ExtendedShape(4)// position is the top left of the border
 {
 	padding = 3;
-	setFillColor(sf::Color(255, 255, 255, 127));
+	setFillColor(fillColor);
 	setOutlineColor(sf::Color::Black);
 	setOutlineThickness(-5);
 
@@ -1072,7 +1072,7 @@ void Button::setString(std::string str)
 void Button::setCharacterSize(int charSize)
 {
 	sf::FloatRect size = getLocalBounds();
-
+	
 	text.setCharacterSize(charSize);
 	sf::FloatRect bounds = text.getLocalBounds();
 	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);

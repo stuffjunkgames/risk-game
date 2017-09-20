@@ -201,6 +201,7 @@ int main()
 	Button buttonAttack(armyFont, "Attack", sf::Vector2f(0, 0), 80, 30);
 	Button buttonPhase(armyFont, "PLACE", sf::Vector2f(0, 0), 275, 60);
 	buttonPhase.setCharacterSize(40);
+	buttonPhase.setFillColor(currentPlayer->getColor());
 	Button buttonChangePhase(armyFont, ">", sf::Vector2f(0, 0), 60, 60);
 	buttonChangePhase.setCharacterSize(40);
 	buttonChangePhase.moveToPosition(sf::Vector2f(275, 0));
@@ -750,6 +751,7 @@ int main()
                     currentPlayer = world.getNextPlayer();
                     phase = place;
 					buttonPhase.setString("PLACE");
+					buttonPhase.setFillColor(currentPlayer->getColor());
 					clickedTerritory = -1;
 					activeTerritory = -1;
 					previousTerritory = -1;

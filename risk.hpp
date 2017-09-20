@@ -224,6 +224,7 @@ class Button : public ExtendedShape
 	int padding;
 	int defaultWidth = 30;
 	int defaultHeight = 30;
+	sf::Color fillColor = sf::Color(255, 255, 255, 127);
 
 public:
 	// constructor
