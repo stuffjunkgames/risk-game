@@ -1085,3 +1085,36 @@ Label* Button::getLabel()
 }
 // Button
 ////////////////////////////////////////////////////////////////////////////////////////////
+
+DashedLine::DashedLine()
+{
+	for (int i = 0; i < maxDashes; i++)
+	{
+		dashes.push_back(ExtendedShape(3));
+		dashes.back().setFillColor(fillColor);
+		dashes.back().setOutlineThickness(-4);
+		dashes.back().setOutlineColor(sf::Color(0, 0, 0, 255));
+	}
+}
+
+void DashedLine::Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos)
+{
+	int dx = (endPos.x - startPos.x);
+	int dy = (endPos.y - startPos.y);
+	// length
+	float l = sqrt(dx * dx + dy * dy);
+	// angle, theta
+	float t = atan2(dy, dx);
+	float pi = 3.1415926535897;
+	
+	int n = l / (dashLength * spacing);
+	sf::Vector2f offset = sf::Vector2f(dashLength * cos(t), dashLength * sin(t));
+	for (int i = 0; i < n; i++)
+	{
+		dashes.at(i).setPoint(0, startPos + 0.5f * offset + i * spacing * offset + sf::Vector2f(dashWidth * cos(-(pi / 2 - t)), dashWidth * sin(-(pi / 2 - t))));
+		dashes.at(i).setPoint(1, startPos + i * spacing * offset + spacing * offset);
+		dashes.at(i).setPoint(2, startPos + 0.5f * offset + i * spacing * offset - sf::Vector2f(dashWidth * cos(-(pi / 2 - t)), dashWidth * sin(-(pi / 2 - t))));
+
+		window->draw(dashes.at(i));
+	}
+}

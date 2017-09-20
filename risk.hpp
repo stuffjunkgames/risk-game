@@ -240,3 +240,17 @@ public:
 
 	bool isActive = false;
 };
+
+class DashedLine
+{
+	sf::Color fillColor = sf::Color(255, 255, 0, 255);
+	std::vector<ExtendedShape> dashes;
+	int maxDashes = 30;
+	int dashWidth = 10;
+	int dashLength = 50;
+	float spacing = 1.5f;
+
+public:
+	DashedLine();
+	void Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos);
+};

@@ -205,6 +205,7 @@ int main()
 	Button buttonChangePhase(armyFont, ">", sf::Vector2f(0, 0), 60, 60);
 	buttonChangePhase.setCharacterSize(40);
 	buttonChangePhase.moveToPosition(sf::Vector2f(275, 0));
+	DashedLine dLine = DashedLine();
 
 	int buttonPressed = -1;
 
@@ -364,6 +365,7 @@ int main()
 			{
 				if (defendingTerritory >= 0)
 				{
+					dLine.Draw(&window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(defendingTerritory)->centerPos);
 					window.draw(attackArrow);
 					buttonAttack.Draw(&window);
 				}
@@ -373,6 +375,7 @@ int main()
 				}
 				if(activeTerritory >= 0)
 				{
+					dLine.Draw(&window, world.getTerritory(activeTerritory)->centerPos, mouseHover);
 					world.getTerritory(activeTerritory)->drawArrows(&window);
 				}
 
@@ -386,11 +389,13 @@ int main()
 				if (targetTerritory >= 0)
 				{
 					//window.draw(attackArrow);
+					dLine.Draw(&window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(targetTerritory)->centerPos);
 					buttonPlus.Draw(&window);
 					buttonMinus.Draw(&window);
 				}
 				else if (activeTerritory >= 0)
 				{
+					dLine.Draw(&window, world.getTerritory(activeTerritory)->centerPos, mouseHover);
 					world.getTerritory(activeTerritory)->drawArrows(&window);
 					buttonPlus.isActive = false;
 					buttonMinus.isActive = false;
@@ -468,6 +473,12 @@ int main()
                 // get number of armies and place them
                 // for now: +1 army for each territory
                 // later: implement bonuses
+
+                if(currentPlayer->getNumTerritories() <= 0)
+                {
+                    currentPlayer = world.getNextPlayer();
+                    break;
+                }
 
                 // first time through, count the number of armies player gets
                 if(armyCount == 0)
