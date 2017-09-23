@@ -22,6 +22,7 @@
 #define BUTTON_MINUS 2
 #define BUTTON_ATTACK 3
 #define BUTTON_CHANGE_PHASE 4
+#define BUTTON_TEXTBOX 5
 
 
 sf::Font loadFont(std::string path)
@@ -205,6 +206,8 @@ int main()
 	Button buttonChangePhase(armyFont, ">", sf::Vector2f(0, 0), 60, 60);
 	buttonChangePhase.setCharacterSize(40);
 	buttonChangePhase.moveToPosition(sf::Vector2f(275, 0));
+	TextEntry textBox(armyFont, sf::Vector2f(0, 0), 60, 30);
+	bool isTyping = false;
 	DashedLine dLine = DashedLine();
 
 	int buttonPressed = -1;
@@ -301,6 +304,11 @@ int main()
 						buttonPressed = BUTTON_CHANGE_PHASE;
 						mouseDown = false;
 					}
+					if (textBox.isInside(mousePosition) && textBox.isActive)
+					{
+						buttonPressed = BUTTON_TEXTBOX;
+						mouseDown = false;
+					}
                 }
                 if(event.mouseButton.button == sf::Mouse::Right)
                 {
@@ -368,10 +376,12 @@ int main()
 					dLine.Draw(&window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(defendingTerritory)->centerPos);
 					window.draw(attackArrow);
 					buttonAttack.Draw(&window);
+					textBox.Draw(&window);
 				}
 				else
 				{
 					buttonAttack.isActive = false;
+					textBox.isActive = false;
 				}
 				if(activeTerritory >= 0)
 				{
@@ -464,6 +474,16 @@ int main()
 				activeTerritory = -1;
 			}
 			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
+		}
+
+		if (isTyping)
+		{
+			if (keyPressed >= sf::Keyboard::Num0 && keyPressed <= sf::Keyboard::Num9)
+			{
+				textBox.appendString(std::to_string(keyPressed - sf::Keyboard::Num0));
+				
+				keyPressed = KEY_PRESSED_ONCE;
+			}
 		}
 
         switch(phase)
@@ -571,6 +591,7 @@ int main()
                             attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
 							attackArrow.setActive();
 							buttonAttack.moveToPosition(attackArrow.Centroid());
+							textBox.moveToPosition(sf::Vector2f(buttonAttack.getLocalBounds().left + buttonAttack.getLocalBounds().width, buttonAttack.getLocalBounds().top));
                         }
                         else
                         {
@@ -619,6 +640,11 @@ int main()
                         {
                             defendingTerritory = -1;
                         }
+						else if (buttonPressed == BUTTON_TEXTBOX)
+						{
+							textBox.setOutlineColor(sf::Color::Yellow);
+							isTyping = true;
+						}
                     }
 
                     if(keyPressed == sf::Keyboard::Return || buttonPressed == BUTTON_CHANGE_PHASE)
@@ -633,6 +659,7 @@ int main()
 						clickedTerritory = -1;
 						previousTerritory = -1;
 						buttonAttack.isActive = false;
+						textBox.isActive = false;
 						buttonPressed = NO_BUTTON_PRESSED;
                     }
 

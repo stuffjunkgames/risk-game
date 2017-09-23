@@ -221,7 +221,6 @@ public:
 class Button : public ExtendedShape
 {
 	Label text;
-	int padding;
 	int defaultWidth = 30;
 	int defaultHeight = 30;
 	sf::Color fillColor = sf::Color(255, 255, 255, 127);
@@ -235,6 +234,8 @@ public:
 	void Draw(sf::RenderWindow* window);
 	void moveToPosition(sf::Vector2f newPosition);
 	void setString(std::string str);
+	void appendString(std::string str);
+	void clearText();
 	void setCharacterSize(int charSize);
 	Label* getLabel();
 
@@ -253,4 +254,13 @@ class DashedLine
 public:
 	DashedLine();
 	void Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos);
+};
+
+class TextEntry : public Button
+{
+	int maxChars = 3;
+
+public:
+	TextEntry(sf::Font& font, sf::Vector2f position, int w, int h);
+	void appendString(std::string str);
 };

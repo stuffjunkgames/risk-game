@@ -1001,8 +1001,7 @@ bool Transfer::operator == (const Transfer &other)
 
 Button::Button(sf::Font& font, std::string string, sf::Vector2f position) : ExtendedShape(4)// position is the top left of the border
 {
-	padding = 3;
-	setFillColor(sf::Color(255, 255, 255, 127));
+	setFillColor(fillColor);
 	setOutlineColor(sf::Color::Black);
 	setOutlineThickness(-5);
 
@@ -1020,7 +1019,6 @@ Button::Button(sf::Font& font, std::string string, sf::Vector2f position) : Exte
 
 Button::Button(sf::Font& font, std::string string, sf::Vector2f position, int w, int h) : ExtendedShape(4)// position is the top left of the border
 {
-	padding = 3;
 	setFillColor(fillColor);
 	setOutlineColor(sf::Color::Black);
 	setOutlineThickness(-5);
@@ -1066,7 +1064,17 @@ void Button::setString(std::string str)
 	text.setString(str);
 	sf::FloatRect bounds = text.getLocalBounds();
 	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
-	text.setPosition(getPosition() + sf::Vector2f((size.width / 2), (size.height / 2)));
+	text.setPosition(sf::Vector2f(size.left + (size.width / 2), size.top + (size.height / 2)));
+}
+
+void Button::appendString(std::string str)
+{
+	setString(text.getString() + str);
+}
+
+void Button::clearText()
+{
+	setString("");
 }
 
 void Button::setCharacterSize(int charSize)
@@ -1076,7 +1084,7 @@ void Button::setCharacterSize(int charSize)
 	text.setCharacterSize(charSize);
 	sf::FloatRect bounds = text.getLocalBounds();
 	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
-	text.setPosition(getPosition() + sf::Vector2f((size.width / 2), (size.height / 2)));
+	text.setPosition(sf::Vector2f(size.left + (size.width / 2), size.top + (size.height / 2)));
 }
 
 Label* Button::getLabel()
@@ -1085,6 +1093,9 @@ Label* Button::getLabel()
 }
 // Button
 ////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// DashedLine class definitions
 
 DashedLine::DashedLine()
 {
@@ -1118,3 +1129,24 @@ void DashedLine::Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vecto
 		window->draw(dashes.at(i));
 	}
 }
+// DashedLine
+////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// TextEntry class definitions
+
+TextEntry::TextEntry(sf::Font& font, sf::Vector2f position, int w, int h) : Button(font, "", position, w, h)
+{
+	
+}
+
+void TextEntry::appendString(std::string str)
+{
+	if (getLabel()->getString().getSize() < maxChars)
+	{
+		setString(getLabel()->getString() + str);
+	}	
+}
+
+// TextEntry
+////////////////////////////////////////////////////////////////////////////////////////////
