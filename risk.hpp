@@ -1,3 +1,7 @@
+#ifndef RISK_HPP_INCLUDED
+#define RISK_HPP_INCLUDED
+
+
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
@@ -84,7 +88,7 @@ class Territory : public ExtendedShape  // if we make a ConcaveShape, inherit fr
     // private variables
     int id;
     std::string name;
-    
+
     Player* owner;
     unsigned int army;  // how many armies player has in territory
     int bonus;
@@ -254,3 +258,5 @@ public:
 	DashedLine();
 	void Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos);
 };
+
+#endif // RISK_HPP_INCLUDED

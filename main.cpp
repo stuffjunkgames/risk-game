@@ -1,5 +1,6 @@
 #include "risk.hpp"
 #include "sfvm.hpp"
+#include "movement.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -167,12 +168,6 @@ int main()
 
     World initialWorld(world);
 
-    enum TurnPhase {
-        place,
-        attack,
-        reposition
-    };
-
     Player* currentPlayer = world.getNextPlayer();
     TurnPhase phase = place;
     int previousTerritory = -2;
@@ -330,7 +325,7 @@ int main()
             window.draw(background);
 			window.draw(map);
 			//window.draw(playerBorder);
-			for (int i = 0; i < playerLabels.size(); i++)
+			for (unsigned int i = 0; i < playerLabels.size(); i++)
 			{
 				playerLabels.at(i).setString(world.getPlayer(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
 				window.draw(playerLabels.at(i));
@@ -522,7 +517,8 @@ int main()
     				// FIXME: maybe add/remove to/from a buffer and apply when changing phase, so the territories aren't directly altered
                     if (keyPressed == sf::Keyboard::Add || keyPressed == sf::Keyboard::Equal || buttonPressed == BUTTON_PLUS) // + key
                     {
-                        world.getTerritory(activeTerritory)->AddArmies(1);
+                        placedArmies += Place(&world, &initialWorld, currentPlayer, activeTerritory, 1, armyCount - placedArmies);
+                        //world.getTerritory(activeTerritory)->AddArmies(1);
 						if (buttonPressed == BUTTON_PLUS)
 						{
 							keyPressed = NO_KEY_PRESSED;
@@ -532,10 +528,11 @@ int main()
 							keyPressed = KEY_PRESSED_ONCE;
 						}
 						buttonPressed = NO_BUTTON_PRESSED;
-                        placedArmies = placedArmies + 1;
+                        //placedArmies = placedArmies + 1;
                     }
                     else if (keyPressed == sf::Keyboard::Subtract || keyPressed == sf::Keyboard::Dash || buttonPressed == BUTTON_MINUS) // - key
                     {
+                        placedArmies += Place(&world, &initialWorld, currentPlayer, activeTerritory, -1, armyCount - placedArmies);
 
 						if (buttonPressed == BUTTON_MINUS)
                         {
@@ -546,11 +543,11 @@ int main()
                             keyPressed = KEY_PRESSED_ONCE;
                         }
 
-                        if(world.getTerritory(activeTerritory)->GetArmies() > initialWorld.getTerritory(activeTerritory)->GetArmies())
-						{
-						    world.getTerritory(activeTerritory)->AddArmies(-1);
-                            placedArmies = placedArmies - 1;
-						}
+//                        if(world.getTerritory(activeTerritory)->GetArmies() > initialWorld.getTerritory(activeTerritory)->GetArmies())
+//						{
+//						    world.getTerritory(activeTerritory)->AddArmies(-1);
+//                            placedArmies = placedArmies - 1;
+//						}
 
 						buttonPressed = NO_BUTTON_PRESSED;
                     }
@@ -585,25 +582,28 @@ int main()
                     {
                         if ((keyPressed == sf::Keyboard::Space || buttonPressed == BUTTON_ATTACK) && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
                         {
-                            // FIXME: code to determine the winner
-                            r = rand();
-                            if (r > RAND_MAX / 2)
-                            {
-                                // attacking player wins
 
-                                world.getTerritory(defendingTerritory)->AddArmies(-1);
-                                if(world.getTerritory(defendingTerritory)->GetArmies() <= 0)
-                                {
-                                    currentPlayer->CaptureTerritory(world.getTerritory(defendingTerritory), 1);
-                                    world.getTerritory(previousTerritory)->AddArmies(-1);
-                                    defendingTerritory = -1;
-                                }
-                            }
-                            else
-                            {
-                                // defending player wins
-                                world.getTerritory(previousTerritory)->AddArmies(-1);
-                            }
+                            Attack(&world, currentPlayer, previousTerritory, defendingTerritory, 1);
+
+                            // FIXME: code to determine the winner
+//                            r = rand();
+//                            if (r > RAND_MAX / 2)
+//                            {
+//                                // attacking player wins
+//
+//                                WORLD.GETTERRITORY(DEFENDINGTERRITORY)->ADDARMIES(-1);
+//                                IF(WORLD.GETTERRITORY(DEFENDINGTERRITORY)->GETARMIES() <= 0)
+//                                {
+//                                    CURRENTPLAYER->CAPTURETERRITORY(WORLD.GETTERRITORY(DEFENDINGTERRITORY), 1);
+//                                    WORLD.GETTERRITORY(PREVIOUSTERRITORY)->ADDARMIES(-1);
+//                                    DEFENDINGTERRITORY = -1;
+//                                }
+//                            }
+//                            else
+//                            {
+//                                // defending player wins
+//                                world.getTerritory(previousTerritory)->AddArmies(-1);
+//                            }
 
 							if (buttonPressed == BUTTON_ATTACK)
 							{
@@ -669,7 +669,7 @@ int main()
                                 transfers.erase(it);
                             }
                         }
-						for (int i = 0; i < transfers.size(); i++)
+						for (unsigned int i = 0; i < transfers.size(); i++)
 						{
 							if (transfers.at(i).donor == previousTerritory && transfers.at(i).receiver == clickedTerritory) {
 								activeTransfer = &transfers.at(i);
