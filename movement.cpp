@@ -38,9 +38,9 @@ int Attack(World* world, Player* player, int source, int target, int armies)
     }
 
     int attacking = armies;
-    if(attacking > (int)world->getTerritory(source)->GetArmies())
+    if(attacking >= (int)world->getTerritory(source)->GetArmies())
     {
-        attacking = world->getTerritory(source)->GetArmies();
+        attacking = world->getTerritory(source)->GetArmies() - 1;
     }
 
     int i = 0;
@@ -70,8 +70,30 @@ int Attack(World* world, Player* player, int source, int target, int armies)
     return attacking;
 }
 
-// TODO implement this.
+// return number actually moved
 int Reposition(World* world, World* initialWorld, Player* player, int source, int target, int armies)
 {
-    return 0;
+    if(world->getTerritory(source)->GetOwner() != player || world->getTerritory(target)->GetOwner() != player)
+    {
+        // must move to and from owned territory
+        return 0;
+    }
+
+    int moving = armies;
+    if(moving >= initialWorld->getTerritory(source)->GetArmies())
+    {
+        // can't move more armies than you have
+        moving = initialWorld->getTerritory(source)->GetArmies() - 1;
+    }
+
+    if(moving < 0)
+    {
+        return 0;
+    }
+
+    world->getTerritory(source)->AddArmies(-moving);
+    world->getTerritory(target)->AddArmies(moving);
+    initialWorld->getTerritory(source)->AddArmies(-moving);
+
+    return moving;
 }

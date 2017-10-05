@@ -476,7 +476,7 @@ int main()
 			if (keyPressed >= sf::Keyboard::Num0 && keyPressed <= sf::Keyboard::Num9)
 			{
 				textBox.appendString(std::to_string(keyPressed - sf::Keyboard::Num0));
-				
+
 				keyPressed = KEY_PRESSED_ONCE;
 			}
 		}
@@ -803,7 +803,7 @@ int main()
             }
             default:
             {
-                // something broke...
+                // something broke... 7
                 break;
             }
         }
