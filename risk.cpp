@@ -459,15 +459,14 @@ std::vector<int> Bonus::GetTerritories()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // World class
 
-World::World(sf::Font& font)
+World::World(sf::Font& font, std::vector<std::string> playerNames, std::vector<sf::Color> playerColors)
 {
     // make the world.
-    // TODO: read in from a file (JSON?) or database (SQL?)
 
-    Player player1(0, "Blue Goo", sf::Color(59, 160, 176, 255));// blue
-    Player player2(1, "Red Dread", sf::Color(176, 59, 110, 255));// red
-	Player player3(2, "Green Spleen", sf::Color(114, 181, 60, 255));// green
-	Player player4(3, "Brown Town", sf::Color(176, 90, 59, 255)); // orange
+    Player player1(0, playerNames.at(0), playerColors.at(0));// blue
+    Player player2(1, playerNames.at(1), playerColors.at(1));// red
+	Player player3(2, playerNames.at(2), playerColors.at(2));// green
+	Player player4(3, playerNames.at(3), playerColors.at(3)); // orange
 
     playerList.push_back(player1);
     playerList.push_back(player2);
@@ -672,7 +671,7 @@ void World::ReadFile(sf::Font& font)
             territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
 
             for (unsigned int i = 0; i < xyPairs.size(); i++) {
-                std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
+                //std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
                 //territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
 				territoryList.back().setCenter(sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
             }
@@ -681,21 +680,21 @@ void World::ReadFile(sf::Font& font)
             bonusList[bonus].AddTerritory(n);
             territoryList.back().SetBonus(bonus);
             xyPairs.clear();
-            std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl;
-            std::cout << "Bonus: " << bonusList[bonus].GetName() << std::endl << std::endl;
+            //std::cout << "Name: " << name << std::endl << "ID: " << n << std::endl << "Army Size: " << armies << std::endl;
+            //std::cout << "Bonus: " << bonusList[bonus].GetName() << std::endl << std::endl;
             n++;
         }
         else if(id == 'c')
         {
-            std::cout << terr << " ";
+            //std::cout << terr << " ";
             // add connection
             while(connections.size() > 0)
             {
                 (territoryList.at(terr)).addConnection(&territoryList.at(connections.back()));
-                std::cout << connections.back() << " ";
+                //std::cout << connections.back() << " ";
                 connections.pop_back();
             }
-            std::cout << std::endl;
+            //std::cout << std::endl;
 			territoryList.at(terr).makeArrows();
         }
         else if(id == 'b')
@@ -703,7 +702,7 @@ void World::ReadFile(sf::Font& font)
             // add bonus
             bonusList.push_back(Bonus(bonusID, bonusIncome, bonusName));
 
-            std::cout << "Bonus: " << bonusName << std::endl << "ID: " << bonusID << std::endl << "Income: " << bonusIncome << std::endl << std::endl;
+            //std::cout << "Bonus: " << bonusName << std::endl << "ID: " << bonusID << std::endl << "Income: " << bonusIncome << std::endl << std::endl;
         }
 
 	}
@@ -1135,9 +1134,9 @@ void DashedLine::Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vecto
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // TextEntry class definitions
 
-TextEntry::TextEntry(sf::Font& font, sf::Vector2f position, int w, int h) : Button(font, "", position, w, h)
+TextEntry::TextEntry(sf::Font& font, sf::Vector2f position, int w, int h, int maxChars) : Button(font, "", position, w, h)
 {
-	
+	this->maxChars = maxChars;
 }
 
 void TextEntry::appendString(std::string str)
@@ -1148,5 +1147,64 @@ void TextEntry::appendString(std::string str)
 	}	
 }
 
+void TextEntry::subtractString()
+{
+	if (getLabel()->getString().getSize() > 0)
+	{
+		setString(getLabel()->getString().substring(0, getLabel()->getString().getSize() - 1));
+	}
+}
+
 // TextEntry
+////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ColorPalette class definitions
+
+ColorPalette::ColorPalette(sf::Vector2f position, int nColors) : ExtendedShape(4)
+{
+	for (int i = 0; i < nColors; i++)
+	{
+		shapes.push_back(ExtendedShape(4));
+		shapes.at(i).setPoint(0, position + sf::Vector2f(size * i, 0));
+		shapes.at(i).setPoint(1, position + sf::Vector2f(size * i, size));
+		shapes.at(i).setPoint(2, position + sf::Vector2f(size * i + size, size));
+		shapes.at(i).setPoint(3, position + sf::Vector2f(size * i + size, 0));
+
+		shapes.at(i).setFillColor(colors.at(i));
+	}
+
+	this->setPoint(0, shapes.at(0).getPoint(0));
+	this->setPoint(1, shapes.at(0).getPoint(1));
+	this->setPoint(2, shapes.back().getPoint(2));
+	this->setPoint(3, shapes.back().getPoint(3));
+}
+
+void ColorPalette::Draw(sf::RenderWindow* window)
+{
+	for (int i = 0; i < shapes.size(); i++)
+	{
+		window->draw(shapes.at(i));
+	}
+}
+
+bool ColorPalette::isInside(sf::Vector2f point)
+{
+	for (int i = 0; i < shapes.size(); i++)
+	{
+		if (shapes.at(i).isInside(point))
+		{
+			colorSelected = i;
+			return true;
+		}
+	}
+	return false;
+}
+
+sf::Color ColorPalette::getSelectedColor()
+{
+	return shapes.at(colorSelected).getFillColor();
+}
+
+// ColorPalette
 ////////////////////////////////////////////////////////////////////////////////////////////
