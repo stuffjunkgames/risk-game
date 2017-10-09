@@ -1,6 +1,7 @@
 #include "risk.hpp"
 #include "sfvm.hpp"
 #include "movement.hpp"
+#include "screens.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -26,7 +27,7 @@
 #define BUTTON_TEXTBOX 5
 
 
-sf::Font loadFont(std::string path)
+/*sf::Font loadFont(std::string path)
 {
     sf::Font font;
     if(!font.loadFromFile(path))
@@ -71,7 +72,7 @@ bool loadImages(World *world)
 	}
 
 	return 1;
-}
+}*/
 
 sf::Color compliment(sf::Color color)
 {
@@ -157,8 +158,33 @@ sf::Color compliment(sf::Color color)
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Risk");
-    sf::RectangleShape background = sf::RectangleShape(sf::Vector2f(GAME_WIDTH, GAME_HEIGHT));
 
+	sf::Color playerColor;
+	std::string playerName;
+	std::vector<sf::Color> playerColors;
+	std::vector<std::string> playerNames;
+
+	playerName = startScreen(&window, &playerColor);
+
+	// This will be replaced with Networking handling getting other player names and colors
+
+	playerNames.push_back("Blue Goo");
+	playerColors.push_back(sf::Color(59, 160, 176, 255));// blue
+	playerNames.push_back("Red Dread");
+	playerColors.push_back(sf::Color(176, 59, 110, 255));// red
+	playerNames.push_back("Green Spleen");
+	playerColors.push_back(sf::Color(114, 181, 60, 255));// green
+	
+
+	if (playerName != "")
+	{
+		playerNames.push_back(playerName);
+		playerColors.push_back(playerColor);
+		gameScreen(&window, playerNames, playerColors);
+	}
+	
+	/*
+	sf::RectangleShape background = sf::RectangleShape(sf::Vector2f(GAME_WIDTH, GAME_HEIGHT));
     background.setPosition(GAME_LEFT, GAME_TOP);
     background.setFillColor(sf::Color::Green);
 
@@ -201,7 +227,7 @@ int main()
 	Button buttonChangePhase(armyFont, ">", sf::Vector2f(0, 0), 60, 60);
 	buttonChangePhase.setCharacterSize(40);
 	buttonChangePhase.moveToPosition(sf::Vector2f(275, 0));
-	TextEntry textBox(armyFont, sf::Vector2f(0, 0), 60, 30);
+	TextEntry textBox(armyFont, sf::Vector2f(0, 0), 60, 30, 3);
 	bool isTyping = false;
 	DashedLine dLine = DashedLine();
 
@@ -476,6 +502,18 @@ int main()
 			if (keyPressed >= sf::Keyboard::Num0 && keyPressed <= sf::Keyboard::Num9)
 			{
 				textBox.appendString(std::to_string(keyPressed - sf::Keyboard::Num0));
+
+				keyPressed = KEY_PRESSED_ONCE;
+			}
+			else if (keyPressed >= sf::Keyboard::Numpad0 && keyPressed <= sf::Keyboard::Numpad9)
+			{
+				textBox.appendString(std::to_string(keyPressed - sf::Keyboard::Numpad0));
+
+				keyPressed = KEY_PRESSED_ONCE;
+			}
+			else if (keyPressed == sf::Keyboard::BackSpace)
+			{
+				textBox.subtractString();
 
 				keyPressed = KEY_PRESSED_ONCE;
 			}
@@ -809,7 +847,7 @@ int main()
         }
 
 		mouseDown = false;
-    }
+    }*/
     return 0;
 } // main
 

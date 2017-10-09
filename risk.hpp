@@ -32,8 +32,6 @@ public:
     float Area();
     sf::Vector2f Centroid();
     bool isInside(sf::Vector2f point);
-
-
 };
 
 class HoverText : public sf::Text
@@ -170,7 +168,8 @@ class World
     int playerTurn;
 
 public:
-    World(sf::Font& font);
+	World(sf::Font& font);
+    World(sf::Font& font, std::vector<std::string> playerNames, std::vector<sf::Color> playerColors);
 
     Territory* getTerritory(int index);
     unsigned int TerritoryNumber();
@@ -262,11 +261,30 @@ public:
 
 class TextEntry : public Button
 {
-	int maxChars = 3;
+	int maxChars;
 
 public:
-	TextEntry(sf::Font& font, sf::Vector2f position, int w, int h);
+	TextEntry(sf::Font& font, sf::Vector2f position, int w, int h, int maxChars);
 	void appendString(std::string str);
+	void subtractString();
+};
+
+class ColorPalette : public ExtendedShape
+{
+	std::vector<ExtendedShape> shapes;
+	int size = 100;
+	int colorSelected;
+
+	std::vector<sf::Color> colors{ sf::Color(59, 160, 176, 255), 
+		sf::Color(176, 59, 110, 255), 
+		sf::Color(114, 181, 60, 255), 
+		sf::Color(176, 90, 59, 255) };
+
+public:
+	ColorPalette(sf::Vector2f position, int nColors);
+	void Draw(sf::RenderWindow* window);
+	bool isInside(sf::Vector2f point);
+	sf::Color getSelectedColor();
 };
 
 #endif // RISK_HPP_INCLUDED
