@@ -168,6 +168,11 @@ bool Player::operator == (const Player &other)
     return this->playerNumber == other.playerNumber;
 }
 
+Player::Player()
+{
+
+}
+
 Player::Player(int number, std::string name, sf::Color color)
 {
     playerNumber = number;
@@ -459,6 +464,12 @@ std::vector<int> Bonus::GetTerritories()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // World class
 
+World::World(sf::Font& font)
+{
+	// make the world.
+
+}
+
 World::World(sf::Font& font, std::vector<std::string> playerNames, std::vector<sf::Color> playerColors)
 {
     // make the world.
@@ -473,7 +484,10 @@ World::World(sf::Font& font, std::vector<std::string> playerNames, std::vector<s
 	playerList.push_back(player3);
 	playerList.push_back(player4);
 
+	nullPlayer = Player(-1, "NULLIE-WOOLIE", sf::Color(127, 127, 127, 255));// grey
+
 	ReadFile(font);
+	allocateTerritories();
 
     playerTurn = -1;
 }
@@ -667,16 +681,26 @@ void World::ReadFile(sf::Font& font)
 		}
 		if(id == 't')
         {
-            // add territory
-            territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
+			if (player >= 0)
+			{
+				// add territory
+				territoryList.push_back(Territory(xyPairs.size(), n, name, &playerList[player], armies, font));
+
+				playerList[player].AddTerritory(&territoryList.back(), armies);
+			}
+			else
+			{
+				// add territory
+				territoryList.push_back(Territory(xyPairs.size(), n, name, &nullPlayer, armies, font));
+
+				nullPlayer.AddTerritory(&territoryList.back(), armies);
+			}			
+			territoryList.back().RefreshText();
 
             for (unsigned int i = 0; i < xyPairs.size(); i++) {
-                //std::cout << "X,Y: " << xyPairs.at(i).at(0) << "," << xyPairs.at(i).at(1) << std::endl;
-                //territoryList.back().setPoint(i, sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
 				territoryList.back().setCenter(sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
-            }
-            territoryList.back().RefreshText();
-            playerList[player].AddTerritory(&territoryList.back(), armies);
+            }            
+            
             bonusList[bonus].AddTerritory(n);
             territoryList.back().SetBonus(bonus);
             xyPairs.clear();
@@ -707,6 +731,26 @@ void World::ReadFile(sf::Font& font)
 
 	}
 
+}
+
+void World::allocateTerritories()
+{
+	std::srand(std::time(0));
+
+	std::vector<int> normalList;
+	int r;
+	for (int i = 0; i < 42; i++)
+	{
+		normalList.push_back(i);
+	}
+	for (int i = 0; i < 42; i++)
+	{
+		r = rand() % normalList.size();	
+
+		playerList.at(i % playerList.size()).CaptureTerritory(&territoryList.at(normalList.at(r)), 1);
+
+		normalList.erase(normalList.begin() + r);
+	}
 }
 
 Territory* World::getTerritory(int index)

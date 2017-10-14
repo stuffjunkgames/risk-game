@@ -68,6 +68,7 @@ class Player
 public:
     sf::Color color;    // make this private
 
+	Player();
     Player(int number, std::string name, sf::Color color);
 
     void AddTerritory(Territory* captured, unsigned int army);
@@ -166,6 +167,9 @@ class World
     std::vector<Player> playerList;
     std::vector<Bonus> bonusList;
     int playerTurn;
+	Player nullPlayer;
+
+	void allocateTerritories();
 
 public:
 	World(sf::Font& font);
