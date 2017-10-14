@@ -107,7 +107,6 @@ public:
     void addConnection(Territory *connection);
     void SetOwner(Player *newOwner, unsigned int newArmy);
     void ChangeOwner(Player *newOwner, unsigned int newArmy);
-    //virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     void drawTerritory(sf::RenderWindow* window);
     void setFont();     // should be able to remove this
 	void AddArmies(int nArmies);
@@ -117,11 +116,11 @@ public:
 	std::string getName();
 	int getID();
 	int GetBonus();
-
 	Player* GetOwner();
 	bool isConnected(Territory* t);
 	unsigned int GetArmies();
 	void setCenter(sf::Vector2f pos);
+	std::vector<Territory*>* getConnected();
 
     bool operator == (const Territory& other);
 
@@ -135,9 +134,6 @@ public:
 	sf::Sprite borderSprite;
 
 	sf::Image territoryImage;
-
-    // add function for adding/subtracting armies
-
 }; // Territory
 
 class Bonus
@@ -289,6 +285,7 @@ public:
 	void Draw(sf::RenderWindow* window);
 	bool isInside(sf::Vector2f point);
 	sf::Color getSelectedColor();
+	void chooseColor(int n);
 };
 
 #endif // RISK_HPP_INCLUDED

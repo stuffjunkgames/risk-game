@@ -404,6 +404,11 @@ int Territory::GetBonus()
     return this->bonus;
 }
 
+std::vector<Territory*>* Territory::getConnected()
+{
+	return &this->connected;
+}
+
 // Territory class ^
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1216,6 +1221,8 @@ ColorPalette::ColorPalette(sf::Vector2f position, int nColors) : ExtendedShape(4
 		shapes.at(i).setPoint(3, position + sf::Vector2f(size * i + size, 0));
 
 		shapes.at(i).setFillColor(colors.at(i));
+		shapes.at(i).setOutlineColor(sf::Color::Black);
+		shapes.at(i).setOutlineThickness(-5);
 	}
 
 	this->setPoint(0, shapes.at(0).getPoint(0));
@@ -1239,6 +1246,7 @@ bool ColorPalette::isInside(sf::Vector2f point)
 		if (shapes.at(i).isInside(point))
 		{
 			colorSelected = i;
+			chooseColor(i);
 			return true;
 		}
 	}
@@ -1248,6 +1256,23 @@ bool ColorPalette::isInside(sf::Vector2f point)
 sf::Color ColorPalette::getSelectedColor()
 {
 	return shapes.at(colorSelected).getFillColor();
+}
+
+void ColorPalette::chooseColor(int n)
+{
+	for (int i = 0; i < colors.size(); i++)
+	{
+		if (i == n)
+		{
+			shapes.at(i).setOutlineColor(sf::Color::Yellow);
+		}
+		else
+		{
+
+			shapes.at(i).setOutlineColor(sf::Color::Black);
+		}
+		
+	}
 }
 
 // ColorPalette
