@@ -1016,7 +1016,7 @@ Transfer::Transfer(sf::Font& font, int donor, int receiver, Arrow arrow)
 
 void Transfer::Draw(sf::RenderWindow* window)
 {
-	window->draw(transferArrow);
+	//window->draw(transferArrow);
 	transferLabel.setString(std::to_string(amount));
 	
 	window->draw(transferLabel);	
