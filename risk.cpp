@@ -296,7 +296,7 @@ void Territory::setFont()
     sf::FloatRect bounds = armyDisplay.getGlobalBounds();
     sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
     //sf::Vector2f centroid = this->Centroid();
-	
+
     //armyDisplay.setPosition(centroid - textShift);
 	armyDisplay.setPosition(centerPos - textShift);
 }
@@ -699,13 +699,13 @@ void World::ReadFile(sf::Font& font)
 				territoryList.push_back(Territory(xyPairs.size(), n, name, &nullPlayer, armies, font));
 
 				nullPlayer.AddTerritory(&territoryList.back(), armies);
-			}			
+			}
 			territoryList.back().RefreshText();
 
             for (unsigned int i = 0; i < xyPairs.size(); i++) {
 				territoryList.back().setCenter(sf::Vector2f(xyPairs.at(i).at(0), xyPairs.at(i).at(1)));
-            }            
-            
+            }
+
             bonusList[bonus].AddTerritory(n);
             territoryList.back().SetBonus(bonus);
             xyPairs.clear();
@@ -750,7 +750,7 @@ void World::allocateTerritories()
 	}
 	for (int i = 0; i < 42; i++)
 	{
-		r = rand() % normalList.size();	
+		r = rand() % normalList.size();
 
 		playerList.at(i % playerList.size()).CaptureTerritory(&territoryList.at(normalList.at(r)), 1);
 
@@ -788,8 +788,7 @@ Player* World::getPlayerID(int id)
         }
     }
 
-    // FIXME: return null player here
-    return &(playerList[0]);
+    return &nullPlayer;
 }
 
 // This assumes player numbers are 0-indexed and do not skip numbers
@@ -803,7 +802,6 @@ Player* World::getNextPlayer()
 
     int tempTurn = playerTurn;
 
-    //FIXME: account for null player (playerList.size() will be too high)
     playerTurn = (playerTurn + 1) % playerList.size();
 
     return getPlayerID(tempTurn);
@@ -1018,8 +1016,8 @@ void Transfer::Draw(sf::RenderWindow* window)
 {
 	//window->draw(transferArrow);
 	transferLabel.setString(std::to_string(amount));
-	
-	window->draw(transferLabel);	
+
+	window->draw(transferLabel);
 }
 
 void Transfer::setAmount(int amount)
@@ -1057,7 +1055,7 @@ Button::Button(sf::Font& font, std::string string, sf::Vector2f position) : Exte
 	setPoint(1, position + sf::Vector2f(0, defaultHeight));
 	setPoint(2, position + sf::Vector2f(defaultWidth, defaultHeight));
 	setPoint(3, position + sf::Vector2f(defaultWidth, 0));
-	
+
 	text.setFont(font);
 	text.setString(string);
 	sf::FloatRect bounds = text.getLocalBounds();
@@ -1128,7 +1126,7 @@ void Button::clearText()
 void Button::setCharacterSize(int charSize)
 {
 	sf::FloatRect size = getLocalBounds();
-	
+
 	text.setCharacterSize(charSize);
 	sf::FloatRect bounds = text.getLocalBounds();
 	text.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
@@ -1165,7 +1163,7 @@ void DashedLine::Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vecto
 	// angle, theta
 	float t = atan2(dy, dx);
 	float pi = 3.1415926535897;
-	
+
 	int n = l / (dashLength * spacing);
 	sf::Vector2f offset = sf::Vector2f(dashLength * cos(t), dashLength * sin(t));
 	for (int i = 0; i < n; i++)
@@ -1193,7 +1191,7 @@ void TextEntry::appendString(std::string str)
 	if (getLabel()->getString().getSize() < maxChars)
 	{
 		setString(getLabel()->getString() + str);
-	}	
+	}
 }
 
 void TextEntry::subtractString()
@@ -1271,7 +1269,7 @@ void ColorPalette::chooseColor(int n)
 
 			shapes.at(i).setOutlineColor(sf::Color::Black);
 		}
-		
+
 	}
 }
 

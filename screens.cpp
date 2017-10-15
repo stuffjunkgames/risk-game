@@ -64,9 +64,9 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 
 	background.setPosition(GAME_LEFT, GAME_TOP);
 	background.setFillColor(sf::Color(63, 63, 63, 255));
-	
+
 	sf::Font armyFont = loadFont("arial.ttf");
-	
+
 	Button buttonStart(armyFont, "START", sf::Vector2f(GAME_WIDTH / 2 - 137, GAME_HEIGHT / 2 - 30 + 200), 275, 60);
 	buttonStart.setCharacterSize(40);
 	ColorPalette colorPalette(sf::Vector2f(GAME_WIDTH / 2 - 200, GAME_HEIGHT / 4 + 75 + 200), 4);
@@ -154,15 +154,15 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 
 			textBox.Draw(window);
 			buttonStart.Draw(window);
-			
+
 			colorPalette.Draw(window);
 
 			window->display();
 		}
-		
+
 		if (mouseDown)
 		{
-			
+
 		}
 
 		if (isTyping)
@@ -441,7 +441,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 				}
 			}
 			else if (phase == reposition)
-			{				
+			{
 				if (targetTerritory >= 0)
 				{
 					//window.draw(attackArrow);
@@ -818,14 +818,18 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 			}
 			else if (mouseDown)  // invalid territory.  Clear target
 			{
-				for (std::vector<Transfer>::iterator it = transfers.begin(); it != transfers.end(); it++)
-				{
-					if (it->getAmount() <= 0)
-					{
-						transfers.erase(it);
-						it--;
-					}
-				}
+			    std::vector<Transfer>::iterator it = transfers.begin();
+			    while(transfers.size() > 0 && it != transfers.end())
+                {
+                    if(it->getAmount() <= 0)
+                    {
+                        transfers.erase(it);
+                    }
+                    else
+                    {
+                        it++;
+                    }
+                }
 				activeTransfer = nullptr;
 				targetTerritory = -1;
 			}
