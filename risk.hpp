@@ -68,6 +68,7 @@ class Player
 public:
     sf::Color color;    // make this private
 
+	Player();
     Player(int number, std::string name, sf::Color color);
 
     void AddTerritory(Territory* captured, unsigned int army);
@@ -106,7 +107,6 @@ public:
     void addConnection(Territory *connection);
     void SetOwner(Player *newOwner, unsigned int newArmy);
     void ChangeOwner(Player *newOwner, unsigned int newArmy);
-    //virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     void drawTerritory(sf::RenderWindow* window);
     void setFont();     // should be able to remove this
 	void AddArmies(int nArmies);
@@ -116,11 +116,11 @@ public:
 	std::string getName();
 	int getID();
 	int GetBonus();
-
 	Player* GetOwner();
 	bool isConnected(Territory* t);
 	unsigned int GetArmies();
 	void setCenter(sf::Vector2f pos);
+	std::vector<Territory*>* getConnected();
 
     bool operator == (const Territory& other);
 
@@ -134,9 +134,6 @@ public:
 	sf::Sprite borderSprite;
 
 	sf::Image territoryImage;
-
-    // add function for adding/subtracting armies
-
 }; // Territory
 
 class Bonus
@@ -166,6 +163,9 @@ class World
     std::vector<Player> playerList;
     std::vector<Bonus> bonusList;
     int playerTurn;
+	Player nullPlayer;
+
+	void allocateTerritories();
 
 public:
 	World(sf::Font& font);
@@ -285,6 +285,7 @@ public:
 	void Draw(sf::RenderWindow* window);
 	bool isInside(sf::Vector2f point);
 	sf::Color getSelectedColor();
+	void chooseColor(int n);
 };
 
 #endif // RISK_HPP_INCLUDED
