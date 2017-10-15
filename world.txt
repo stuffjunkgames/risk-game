@@ -4,7 +4,7 @@ b;2;Europe;5;
 b;3;Africa;3;
 b;4;Asia;7;
 b;5;Australia;2;
-t;1014 376;Afghanistan;0;0;4;
+t;1014 376;Afghanistan;-1;0;4;
 t;83 157;Alaska;-1;0;0;
 t;208 237;Alberta;-1;0;0;
 t;377 832;Argentina;-1;0;1;

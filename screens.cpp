@@ -73,7 +73,7 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 	TextEntry textBox(armyFont, sf::Vector2f(GAME_WIDTH / 2 - 150, GAME_HEIGHT / 4 + 200), 300, 30, 20);
 	bool isTyping = false;
 
-	int buttonPressed = -1;
+	unsigned int buttonPressed = -1;
 
 	std::string playerName = "";
 
@@ -177,6 +177,13 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 				textBox.subtractString();
 				keyPressed = NO_KEY_PRESSED;
 			}
+			/*else
+			{
+				sf::String unicodeStr;
+				unicodeStr = sf::String(sf::Uint32(keyPressed));
+				textBox.appendString(std::string() + unicodeStr.toAnsiString());
+				keyPressed = NO_KEY_PRESSED;
+			}*/
 		}
 
 		if (buttonPressed == BUTTON_TEXTBOX)
@@ -818,12 +825,16 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 			}
 			else if (mouseDown)  // invalid territory.  Clear target
 			{
-				for (std::vector<Transfer>::iterator it = transfers.begin(); it != transfers.end(); it++)
+				std::vector<Transfer>::iterator it = transfers.begin();
+				while (transfers.size() > 0 && it != transfers.end())
 				{
 					if (it->getAmount() <= 0)
 					{
 						transfers.erase(it);
-						it--;
+					}
+					else
+					{
+						it++;
 					}
 				}
 				activeTransfer = nullptr;

@@ -469,25 +469,28 @@ std::vector<int> Bonus::GetTerritories()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // World class
 
+World::World()
+{
+	// make the world.
+}
+
 World::World(sf::Font& font)
 {
 	// make the world.
+	nullPlayer = Player(-1, "NULLIE-WOOLIE", sf::Color(127, 127, 127, 255));// grey
 
+	ReadFile(font);
+
+	playerTurn = -1;
 }
 
 World::World(sf::Font& font, std::vector<std::string> playerNames, std::vector<sf::Color> playerColors)
 {
     // make the world.
-
-    Player player1(0, playerNames.at(0), playerColors.at(0));// blue
-    Player player2(1, playerNames.at(1), playerColors.at(1));// red
-	Player player3(2, playerNames.at(2), playerColors.at(2));// green
-	Player player4(3, playerNames.at(3), playerColors.at(3)); // orange
-
-    playerList.push_back(player1);
-    playerList.push_back(player2);
-	playerList.push_back(player3);
-	playerList.push_back(player4);
+    playerList.push_back(Player(0, playerNames.at(0), playerColors.at(0)));
+    playerList.push_back(Player(1, playerNames.at(1), playerColors.at(1)));
+	playerList.push_back(Player(2, playerNames.at(2), playerColors.at(2)));
+	playerList.push_back(Player(3, playerNames.at(3), playerColors.at(3)));
 
 	nullPlayer = Player(-1, "NULLIE-WOOLIE", sf::Color(127, 127, 127, 255));// grey
 
@@ -882,6 +885,11 @@ int World::GetBonusIncome(int tid)
 {
     // FIXME: use territory id instead of index
     return GetBonusIncome(getTerritory(tid));
+}
+
+void World::addPlayer(std::string playerName, sf::Color playerColor)
+{
+	playerList.push_back(Player(playerList.size(), playerName, playerColor));
 }
 
 // World
