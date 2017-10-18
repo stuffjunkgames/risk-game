@@ -70,7 +70,15 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 	Button buttonStart(armyFont, "START", sf::Vector2f(GAME_WIDTH / 2 - 137, GAME_HEIGHT / 2 - 30 + 200), 275, 60);
 	buttonStart.setCharacterSize(40);
 	ColorPalette colorPalette(sf::Vector2f(GAME_WIDTH / 2 - 200, GAME_HEIGHT / 4 + 75 + 200), 4);
+	Label paletteLabel(armyFont);
+	paletteLabel.setString("Choose a Color:");
+	sf::FloatRect bounds = colorPalette.getLocalBounds();
+	paletteLabel.setPosition(sf::Vector2f(bounds.left + bounds.width / 2 - paletteLabel.getLocalBounds().width / 2, bounds.top - paletteLabel.getLocalBounds().height));
 	TextEntry textBox(armyFont, sf::Vector2f(GAME_WIDTH / 2 - 150, GAME_HEIGHT / 4 + 200), 300, 30, 20);
+	Label textBoxLabel(armyFont);
+	textBoxLabel.setString("Choose a Name:");
+	bounds = textBox.getLocalBounds();
+	textBoxLabel.setPosition(sf::Vector2f(bounds.left + bounds.width / 2 - textBoxLabel.getLocalBounds().width / 2, bounds.top - textBoxLabel.getLocalBounds().height));
 	bool isTyping = false;
 
 	unsigned int buttonPressed = -1;
@@ -153,9 +161,11 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 			window->draw(title);
 
 			textBox.Draw(window);
+			window->draw(textBoxLabel);
 			buttonStart.Draw(window);
 
 			colorPalette.Draw(window);
+			window->draw(paletteLabel);
 
 			window->display();
 		}
@@ -233,7 +243,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 	int targetTerritory = -1;
 	int armyCount = 0;
 	int placedArmies = 0;
-	Arrow attackArrow;
+	//Arrow attackArrow;
 	std::vector<Transfer> transfers;
 	Transfer* activeTransfer = nullptr;
 	int r;
@@ -339,40 +349,38 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 					mouseDown = true;
 					mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
 
-					// Deal with buttons
+					// Set flags for button presses
 					if (buttonPlus.isInside(mousePosition) && buttonPlus.isActive)
 					{
 						buttonPressed = BUTTON_PLUS;
 						mouseDown = false;
 					}
-					if (buttonMinus.isInside(mousePosition) && buttonMinus.isActive)
+					else if (buttonMinus.isInside(mousePosition) && buttonMinus.isActive)
 					{
 						buttonPressed = BUTTON_MINUS;
 						mouseDown = false;
 					}
-					if (buttonAttack.isInside(mousePosition) && buttonAttack.isActive)
+					else if (buttonAttack.isInside(mousePosition) && buttonAttack.isActive)
 					{
 						buttonPressed = BUTTON_ATTACK;
 						mouseDown = false;
 					}
-					if (buttonChangePhase.isInside(mousePosition) && buttonChangePhase.isActive)
+					else if (buttonChangePhase.isInside(mousePosition) && buttonChangePhase.isActive)
 					{
 						buttonPressed = BUTTON_CHANGE_PHASE;
 						mouseDown = false;
 					}
-					if (textBox.isInside(mousePosition) && textBox.isActive)
+					else if (textBox.isInside(mousePosition) && textBox.isActive)
 					{
 						buttonPressed = BUTTON_TEXTBOX;
 						mouseDown = false;
 					}
-				}
-				if (event.mouseButton.button == sf::Mouse::Right)
-				{
-					// right mouse pressed
-
-					mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
-
-					std::cout << event.mouseButton.x << ", " << event.mouseButton.y << std::endl;
+					else
+					{
+						isTyping = false;
+						textBox.setIsTyping(isTyping);
+						buttonPressed = NO_BUTTON_PRESSED;
+					}
 				}
 			}
 			if (event.type == sf::Event::MouseMoved)
@@ -386,10 +394,8 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 		t += dt;
 		if (t.asMilliseconds() >= 16)
 		{
-
 			t = sf::Time::Zero;
 
-			// draw
 			window->clear();
 			window->draw(background);
 			window->draw(map);
@@ -422,7 +428,6 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 				if (defendingTerritory >= 0)
 				{
 					dLine.Draw(window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(defendingTerritory)->centerPos);
-					//window->draw(attackArrow);
 					buttonAttack.Draw(window);
 					textBox.Draw(window);
 				}
@@ -433,7 +438,6 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 				}
 				if (activeTerritory >= 0)
 				{
-					//world.getTerritory(activeTerritory)->drawArrows(window);
 					window->draw(greySprite);
 					for (unsigned int i = 0; i < world.getTerritory(activeTerritory)->getConnected()->size(); i++)
 					{
@@ -451,14 +455,12 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 			{
 				if (targetTerritory >= 0)
 				{
-					//window.draw(attackArrow);
 					dLine.Draw(window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(targetTerritory)->centerPos);
 					buttonPlus.Draw(window);
 					buttonMinus.Draw(window);
 				}
 				else if (activeTerritory >= 0)
 				{
-					//world.getTerritory(activeTerritory)->drawArrows(window);
 					window->draw(greySprite);
 					for (unsigned int i = 0; i < world.getTerritory(activeTerritory)->getConnected()->size(); i++)
 					{
@@ -514,7 +516,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 		// check if click is inside territory
 		// keep track of previous clicks inside territories
 		// make moves based on clicks
-		// turn has 3 parts:  place units -> attack -> relocate
+		// turn has 3 parts:  place units -> attack -> reposition
 
 		if (mouseDown)
 		{
@@ -547,7 +549,6 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 			{
 				activeTerritory = -1;
 			}
-			std::cout << "Selected Territory (index): " << clickedTerritory << std::endl;
 		}
 
 		if (isTyping)
@@ -676,9 +677,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 					world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
 				{
 					defendingTerritory = clickedTerritory;
-					attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
-					attackArrow.setActive();
-					buttonAttack.moveToPosition(attackArrow.Centroid());
+					buttonAttack.moveToPosition(dLine.getCenter());
 					textBox.moveToPosition(sf::Vector2f(buttonAttack.getLocalBounds().left + buttonAttack.getLocalBounds().width, buttonAttack.getLocalBounds().top));
 				}
 				else
@@ -733,8 +732,8 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 				}
 				else if (buttonPressed == BUTTON_TEXTBOX)
 				{
-					textBox.setOutlineColor(sf::Color::Yellow);
 					isTyping = true;
+					textBox.setIsTyping(isTyping);
 				}
 			}
 
@@ -805,11 +804,10 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 						}
 					}
 					if (activeTransfer == nullptr) {
-						attackArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
-						attackArrow.setActive();
-						buttonPlus.moveToPosition(attackArrow.Centroid() + sf::Vector2f(30, -25));
-						buttonMinus.moveToPosition(attackArrow.Centroid() + sf::Vector2f(30, 7));
-						transfers.push_back(Transfer(armyFont, previousTerritory, clickedTerritory, attackArrow));
+						buttonPlus.moveToPosition(dLine.getCenter() + sf::Vector2f(30, -25));
+						buttonMinus.moveToPosition(dLine.getCenter() + sf::Vector2f(30, 7));
+						transfers.push_back(Transfer(armyFont, previousTerritory, clickedTerritory, dLine));
+						transfers.back().setLinePoints(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(activeTerritory)->centerPos);
 						activeTransfer = &transfers.back();
 					}
 

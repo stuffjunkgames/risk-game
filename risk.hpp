@@ -202,21 +202,41 @@ public:
 	void setActive();
 };
 
+class DashedLine
+{
+	sf::Color fillColor = sf::Color(255, 255, 0, 255);
+	std::vector<ExtendedShape> dashes;
+	sf::Vector2f startPos, endPos;
+	int maxDashes = 30;
+	int dashWidth = 10;
+	int dashLength = 50;
+	float spacing = 1.5f;
+
+public:
+	DashedLine();
+	DashedLine(sf::Vector2f startPos, sf::Vector2f endPos);
+	void Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos);
+	void Draw(sf::RenderWindow* window);
+	sf::Vector2f getCenter();
+	void setPoints(sf::Vector2f startPos, sf::Vector2f endPos);
+};
+
 class Transfer
 {
-	Arrow transferArrow;
+	DashedLine transferLine;
 	Label transferLabel;
 	sf::Vector2f position;
 	int amount;
 public:
 	// constructor
-	Transfer(sf::Font& font, int donor, int receiver, Arrow arrow);
+	Transfer(sf::Font& font, int donor, int receiver, DashedLine line);
 
 	// public functions
 	void Draw(sf::RenderWindow* window);
 	void setAmount(int amount);
 	void increaseAmount(int inc);
 	int getAmount();
+	void setLinePoints(sf::Vector2f startPos, sf::Vector2f endPos);
 	bool operator == (const Transfer &other);
 
 	int donor;
@@ -247,20 +267,6 @@ public:
 	bool isActive = false;
 };
 
-class DashedLine
-{
-	sf::Color fillColor = sf::Color(255, 255, 0, 255);
-	std::vector<ExtendedShape> dashes;
-	int maxDashes = 30;
-	int dashWidth = 10;
-	int dashLength = 50;
-	float spacing = 1.5f;
-
-public:
-	DashedLine();
-	void Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos);
-};
-
 class TextEntry : public Button
 {
 	int maxChars;
@@ -269,6 +275,7 @@ public:
 	TextEntry(sf::Font& font, sf::Vector2f position, int w, int h, int maxChars);
 	void appendString(std::string str);
 	void subtractString();
+	void setIsTyping(bool isTyping);
 };
 
 class ColorPalette : public ExtendedShape
