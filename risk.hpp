@@ -165,8 +165,6 @@ class World
     int playerTurn;
 	Player nullPlayer;
 
-	void allocateTerritories();
-
 public:
 	World();
 	World(sf::Font& font);
@@ -186,6 +184,7 @@ public:
 	int GetBonusIncome(Territory* t);
 	int GetBonusIncome(int tid);
 	void addPlayer(std::string playerName, sf::Color playerColor);
+	void allocateTerritories();
 }; // World
 
 
