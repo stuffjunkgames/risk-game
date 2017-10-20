@@ -939,6 +939,68 @@ void Arrow::setActive()
 // Arrow
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// DashedLine class definitions
+
+DashedLine::DashedLine()
+{
+	for (int i = 0; i < maxDashes; i++)
+	{
+		dashes.push_back(ExtendedShape(3));
+		dashes.back().setFillColor(fillColor);
+		dashes.back().setOutlineThickness(-4);
+		dashes.back().setOutlineColor(sf::Color(0, 0, 0, 255));
+	}
+}
+
+DashedLine::DashedLine(sf::Vector2f startPos, sf::Vector2f endPos) : DashedLine()
+{
+	this->startPos = startPos;
+	this->endPos = endPos;
+}
+
+void DashedLine::Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos)
+{
+	this->startPos = startPos;
+	this->endPos = endPos;
+	Draw(window);
+}
+
+void DashedLine::Draw(sf::RenderWindow* window)
+{
+	int dx = (this->endPos.x - this->startPos.x);
+	int dy = (this->endPos.y - this->startPos.y);
+	// length
+	float l = sqrt(dx * dx + dy * dy);
+	// angle, theta
+	float t = atan2(dy, dx);
+	float pi = 3.1415926535897;
+
+	int n = l / (dashLength * spacing);
+	sf::Vector2f offset = sf::Vector2f(dashLength * cos(t), dashLength * sin(t));
+	for (int i = 0; i < n; i++)
+	{
+		dashes.at(i).setPoint(0, startPos + 0.5f * offset + i * spacing * offset + sf::Vector2f(dashWidth * cos(-(pi / 2 - t)), dashWidth * sin(-(pi / 2 - t))));
+		dashes.at(i).setPoint(1, startPos + i * spacing * offset + spacing * offset);
+		dashes.at(i).setPoint(2, startPos + 0.5f * offset + i * spacing * offset - sf::Vector2f(dashWidth * cos(-(pi / 2 - t)), dashWidth * sin(-(pi / 2 - t))));
+
+		window->draw(dashes.at(i));
+	}
+}
+
+sf::Vector2f DashedLine::getCenter()
+{
+	return this->startPos + sf::Vector2f((this->endPos.x - this->startPos.x) / 2, (this->endPos.y - this->startPos.y) / 2);
+}
+
+void DashedLine::setPoints(sf::Vector2f startPos, sf::Vector2f endPos)
+{
+	this->startPos = startPos;
+	this->endPos = endPos;
+}
+
+// DashedLine
+////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // HoverText class definitions
@@ -1004,25 +1066,25 @@ Label::Label(sf::Font& font)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Transfer class definitions
 
-Transfer::Transfer(sf::Font& font, int donor, int receiver, Arrow arrow)
+Transfer::Transfer(sf::Font& font, int donor, int receiver, DashedLine line)
 {
 	transferLabel.setFont(font);
 	this->amount = 0;
 	this->donor = donor;
 	this->receiver = receiver;
-	this->transferArrow = arrow;
+	this->transferLine = line;
 
-	transferArrow.setActive();
+	//transferLine.setActive();
 	transferLabel.setString(std::to_string(amount));
 
 	sf::FloatRect bounds = transferLabel.getGlobalBounds();
 	sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
-	transferLabel.setPosition(transferArrow.Centroid() - textShift);
+	transferLabel.setPosition(transferLine.getCenter() - textShift);
 }
 
 void Transfer::Draw(sf::RenderWindow* window)
 {
-	//window->draw(transferArrow);
+	transferLine.Draw(window);
 	transferLabel.setString(std::to_string(amount));
 
 	window->draw(transferLabel);
@@ -1041,6 +1103,15 @@ void Transfer::increaseAmount(int inc)
 int Transfer::getAmount()
 {
 	return this->amount;
+}
+
+void Transfer::setLinePoints(sf::Vector2f startPos, sf::Vector2f endPos)
+{
+	transferLine.setPoints(startPos, endPos);
+
+	sf::FloatRect bounds = transferLabel.getGlobalBounds();
+	sf::Vector2f textShift(bounds.width / 2, bounds.height / 2);
+	transferLabel.setPosition(transferLine.getCenter() - textShift);
 }
 
 bool Transfer::operator == (const Transfer &other)
@@ -1149,44 +1220,6 @@ Label* Button::getLabel()
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// DashedLine class definitions
-
-DashedLine::DashedLine()
-{
-	for (int i = 0; i < maxDashes; i++)
-	{
-		dashes.push_back(ExtendedShape(3));
-		dashes.back().setFillColor(fillColor);
-		dashes.back().setOutlineThickness(-4);
-		dashes.back().setOutlineColor(sf::Color(0, 0, 0, 255));
-	}
-}
-
-void DashedLine::Draw(sf::RenderWindow* window, sf::Vector2f startPos, sf::Vector2f endPos)
-{
-	int dx = (endPos.x - startPos.x);
-	int dy = (endPos.y - startPos.y);
-	// length
-	float l = sqrt(dx * dx + dy * dy);
-	// angle, theta
-	float t = atan2(dy, dx);
-	float pi = 3.1415926535897;
-
-	int n = l / (dashLength * spacing);
-	sf::Vector2f offset = sf::Vector2f(dashLength * cos(t), dashLength * sin(t));
-	for (int i = 0; i < n; i++)
-	{
-		dashes.at(i).setPoint(0, startPos + 0.5f * offset + i * spacing * offset + sf::Vector2f(dashWidth * cos(-(pi / 2 - t)), dashWidth * sin(-(pi / 2 - t))));
-		dashes.at(i).setPoint(1, startPos + i * spacing * offset + spacing * offset);
-		dashes.at(i).setPoint(2, startPos + 0.5f * offset + i * spacing * offset - sf::Vector2f(dashWidth * cos(-(pi / 2 - t)), dashWidth * sin(-(pi / 2 - t))));
-
-		window->draw(dashes.at(i));
-	}
-}
-// DashedLine
-////////////////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // TextEntry class definitions
 
 TextEntry::TextEntry(sf::Font& font, sf::Vector2f position, int w, int h, int maxChars) : Button(font, "", position, w, h)
@@ -1207,6 +1240,18 @@ void TextEntry::subtractString()
 	if (getLabel()->getString().getSize() > 0)
 	{
 		setString(getLabel()->getString().substring(0, getLabel()->getString().getSize() - 1));
+	}
+}
+
+void TextEntry::setIsTyping(bool isTyping)
+{
+	if (isTyping)
+	{
+		setOutlineColor(sf::Color::Yellow);
+	}
+	else
+	{
+		setOutlineColor(sf::Color::Black);
 	}
 }
 
