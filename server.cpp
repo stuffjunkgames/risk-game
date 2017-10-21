@@ -49,7 +49,7 @@ int RunServer()
         clients.push_back(std::unique_ptr<sf::TcpSocket>());
         if(listener.accept(*clients.back()) == sf::Socket::Status::Done)
         {
-            //clients.push_back(client);
+            std::cout << "Player connected! " << clients.size() << " players have connected\n";
 
             // generate player number and send to all connected clients
 
@@ -73,6 +73,7 @@ int RunServer()
                     if(s == "start")
                     {
                         started = true;
+                        std::cout << "Game started by player " << i << std::endl;
                     }
                 }
             }
@@ -91,6 +92,10 @@ int RunServer()
         sf::Packet packet = ServerCommandAdd(i, world.getTerritory(i)->GetArmies(), world.getTerritory(i)->GetOwner()->getID());
 
         // send packet to all clients
+        for(int i = 0; i < clients.size(); ++i)
+        {
+            clients[i].get()->send(packet);
+        }
     }
 
 
