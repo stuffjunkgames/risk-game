@@ -7,6 +7,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 
 // only included for loadFont
 #include "screens.hpp"

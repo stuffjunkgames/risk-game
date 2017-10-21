@@ -16,6 +16,7 @@
 #define BUTTON_TEXTBOX 5
 #define BUTTON_START 6
 #define BUTTON_COLORPALETTE 7
+#define BUTTON_EXIT 8
 #define NUM_COLORS 4
 
 sf::Font loadFont(std::string path)
@@ -69,6 +70,7 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 
 	Button buttonStart(armyFont, "START", sf::Vector2f(GAME_WIDTH / 2 - 137, GAME_HEIGHT / 2 - 30 + 200), 275, 60);
 	buttonStart.setCharacterSize(40);
+	Button buttonExit(armyFont, "EXIT", sf::Vector2f(GAME_WIDTH - 100, GAME_HEIGHT - 40), 100, 40);
 	ColorPalette colorPalette(sf::Vector2f(GAME_WIDTH / 2 - 200, GAME_HEIGHT / 4 + 75 + 200), 4);
 	Label paletteLabel(armyFont);
 	paletteLabel.setString("Choose a Color:");
@@ -143,6 +145,11 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 						buttonPressed = BUTTON_COLORPALETTE;
 						mouseDown = false;
 					}
+					else if (buttonExit.isInside(mousePosition) && buttonExit.isActive)
+					{
+						buttonPressed = BUTTON_EXIT;
+						mouseDown = false;
+					}
 				}
 			}
 		}
@@ -163,6 +170,7 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 			textBox.Draw(window);
 			window->draw(textBoxLabel);
 			buttonStart.Draw(window);
+			buttonExit.Draw(window);
 
 			colorPalette.Draw(window);
 			window->draw(paletteLabel);
@@ -216,6 +224,10 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 			playerColor->b = colorPalette.getSelectedColor().b;
 			playerColor->a = colorPalette.getSelectedColor().a;
 		}
+		else if (buttonPressed == BUTTON_EXIT)
+		{
+			return "";
+		}
 	}
 
 	return "";
@@ -266,6 +278,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 	Button buttonChangePhase(armyFont, ">", sf::Vector2f(0, 0), 60, 60);
 	buttonChangePhase.setCharacterSize(40);
 	buttonChangePhase.moveToPosition(sf::Vector2f(275, 0));
+	Button buttonExit(armyFont, "EXIT", sf::Vector2f(GAME_WIDTH - 100, GAME_HEIGHT - 40), 100, 40);
 	TextEntry textBox(armyFont, sf::Vector2f(0, 0), 60, 30, 3);
 	bool isTyping = false;
 	DashedLine dLine = DashedLine();
@@ -373,6 +386,11 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 					else if (textBox.isInside(mousePosition) && textBox.isActive)
 					{
 						buttonPressed = BUTTON_TEXTBOX;
+						mouseDown = false;
+					}
+					else if (buttonExit.isInside(mousePosition) && buttonExit.isActive)
+					{
+						buttonPressed = BUTTON_EXIT;
 						mouseDown = false;
 					}
 					else
@@ -493,6 +511,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 			}
 			buttonPhase.Draw(window);
 			buttonChangePhase.Draw(window);
+			buttonExit.Draw(window);
 
 			sf::Color pxColor;
 			for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
@@ -517,6 +536,11 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 		// keep track of previous clicks inside territories
 		// make moves based on clicks
 		// turn has 3 parts:  place units -> attack -> reposition
+
+		if (buttonPressed == BUTTON_EXIT)
+		{
+			return 0;
+		}
 
 		if (mouseDown)
 		{
