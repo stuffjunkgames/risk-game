@@ -47,7 +47,7 @@ int Attack(World* world, Player* player, int source, int target, int armies)
     while(i < attacking)
     {
         int r = rand();
-        if(r > RAND_MAX / 2)
+        if(r % 100 > 55)
         {
             // kill target
             world->getTerritory(target)->AddArmies(-1);
