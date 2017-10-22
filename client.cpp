@@ -20,44 +20,22 @@ int RunClient()
 
 	//////////// SETUP /////////////
 
+	// create world
+	sf::Font armyFont = loadFont("arial.ttf");
+	World world(armyFont);
+
 	unsigned int port = 12345;
 	std::string address = "msquared169.ddns.net";
+	
+	// connect to server
 
-	// CLI configurations? (later)
+	// set up start screen options
 
-	// load font
-	sf::Font armyFont = loadFont("arial.ttf");
+	// get other player configurations and add them to the world
 
-	// create listener
-	sf::TcpListener listener;
-	sf::Packet packet;
-	if (listener.listen(port) != sf::Socket::Done)
-	{
-		std::cout << "Error listening to port!\n";
-		return 1;
-	}
-
-	listener.setBlocking(false);
-
-	std::unique_ptr<sf::TcpSocket> server = std::unique_ptr<sf::TcpSocket>();
-
-	// TODO: send start signal to server, probably through input from user
-	bool started = false;
-
-	// receive configurations from server? (later)
-
-
-	// get territory assignments from server
-
-
-	// starting player is picked, sent to clients
-
+	// get add commands for assigning territories
 
 	//////////// GAMEPLAY ///////////
-	// Wait for commands from current player client
-	// check legality
-	// send movements to all clients
-	// send turn changes to all clients, including next player
 
 	return 0;
 }

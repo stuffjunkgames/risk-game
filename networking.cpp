@@ -39,3 +39,41 @@ sf::Packet ServerCommandAdd(int target, int army, int owner)
 
     return packet;
 }
+
+sf::Packet ClientRequestPhaseChange()
+{
+	sf::Packet packet;
+
+	packet << "phase";
+
+	return packet;
+}
+
+sf::Packet ServerCommandPhaseChange(TurnPhase phase, int player)
+{
+	sf::Packet packet;
+
+	packet << "phase" << phase << player;
+
+	return packet;
+}
+
+// request player ready
+sf::Packet ClientRequestReady(std::string name, sf::Color color)
+{
+	sf::Packet packet;
+
+	packet << "ready" << name << color.toInteger();
+
+	return packet;
+}
+
+// send player configurations
+sf::Packet ServerCommandReady(int playerID, std::string name, sf::Color color)
+{
+	sf::Packet packet;
+
+	packet << "ready" << playerID << name << color.toInteger();
+
+	return packet;
+}

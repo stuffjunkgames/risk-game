@@ -885,10 +885,19 @@ int World::GetBonusIncome(int tid)
     return GetBonusIncome(getTerritory(tid));
 }
 
-void World::addPlayer(std::string playerName, sf::Color playerColor)
+int World::addPlayer(std::string playerName, sf::Color playerColor)
 {
-	playerList.push_back(Player(playerList.size(), playerName, playerColor));
+	int id = playerList.size();
+	playerList.push_back(Player(id, playerName, playerColor));
+	return id;
 }
+
+int World::addPlayer(int id, std::string playerName, sf::Color playerColor)
+{
+	playerList.push_back(Player(id, playerName, playerColor));
+	return id;
+}
+
 
 // World
 ////////////////////////////////////////////////////////////////////////////////////////////

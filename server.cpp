@@ -2,6 +2,7 @@
 #include "sfvm.hpp"
 #include "movement.hpp"
 #include "networking.hpp"
+#include "server.hpp"
 
 #include <SFML/Network.hpp>
 
@@ -41,6 +42,7 @@ int RunServer()
     listener.setBlocking(false);
 
     std::vector<std::unique_ptr<sf::TcpSocket>> clients;
+	std::vector<bool> readyStatus;
     bool started = false;
 
     // listen for client connections
@@ -48,6 +50,7 @@ int RunServer()
     while(!started)
     {
         clients.push_back(std::unique_ptr<sf::TcpSocket>());
+		readyStatus.push_back(false);
         if(listener.accept(*clients.back()) == sf::Socket::Status::Done)
         {
             std::cout << "Player connected! " << clients.size() << " players have connected\n";
@@ -59,8 +62,9 @@ int RunServer()
         else
         {
             clients.pop_back();
+			readyStatus.pop_back();
         }
-
+		started = true;
         for(unsigned int i = 0; i < clients.size(); i++)
         {
             sf::Packet packet;
@@ -71,42 +75,49 @@ int RunServer()
                 std::string s;
                 if(packet >> s)
                 {
-                    if(s == "start")
+                    if(s == "ready")
                     {
-                        started = true;
-                        std::cout << "Game started by player " << i << std::endl;
+						// get configurations from player (name, color, etc.)
+						readyStatus[i] = true;
+						std::string name;
+						sf::Uint32 color;
+						if (packet >> name >> color)
+						{
+							world.addPlayer(name, sf::Color(color));							
+						}
+                        std::cout << "Player " << i << " is ready :P" << std::endl;
                     }
                 }
             }
+			if (!readyStatus[i])
+			{
+				started = false;
+			}
         }
-
     }
 
-
-    // send configurations to clients? (later)
-
-
+	for (int i = 0; i < world.PlayerNumber(); i++)
+	{
+		int id = world.getPlayer(i)->getID();
+		std::string name = world.getPlayerID(id)->getName();
+		sf::Color color = world.getPlayerID(id)->getColor();
+		SendAllClients(ServerCommandReady(id, name, color), clients);
+	}
+	
     // assign territories to players
     world.allocateTerritories();
     for(int i = 0; i < world.TerritoryNumber(); i++)
     {
         sf::Packet packet = ServerCommandAdd(i, world.getTerritory(i)->GetArmies(), world.getTerritory(i)->GetOwner()->getID());
 
-        // send packet to all clients
-        for(int i = 0; i < clients.size(); ++i)
-        {
-            clients[i].get()->send(packet);
-        }
+		SendAllClients(packet, clients);
     }
 
-
-
-
-    // send assignments to clients
-
-
     // pick starting player, send to clients
-    int startPlayer = rand() % clients.size() + 1;
+    //int currentPlayer = rand() % clients.size() + 1;
+	int currentPlayer = world.getNextPlayer()->getID();
+	sf::Packet packet = ServerCommandPhaseChange(TurnPhase::place, currentPlayer);
+	SendAllClients(packet, clients);
 
 
     //////////// GAMEPLAY ///////////
@@ -115,5 +126,95 @@ int RunServer()
     // send movements to all clients
     // send turn changes to all clients, including next player
 
+	TurnPhase phase = place;
+	int armyCount = 3 + world.GetBonus(currentPlayer);
+	int placedArmies = 0;
+	World initialWorld = world;
+	while (started)
+	{
+		// receive packet from the current player
+		sf::Packet receivePacket, sendPacket;
+		sf::Socket::Status status = clients[currentPlayer].get()->receive(receivePacket);
+
+		// do something with the packet
+		if (status == sf::Socket::Status::Done)
+		{
+			// open the packet
+			std::string s;
+			
+			if (receivePacket >> s)
+			{
+				if (s == "add" && phase == TurnPhase::place)// client is requesting to add armies
+				{
+					int target, army;
+					if (receivePacket >> target >> army)
+					{
+						armyCount -= Place(&world, &initialWorld, world.getPlayerID(currentPlayer), target, army, armyCount);
+						sendPacket = ServerCommandAdd(target, world.getTerritory(target)->GetArmies(), currentPlayer);
+						SendAllClients(sendPacket, clients);
+					}
+				}
+				else if (s == "move" && phase == TurnPhase::attack)
+				{
+					int source, target, army;
+					if (receivePacket >> source >> target >> army)
+					{
+						Attack(&world, world.getPlayerID(currentPlayer), source, target, army);
+						sendPacket = ServerCommandMove(source, world.getTerritory(source)->GetArmies(), target, world.getTerritory(target)->GetArmies(), world.getTerritory(target)->GetOwner()->getID());
+						SendAllClients(sendPacket, clients);
+					}
+				}
+				else if (s == "move" && phase == TurnPhase::reposition)
+				{
+					int source, target, army;
+					if (receivePacket >> source >> target >> army)
+					{
+						Reposition(&world, &initialWorld, world.getPlayerID(currentPlayer), source, target, army);
+						sendPacket = ServerCommandMove(source, world.getTerritory(source)->GetArmies(), target, world.getTerritory(target)->GetArmies(), world.getTerritory(target)->GetOwner()->getID());
+						SendAllClients(sendPacket, clients);
+					}
+				}
+				else if (s == "phase")
+				{
+					switch (phase)
+					{
+					case TurnPhase::place:
+					{
+						phase = TurnPhase::attack;
+						break;
+					}
+					case TurnPhase::attack:
+					{
+						phase = TurnPhase::reposition;
+						break;
+					}
+					case TurnPhase::reposition:
+					{
+						phase = TurnPhase::place;
+						currentPlayer = world.getNextPlayer()->getID();
+						armyCount = 3 + world.GetBonus(currentPlayer);
+						break;
+					}
+					default:
+					{
+						break;
+					}
+					}
+					sendPacket = ServerCommandPhaseChange(phase, currentPlayer);
+					SendAllClients(sendPacket, clients);
+					initialWorld = world;
+				}
+			}
+		}
+	}
+
     return 0;
+}
+
+void SendAllClients(sf::Packet &packet, std::vector<std::unique_ptr<sf::TcpSocket>> &clients)
+{
+	for (unsigned int i = 0; i < clients.size(); i++)
+	{
+		clients[i].get()->send(packet);
+	}
 }

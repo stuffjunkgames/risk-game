@@ -719,27 +719,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 				{
 
 					Attack(&world, currentPlayer, previousTerritory, defendingTerritory, 1);
-
-					// FIXME: code to determine the winner
-					//                            r = rand();
-					//                            if (r > RAND_MAX / 2)
-					//                            {
-					//                                // attacking player wins
-					//
-					//                                WORLD.GETTERRITORY(DEFENDINGTERRITORY)->ADDARMIES(-1);
-					//                                IF(WORLD.GETTERRITORY(DEFENDINGTERRITORY)->GETARMIES() <= 0)
-					//                                {
-					//                                    CURRENTPLAYER->CAPTURETERRITORY(WORLD.GETTERRITORY(DEFENDINGTERRITORY), 1);
-					//                                    WORLD.GETTERRITORY(PREVIOUSTERRITORY)->ADDARMIES(-1);
-					//                                    DEFENDINGTERRITORY = -1;
-					//                                }
-					//                            }
-					//                            else
-					//                            {
-					//                                // defending player wins
-					//                                world.getTerritory(previousTerritory)->AddArmies(-1);
-					//                            }
-
+					
 					if (buttonPressed == BUTTON_ATTACK)
 					{
 						keyPressed = NO_KEY_PRESSED;

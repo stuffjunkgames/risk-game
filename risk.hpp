@@ -183,7 +183,8 @@ public:
 	std::string GetBonusName(int tid);
 	int GetBonusIncome(Territory* t);
 	int GetBonusIncome(int tid);
-	void addPlayer(std::string playerName, sf::Color playerColor);
+	int addPlayer(std::string playerName, sf::Color playerColor);
+	int addPlayer(int id, std::string playerName, sf::Color playerColor);
 	void allocateTerritories();
 }; // World
 
