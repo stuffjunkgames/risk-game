@@ -608,6 +608,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 			if (currentPlayer->getNumTerritories() <= 0)
 			{
 				currentPlayer = world.getNextPlayer();
+				buttonPhase.setFillColor(currentPlayer->getColor());
 				break;
 			}
 
@@ -719,7 +720,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 				{
 
 					Attack(&world, currentPlayer, previousTerritory, defendingTerritory, 1);
-					
+
 					if (buttonPressed == BUTTON_ATTACK)
 					{
 						keyPressed = NO_KEY_PRESSED;
