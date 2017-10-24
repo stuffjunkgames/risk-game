@@ -83,7 +83,7 @@ int RunServer()
 						sf::Uint32 color;
 						if (packet >> name >> color)
 						{
-							world.addPlayer(name, sf::Color(color));							
+							world.addPlayer(name, sf::Color(color));
 						}
                         std::cout << "Player " << i << " is ready :P" << std::endl;
                     }
@@ -101,14 +101,15 @@ int RunServer()
 		int id = world.getPlayer(i)->getID();
 		std::string name = world.getPlayerID(id)->getName();
 		sf::Color color = world.getPlayerID(id)->getColor();
-		SendAllClients(ServerCommandReady(id, name, color), clients);
+		sf::Packet packet = ServerCommandReady(id, name, color);
+		SendAllClients(packet, clients);
 	}
-	
+
     // assign territories to players
     world.allocateTerritories();
     for(int i = 0; i < world.TerritoryNumber(); i++)
     {
-        sf::Packet packet = ServerCommandAdd(i, world.getTerritory(i)->GetArmies(), world.getTerritory(i)->GetOwner()->getID());
+        packet = ServerCommandAdd(i, world.getTerritory(i)->GetArmies(), world.getTerritory(i)->GetOwner()->getID());
 
 		SendAllClients(packet, clients);
     }
@@ -116,7 +117,7 @@ int RunServer()
     // pick starting player, send to clients
     //int currentPlayer = rand() % clients.size() + 1;
 	int currentPlayer = world.getNextPlayer()->getID();
-	sf::Packet packet = ServerCommandPhaseChange(TurnPhase::place, currentPlayer);
+	packet = ServerCommandPhaseChange(TurnPhase::place, currentPlayer);
 	SendAllClients(packet, clients);
 
 
@@ -141,7 +142,7 @@ int RunServer()
 		{
 			// open the packet
 			std::string s;
-			
+
 			if (receivePacket >> s)
 			{
 				if (s == "add" && phase == TurnPhase::place)// client is requesting to add armies
