@@ -24,18 +24,33 @@ enum ButtonValues {
     ExitButton
 };
 
+class GameState
+{
+    int currentPlayerID;
+    TurnPhase phase;
+
+    ButtonValues buttonVal;
+    int keyPressed;
+
+    int activeTerritory;
+    int targetTerritory;
+
+    std::vector<Transfer> transfers;
+    Transfer *activeTransfer;
+};
+
 sf::Font loadFont(std::string path);
 bool loadImages(World *world);
 
 std::string StartScreen(sf::RenderWindow &window, sf::Color &playerColor);
 
 // can we contain all the necessary drawing information in world and a button vector?
-int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> buttons);
+int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> buttons, HoverText hoverText);
 
 // Event polling for game screen
-int GetGameEvents(sf::RenderWindow &window, std::vector<Button> &buttons, ButtonValues &buttonVal, int &keyPressed);
+int GetGameEvents(sf::RenderWindow &window, std::vector<Button> &buttons, GameState &gameState, HoverText hoverText);
 
 // game logic
-// uhh... make a function prototype here...
+int GameLogic(World &world, World &initialWorld, std::vector<Button> &buttons, GameState &gameState);
 
 #endif // NETWORK_SCREENS_HPP_INCLUDED
