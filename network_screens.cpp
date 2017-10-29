@@ -42,7 +42,7 @@
 //}
 
 // return player number
-int StartScreen(sf::RenderWindow &window, sf::Color* playerColor, World &world, sf::TcpSocket &socket)
+int StartScreen(sf::RenderWindow &window, World &world, sf::TcpSocket &socket)
 {
     sf::RectangleShape background = sf::RectangleShape(sf::Vector2f(GAME_WIDTH, GAME_HEIGHT));
 
@@ -89,6 +89,7 @@ int StartScreen(sf::RenderWindow &window, sf::Color* playerColor, World &world, 
 	sf::Clock clock;
 
 	int id;
+	sf::Color playerColor;
 
 	while (window.isOpen())
 	{
@@ -264,7 +265,7 @@ int StartScreen(sf::RenderWindow &window, sf::Color* playerColor, World &world, 
 
                     if(packet >> target >> army >> owner)
                     {
-
+                        world.getPlayerID(owner)->CaptureTerritory(world.getTerritory(target), army);
                     }
                 }
                 else if(s == "phase")
