@@ -81,11 +81,14 @@ int RunServer()
 						readyStatus[i] = true;
 						std::string name;
 						sf::Uint32 color;
+						int id;
 						if (packet >> name >> color)
 						{
-							world.addPlayer(name, sf::Color(color));
+							id = world.addPlayer(name, sf::Color(color));
 						}
                         std::cout << "Player " << i << " is ready :P" << std::endl;
+                        sf::Packet sendPacket = ServerCommandID(id);
+                        clients[i].get()->send(sendPacket);
                     }
                 }
             }

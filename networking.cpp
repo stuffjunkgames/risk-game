@@ -77,3 +77,13 @@ sf::Packet ServerCommandReady(int playerID, std::string name, sf::Color color)
 
 	return packet;
 }
+
+// send player ID, only to that player
+sf::Packet ServerCommandID(int playerID)
+{
+    sf::Packet packet;
+
+    packet << "id" << playerID;
+
+    return packet;
+}

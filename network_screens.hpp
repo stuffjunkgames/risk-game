@@ -4,11 +4,14 @@
 #include "risk.hpp"
 #include "sfvm.hpp"
 #include "movement.hpp"
+#include "networking.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window.hpp>
+#include <SFML/Network.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -21,7 +24,8 @@ enum ButtonValues {
     TextBox,
     StartButton,
     ColorPicker,
-    ExitButton
+    ExitButton,
+    NoButton
 };
 
 class GameState
@@ -42,7 +46,8 @@ class GameState
 sf::Font loadFont(std::string path);
 bool loadImages(World *world);
 
-std::string StartScreen(sf::RenderWindow &window, sf::Color &playerColor);
+// return player number
+int StartScreen(sf::RenderWindow &window, sf::Color &playerColor, sf::TcpSocket &socket);
 
 // can we contain all the necessary drawing information in world and a button vector?
 int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> buttons, HoverText hoverText);

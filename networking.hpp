@@ -33,4 +33,7 @@ sf::Packet ClientRequestReady(std::string name, sf::Color color);
 // send player configurations
 sf::Packet ServerCommandReady(int playerID, std::string name, sf::Color color);
 
+// send player ID, only to that player
+sf::Packet ServerCommandID(int playerID);
+
 #endif // NETWORKING_HPP_INCLUDED
