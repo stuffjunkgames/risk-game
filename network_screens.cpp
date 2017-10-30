@@ -42,7 +42,7 @@
 //}
 
 // return player number
-int StartScreen(sf::RenderWindow &window, World &world, sf::TcpSocket &socket)
+int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::TcpSocket &socket)
 {
     sf::RectangleShape background = sf::RectangleShape(sf::Vector2f(GAME_WIDTH, GAME_HEIGHT));
 
@@ -215,21 +215,21 @@ int StartScreen(sf::RenderWindow &window, World &world, sf::TcpSocket &socket)
 			buttonStart.setOutlineColor(sf::Color::Yellow);
 
 			// send ready signal to server
-			packet = ClientRequestReady(textBox.getLabel()->getString(), *playerColor);
+			packet = ClientRequestReady(textBox.getLabel()->getString(), playerColor);
 			socket.send(packet);
 
 			keyPressed = NO_KEY_PRESSED;
 		}
 		else if (buttonPressed == ButtonValues::ColorPicker)
 		{
-			playerColor->r = colorPalette.getSelectedColor().r;
-			playerColor->g = colorPalette.getSelectedColor().g;
-			playerColor->b = colorPalette.getSelectedColor().b;
-			playerColor->a = colorPalette.getSelectedColor().a;
+			playerColor.r = colorPalette.getSelectedColor().r;
+			playerColor.g = colorPalette.getSelectedColor().g;
+			playerColor.b = colorPalette.getSelectedColor().b;
+			playerColor.a = colorPalette.getSelectedColor().a;
 		}
 		else if (buttonPressed == ButtonValues::ExitButton)
 		{
-		    // send disconnect signal to server
+		    // TODO: send disconnect signal to server
 			return -1;
 		}
 
@@ -265,17 +265,143 @@ int StartScreen(sf::RenderWindow &window, World &world, sf::TcpSocket &socket)
 
                     if(packet >> target >> army >> owner)
                     {
-                        world.getPlayerID(owner)->CaptureTerritory(world.getTerritory(target), army);
+						world.getPlayerID(owner)->CaptureTerritory(world.getTerritory(target), army);
                     }
                 }
                 else if(s == "phase")
                 {
                     // start screen is done -- start game
+					int phase;
+					int player;
+					if (packet >> phase >> player)
+					{
+						state.currentPlayerID = player;
+						state.phase = (TurnPhase)phase;
 
+						// exit StartScreen
+						return id;
+					}
                 }
             }
         }
 	}
 
 	return -1;
+}
+
+int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, HoverText & hoverText)
+{
+	return 0;
+}
+
+int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText)
+{
+	sf::Vector2f mousePosition, mouseHover;
+	sf::Event event;
+
+	while (window.pollEvent(event))
+	{
+		if (event.type == sf::Event::Closed)
+			window.close();
+
+		// get key presses, respond to them
+		if (event.type == sf::Event::KeyPressed)
+		{
+			//this is only working for one key pressed at a time
+			if (keyPressed == NO_KEY_PRESSED)
+			{
+				keyPressed = event.key.code;
+				std::cout << "Key pressed: " << keyPressed << std::endl;
+			}
+		}
+
+		if (event.type == sf::Event::KeyReleased)
+		{
+			keyPressed = NO_KEY_PRESSED;
+		}
+
+		if (event.type == sf::Event::MouseButtonPressed)
+		{
+			if (event.mouseButton.button == sf::Mouse::Left)
+			{
+				// left mouse pressed
+				mouseDown = true;
+				mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+				// Set flags for button presses
+				if (buttonPlus.isInside(mousePosition) && buttonPlus.isActive)
+				{
+					buttonPressed = BUTTON_PLUS;
+					mouseDown = false;
+				}
+				else if (buttonMinus.isInside(mousePosition) && buttonMinus.isActive)
+				{
+					buttonPressed = BUTTON_MINUS;
+					mouseDown = false;
+				}
+				else if (buttonAttack.isInside(mousePosition) && buttonAttack.isActive)
+				{
+					buttonPressed = BUTTON_ATTACK;
+					mouseDown = false;
+				}
+				else if (buttonChangePhase.isInside(mousePosition) && buttonChangePhase.isActive)
+				{
+					buttonPressed = BUTTON_CHANGE_PHASE;
+					mouseDown = false;
+				}
+				else if (textBox.isInside(mousePosition) && textBox.isActive)
+				{
+					buttonPressed = BUTTON_TEXTBOX;
+					mouseDown = false;
+				}
+				else if (buttonExit.isInside(mousePosition) && buttonExit.isActive)
+				{
+					buttonPressed = BUTTON_EXIT;
+					mouseDown = false;
+				}
+				else
+				{
+					isTyping = false;
+					textBox.setIsTyping(isTyping);
+					buttonPressed = NO_BUTTON_PRESSED;
+				}
+			}
+		}
+		if (event.type == sf::Event::MouseMoved)
+		{
+			mouseHover = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+			sf::Color pxColor;
+			for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
+			{
+				pxColor = world.getTerritory(i)->territoryImage.getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+				if (pxColor.a > 0) {
+					hoverText.setText(world.getTerritory(i)->getName() + " " + std::to_string(i) +
+						"\n" + world.GetBonusName(i) + " " + std::to_string(world.GetBonusIncome(i)),
+						mouseHover.x, mouseHover.y);
+					break;
+				}
+			}
+
+		}
+	}
+
+	return 0;
+}
+
+int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons, GameState & gameState)
+{
+	return 0;
+}
+
+
+
+GameState::GameState()
+{
+	currentPlayerID = -1;
+	phase = TurnPhase::place;
+	buttonVal = ButtonValues::NoButton;
+	keyPressed = NO_KEY_PRESSED;
+	activeTerritory = -1;
+	targetTerritory = -1;
+	activeTransfer = nullptr;
 }

@@ -1133,6 +1133,11 @@ bool Transfer::operator == (const Transfer &other)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Button class definitions
 
+Button::Button() : ExtendedShape(4)
+{
+
+}
+
 Button::Button(sf::Font& font, std::string string, sf::Vector2f position) : ExtendedShape(4)// position is the top left of the border
 {
 	setFillColor(fillColor);
@@ -1171,10 +1176,16 @@ Button::Button(sf::Font& font, std::string string, sf::Vector2f position, int w,
 
 void Button::Draw(sf::RenderWindow* window)
 {
-	isActive = true;
-
-	window->draw(*this);
-	window->draw(text);
+	if (this->getPointCount() > 0)
+	{
+		isActive = true;
+		window->draw(*this);
+		window->draw(text);
+	}
+	else
+	{
+		isActive = false;
+	}
 }
 
 void Button::moveToPosition(sf::Vector2f newPosition)

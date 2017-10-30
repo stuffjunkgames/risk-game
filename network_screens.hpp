@@ -20,6 +20,7 @@ enum ButtonValues {
     PlusButton,
     MinusButton,
     AttackButton,
+	PhaseButton,
     ChangePhaseButton,
     TextBox,
     StartButton,
@@ -30,7 +31,10 @@ enum ButtonValues {
 
 class GameState
 {
-    int currentPlayerID;8
+public:
+	GameState();
+
+    int currentPlayerID;
     TurnPhase phase;
 
     ButtonValues buttonVal;
@@ -47,13 +51,13 @@ sf::Font loadFont(std::string path);
 bool loadImages(World *world);
 
 // return player number
-int StartScreen(sf::RenderWindow &window, sf::TcpSocket &socket);
+int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::TcpSocket &socket);
 
 // can we contain all the necessary drawing information in world and a button vector?
-int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> buttons, HoverText hoverText);
+int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> &buttons, HoverText &hoverText);
 
 // Event polling for game screen
-int GetGameEvents(sf::RenderWindow &window, std::vector<Button> &buttons, GameState &gameState, HoverText hoverText);
+int GetGameEvents(sf::RenderWindow &window, World & world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText);
 
 // game logic
 int GameLogic(World &world, World &initialWorld, std::vector<Button> &buttons, GameState &gameState);
