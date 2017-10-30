@@ -297,6 +297,9 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText)
 {
 	sf::Vector2f mousePosition, mouseHover;
+	bool mouseDown = false, isTyping = false;
+	// Make a pointer to the textBox in the buttons vector, which has to be dynamically cast
+	TextEntry *tmpBox = dynamic_cast<TextEntry*>(&buttons.at(ButtonValues::TextBox));
 	sf::Event event;
 
 	while (window.pollEvent(event))
@@ -308,16 +311,15 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		if (event.type == sf::Event::KeyPressed)
 		{
 			//this is only working for one key pressed at a time
-			if (keyPressed == NO_KEY_PRESSED)
+			if (gameState.keyPressed == NO_KEY_PRESSED)
 			{
-				keyPressed = event.key.code;
-				std::cout << "Key pressed: " << keyPressed << std::endl;
+				gameState.keyPressed = event.key.code;
 			}
 		}
 
 		if (event.type == sf::Event::KeyReleased)
 		{
-			keyPressed = NO_KEY_PRESSED;
+			gameState.keyPressed = NO_KEY_PRESSED;
 		}
 
 		if (event.type == sf::Event::MouseButtonPressed)
@@ -325,45 +327,41 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 			if (event.mouseButton.button == sf::Mouse::Left)
 			{
 				// left mouse pressed
-				mouseDown = true;
 				mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
 
 				// Set flags for button presses
-				if (buttonPlus.isInside(mousePosition) && buttonPlus.isActive)
+				if (buttons.at(ButtonValues::PlusButton).isInside(mousePosition) && buttons.at(ButtonValues::PlusButton).isActive)
 				{
-					buttonPressed = BUTTON_PLUS;
-					mouseDown = false;
+					gameState.buttonVal = ButtonValues::PlusButton;
 				}
-				else if (buttonMinus.isInside(mousePosition) && buttonMinus.isActive)
+				else if (buttons.at(ButtonValues::MinusButton).isInside(mousePosition) && buttons.at(ButtonValues::MinusButton).isActive)
 				{
-					buttonPressed = BUTTON_MINUS;
-					mouseDown = false;
+					gameState.buttonVal = ButtonValues::MinusButton;
 				}
-				else if (buttonAttack.isInside(mousePosition) && buttonAttack.isActive)
+				else if (buttons.at(ButtonValues::AttackButton).isInside(mousePosition) && buttons.at(ButtonValues::AttackButton).isActive)
 				{
-					buttonPressed = BUTTON_ATTACK;
-					mouseDown = false;
+					gameState.buttonVal = ButtonValues::AttackButton;
 				}
-				else if (buttonChangePhase.isInside(mousePosition) && buttonChangePhase.isActive)
+				else if (buttons.at(ButtonValues::ChangePhaseButton).isInside(mousePosition) && buttons.at(ButtonValues::ChangePhaseButton).isActive)
 				{
-					buttonPressed = BUTTON_CHANGE_PHASE;
-					mouseDown = false;
+					gameState.buttonVal = ButtonValues::ChangePhaseButton;
 				}
-				else if (textBox.isInside(mousePosition) && textBox.isActive)
+				else if (buttons.at(ButtonValues::TextBox).isInside(mousePosition) && buttons.at(ButtonValues::TextBox).isActive)
 				{
-					buttonPressed = BUTTON_TEXTBOX;
-					mouseDown = false;
+					gameState.buttonVal = ButtonValues::TextBox;
+					isTyping = true;
+					tmpBox->setIsTyping(isTyping);
 				}
-				else if (buttonExit.isInside(mousePosition) && buttonExit.isActive)
+				else if (buttons.at(ButtonValues::ExitButton).isInside(mousePosition) && buttons.at(ButtonValues::ExitButton).isActive)
 				{
-					buttonPressed = BUTTON_EXIT;
-					mouseDown = false;
+					gameState.buttonVal = ButtonValues::ExitButton;
 				}
 				else
 				{
+					mouseDown = true;
 					isTyping = false;
-					textBox.setIsTyping(isTyping);
-					buttonPressed = NO_BUTTON_PRESSED;
+					tmpBox->setIsTyping(isTyping);
+					gameState.buttonVal = ButtonValues::NoButton;
 				}
 			}
 		}
@@ -382,6 +380,157 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 				}
 			}
 
+		}
+	}
+
+	if (mouseDown)// mouse was clicked, but not on any buttons
+	{
+		// Check the territory images for non-zero alpha value at mousePosition
+		sf::Color pxColor;
+		int clickedTerritory = -1;
+		for (unsigned int i = 0; i < world.TerritoryNumber() && clickedTerritory == -1; i++) {
+			pxColor = world.getTerritory(i)->territoryImage.getPixel(mousePosition.x / 1.5, mousePosition.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+			if (pxColor.a > 0) {
+				clickedTerritory = i;
+			}
+			else {
+				clickedTerritory = -1;
+			}
+		}
+		if (clickedTerritory >= 0)// clicked in a valid territory
+		{
+			switch (gameState.phase)
+			{
+			case TurnPhase::place:
+			{
+				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.currentPlayerID))// player clicked their own territory
+				{
+					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
+					{
+						gameState.activeTerritory = clickedTerritory;
+					}
+					else
+					{
+						gameState.activeTerritory = -1;
+					}
+				}
+				else
+				{
+					gameState.activeTerritory = -1;
+				}
+				break;
+			}
+			case TurnPhase::attack:
+			{
+				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.currentPlayerID))// player clicked their own territory
+				{
+					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
+					{
+						gameState.activeTerritory = clickedTerritory;
+					}
+					else
+					{
+						gameState.activeTerritory = -1;
+						gameState.targetTerritory = -1;
+					}
+				}
+				else
+				{
+					if (gameState.activeTerritory >= 0)// active already set
+					{
+						if (world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(gameState.activeTerritory)))// active and clicked are connected
+						{
+							gameState.targetTerritory = clickedTerritory;
+						}
+						else
+						{
+							gameState.targetTerritory = -1;
+						}
+					}
+					else
+					{
+						gameState.activeTerritory = -1;
+						gameState.targetTerritory = -1;
+					}
+				}
+				break;
+			}
+			case TurnPhase::reposition:
+			{
+				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.currentPlayerID))// player clicked their own territory
+				{
+					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
+					{
+						if (gameState.activeTerritory >= 0)// active already set
+						{
+							if (gameState.targetTerritory >= 0)// target already set
+							{
+								gameState.activeTerritory = clickedTerritory;
+								gameState.targetTerritory = -1;
+							}
+							else
+							{
+								if (world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(gameState.activeTerritory)))// active and clicked are connected
+								{
+									gameState.targetTerritory = clickedTerritory;
+								}
+								else
+								{
+									gameState.activeTerritory = -1;
+									gameState.targetTerritory = -1;
+								}
+							}
+						}
+						else
+						{
+							gameState.activeTerritory = clickedTerritory;
+						}
+					}
+					else
+					{
+						gameState.activeTerritory = -1;
+						gameState.targetTerritory = -1;
+					}
+				}
+				else
+				{
+					gameState.activeTerritory = -1;
+					gameState.targetTerritory = -1;
+				}
+				break;
+			}
+			default:
+			{
+				break;
+			}
+			}
+		}
+		else// clicked ouside all valid territories
+		{
+			gameState.activeTerritory = -1;
+			gameState.targetTerritory = -1;
+		}
+	}
+
+	if (isTyping)
+	{
+		if (gameState.keyPressed >= sf::Keyboard::Num0 && gameState.keyPressed <= sf::Keyboard::Num9)
+		{
+			tmpBox->appendString(std::to_string(gameState.keyPressed - sf::Keyboard::Num0));
+
+			gameState.keyPressed = KEY_PRESSED_ONCE;
+		}
+		else if (gameState.keyPressed >= sf::Keyboard::Numpad0 && gameState.keyPressed <= sf::Keyboard::Numpad9)
+		{
+			tmpBox->appendString(std::to_string(gameState.keyPressed - sf::Keyboard::Numpad0));
+
+			gameState.keyPressed = KEY_PRESSED_ONCE;
+		}
+		else if (gameState.keyPressed == sf::Keyboard::BackSpace)
+		{
+			tmpBox->subtractString();
+
+			gameState.keyPressed = KEY_PRESSED_ONCE;
 		}
 	}
 

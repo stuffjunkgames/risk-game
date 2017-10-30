@@ -73,6 +73,7 @@ int RunClient()
 	while (window.isOpen())
 	{
 		GetGameEvents(window, world, buttons, state, hoverText);
+		// TODO: call this draw function at 60fps
 		DrawGameScreen(window, world, buttons, hoverText);
 		GameLogic(world, initialWorld, buttons, state);
 		
