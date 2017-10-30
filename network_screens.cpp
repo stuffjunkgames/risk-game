@@ -289,14 +289,132 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 	return -1;
 }
 
-int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, HoverText & hoverText)
+int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState &gameState, HoverText & hoverText)
 {
+	// clear the window
+	window.clear();
+	// draw the underlying map image
+	window.draw(map);
+	// draw all of the territory images
+	for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
+	{
+		world.getTerritory(i)->drawTerritory(&window);
+	}
+	// draw the black borders image
+	window.draw(normalBordersSprite);
+	// draw the active territory's yellow border
+	if (activeTerritory >= 0 && activeTerritory < (int)world.TerritoryNumber()) {
+		window.draw(world.getTerritory(activeTerritory)->borderSprite);
+	}
+
+	if (phase == place)
+	{
+		if (activeTerritory >= 0)
+		{
+			buttonPlus.Draw(window);
+			buttonMinus.Draw(window);
+		}
+		else
+		{
+			buttonPlus.isActive = false;
+			buttonMinus.isActive = false;
+		}
+	}
+	else if (phase == attack)
+	{
+		if (defendingTerritory >= 0)
+		{
+			dLine.Draw(window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(defendingTerritory)->centerPos);
+			buttonAttack.Draw(window);
+			textBox.Draw(window);
+		}
+		else
+		{
+			buttonAttack.isActive = false;
+			textBox.isActive = false;
+		}
+		if (activeTerritory >= 0)
+		{
+			window.draw(greySprite);
+			for (unsigned int i = 0; i < world.getTerritory(activeTerritory)->getConnected()->size(); i++)
+			{
+				if (world.getTerritory(activeTerritory)->getConnected()->at(i)->GetOwner() != world.getTerritory(activeTerritory)->GetOwner())
+				{
+					world.getTerritory(activeTerritory)->getConnected()->at(i)->drawTerritory(&window);
+				}
+			}
+			world.getTerritory(activeTerritory)->drawTerritory(&window);
+			window.draw(normalBordersSprite);
+			dLine.Draw(window, world.getTerritory(activeTerritory)->centerPos, gameState.mouseHoverPosition);
+		}
+	}
+	else if (phase == reposition)
+	{
+		if (targetTerritory >= 0)
+		{
+			dLine.Draw(window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(targetTerritory)->centerPos);
+			buttonPlus.Draw(window);
+			buttonMinus.Draw(window);
+		}
+		else if (activeTerritory >= 0)
+		{
+			window->draw(greySprite);
+			for (unsigned int i = 0; i < world.getTerritory(activeTerritory)->getConnected()->size(); i++)
+			{
+				if (world.getTerritory(activeTerritory)->getConnected()->at(i)->GetOwner() == world.getTerritory(activeTerritory)->GetOwner())
+				{
+					world.getTerritory(activeTerritory)->getConnected()->at(i)->drawTerritory(window);
+				}
+			}
+			world.getTerritory(activeTerritory)->drawTerritory(window);
+			window->draw(normalBordersSprite);
+			dLine.Draw(window, world.getTerritory(activeTerritory)->centerPos, gameState.mouseHoverPosition);
+			buttonPlus.isActive = false;
+			buttonMinus.isActive = false;
+		}
+		else
+		{
+			buttonPlus.isActive = false;
+			buttonMinus.isActive = false;
+		}
+		for (Transfer t : gameState.transfers)
+		{
+			t.Draw(&window);
+		}
+	}
+
+	for (unsigned int i = 0; i < playerLabels.size(); i++)
+	{
+		playerLabels.at(i).setString(world.getPlayer(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
+		window.draw(playerLabels.at(i));
+	}
+	buttonPhase.Draw(window);
+	buttonChangePhase.Draw(window);
+	buttonExit.Draw(window);
+
+	// draw the hover text
+	sf::Color pxColor;
+	for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
+	{
+		pxColor = world.getTerritory(i)->territoryImage.getPixel(gameState.mouseHoverPosition.x / 1.5, gameState.mouseHoverPosition.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
+		if (pxColor.a > 0) {
+			hoverText.setText(world.getTerritory(i)->getName() + " " + std::to_string(i) +
+				"\n" + world.GetBonusName(i) + " " + std::to_string(world.GetBonusIncome(i)),
+				gameState.mouseHoverPosition.x, gameState.mouseHoverPosition.y);
+			hoverText.Draw(&window);
+			break;
+		}
+	}
+
+	// display everything that was drawn
+	window.display();
+
 	return 0;
 }
 
 int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText)
 {
-	sf::Vector2f mousePosition, mouseHover;
+	sf::Vector2f mousePosition;
 	bool mouseDown = false, isTyping = false;
 	// Make a pointer to the textBox in the buttons vector, which has to be dynamically cast
 	TextEntry *tmpBox = dynamic_cast<TextEntry*>(&buttons.at(ButtonValues::TextBox));
@@ -306,7 +424,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 	{
 		if (event.type == sf::Event::Closed)
 			window.close();
-
+		
 		// get key presses, respond to them
 		if (event.type == sf::Event::KeyPressed)
 		{
@@ -367,19 +485,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		}
 		if (event.type == sf::Event::MouseMoved)
 		{
-			mouseHover = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
-			sf::Color pxColor;
-			for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
-			{
-				pxColor = world.getTerritory(i)->territoryImage.getPixel(mouseHover.x / 1.5, mouseHover.y / 1.5); // devision by 1.5 because everything is scaled up by 1.5
-				if (pxColor.a > 0) {
-					hoverText.setText(world.getTerritory(i)->getName() + " " + std::to_string(i) +
-						"\n" + world.GetBonusName(i) + " " + std::to_string(world.GetBonusIncome(i)),
-						mouseHover.x, mouseHover.y);
-					break;
-				}
-			}
-
+			gameState.mouseHoverPosition = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
 		}
 	}
 
