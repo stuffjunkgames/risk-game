@@ -252,6 +252,7 @@ class Button : public ExtendedShape
 
 public:
 	// constructor
+	Button();
 	Button(sf::Font& font, std::string string, sf::Vector2f position);
 	Button(sf::Font& font, std::string string, sf::Vector2f position, int w, int h);
 

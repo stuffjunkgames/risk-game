@@ -4,12 +4,6 @@
 #include "networking.hpp"
 #include "server.hpp"
 
-#include <SFML/Network.hpp>
-
-#include <cstdlib>
-#include <iostream>
-#include <memory>
-
 // only included for loadFont
 #include "network_screens.hpp"
 
