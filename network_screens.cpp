@@ -291,6 +291,9 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 
 int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState &gameState, HoverText & hoverText)
 {
+	// Make a pointer to the textBox in the buttons vector, which has to be dynamically cast
+	TextEntry *tmpBox = dynamic_cast<TextEntry*>(&buttons.at(ButtonValues::TextBox));
+
 	// clear the window
 	window.clear();
 	// draw the underlying map image
@@ -303,79 +306,79 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	// draw the black borders image
 	window.draw(normalBordersSprite);
 	// draw the active territory's yellow border
-	if (activeTerritory >= 0 && activeTerritory < (int)world.TerritoryNumber()) {
-		window.draw(world.getTerritory(activeTerritory)->borderSprite);
+	if (gameState.activeTerritory >= 0 && gameState.activeTerritory < (int)world.TerritoryNumber()) {
+		window.draw(world.getTerritory(gameState.activeTerritory)->borderSprite);
 	}
 
-	if (phase == place)
+	if (gameState.phase == place)
 	{
-		if (activeTerritory >= 0)
+		if (gameState.activeTerritory >= 0)
 		{
-			buttonPlus.Draw(window);
-			buttonMinus.Draw(window);
+			buttons.at(PlusButton).Draw(&window);
+			buttons.at(MinusButton).Draw(&window);
 		}
 		else
 		{
-			buttonPlus.isActive = false;
-			buttonMinus.isActive = false;
+			buttons.at(PlusButton).isActive = false;
+			buttons.at(MinusButton).isActive = false;
 		}
 	}
-	else if (phase == attack)
+	else if (gameState.phase == attack)
 	{
-		if (defendingTerritory >= 0)
+		if (gameState.targetTerritory >= 0)
 		{
-			dLine.Draw(window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(defendingTerritory)->centerPos);
-			buttonAttack.Draw(window);
-			textBox.Draw(window);
+			dLine.Draw(window, world.getTerritory(gameState.activeTerritory)->centerPos, world.getTerritory(gameState.targetTerritory)->centerPos);
+			buttons.at(AttackButton).Draw(&window);
+			tmpBox->Draw(&window);
 		}
 		else
 		{
-			buttonAttack.isActive = false;
-			textBox.isActive = false;
+			buttons.at(AttackButton).isActive = false;
+			tmpBox->isActive = false;
 		}
-		if (activeTerritory >= 0)
+		if (gameState.activeTerritory >= 0)
 		{
 			window.draw(greySprite);
-			for (unsigned int i = 0; i < world.getTerritory(activeTerritory)->getConnected()->size(); i++)
+			for (unsigned int i = 0; i < world.getTerritory(gameState.activeTerritory)->getConnected()->size(); i++)
 			{
-				if (world.getTerritory(activeTerritory)->getConnected()->at(i)->GetOwner() != world.getTerritory(activeTerritory)->GetOwner())
+				if (world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->GetOwner() != world.getTerritory(gameState.activeTerritory)->GetOwner())
 				{
-					world.getTerritory(activeTerritory)->getConnected()->at(i)->drawTerritory(&window);
+					world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->drawTerritory(&window);
 				}
 			}
-			world.getTerritory(activeTerritory)->drawTerritory(&window);
+			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
 			window.draw(normalBordersSprite);
-			dLine.Draw(window, world.getTerritory(activeTerritory)->centerPos, gameState.mouseHoverPosition);
+			dLine.Draw(window, world.getTerritory(gameState.activeTerritory)->centerPos, gameState.mouseHoverPosition);
 		}
 	}
-	else if (phase == reposition)
+	else if (gameState.phase == reposition)
 	{
-		if (targetTerritory >= 0)
+		if (gameState.targetTerritory >= 0)
 		{
-			dLine.Draw(window, world.getTerritory(previousTerritory)->centerPos, world.getTerritory(targetTerritory)->centerPos);
-			buttonPlus.Draw(window);
-			buttonMinus.Draw(window);
+			dLine.Draw(window, world.getTerritory(gameState.activeTerritory)->centerPos, world.getTerritory(gameState.targetTerritory)->centerPos);
+			buttons.at(PlusButton).Draw(&window);
+			buttons.at(MinusButton).Draw(&window);
 		}
-		else if (activeTerritory >= 0)
+		else if (gameState.activeTerritory >= 0)
 		{
-			window->draw(greySprite);
-			for (unsigned int i = 0; i < world.getTerritory(activeTerritory)->getConnected()->size(); i++)
+			window.draw(greySprite);
+			for (unsigned int i = 0; i < world.getTerritory(gameState.activeTerritory)->getConnected()->size(); i++)
 			{
-				if (world.getTerritory(activeTerritory)->getConnected()->at(i)->GetOwner() == world.getTerritory(activeTerritory)->GetOwner())
+				if (world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->GetOwner() == world.getTerritory(gameState.activeTerritory)->GetOwner())
 				{
-					world.getTerritory(activeTerritory)->getConnected()->at(i)->drawTerritory(window);
+					world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->drawTerritory(&window);
 				}
 			}
-			world.getTerritory(activeTerritory)->drawTerritory(window);
-			window->draw(normalBordersSprite);
-			dLine.Draw(window, world.getTerritory(activeTerritory)->centerPos, gameState.mouseHoverPosition);
-			buttonPlus.isActive = false;
-			buttonMinus.isActive = false;
+			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
+			window.draw(normalBordersSprite);
+			dLine.Draw(window, world.getTerritory(gameState.activeTerritory)->centerPos, gameState.mouseHoverPosition);
+			buttons.at(PlusButton).isActive = false;
+			buttons.at(MinusButton).isActive = false;
 		}
 		else
 		{
-			buttonPlus.isActive = false;
-			buttonMinus.isActive = false;
+			buttons.at(PlusButton).isActive = false;
+			buttons.at(MinusButton).isActive = false;
 		}
 		for (Transfer t : gameState.transfers)
 		{
@@ -388,9 +391,9 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 		playerLabels.at(i).setString(world.getPlayer(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
 		window.draw(playerLabels.at(i));
 	}
-	buttonPhase.Draw(window);
-	buttonChangePhase.Draw(window);
-	buttonExit.Draw(window);
+	buttons.at(PhaseButton).Draw&(window);
+	buttons.at(ChangePhaseButton).Draw(&window);
+	buttons.at(ExitButton).Draw(&window);
 
 	// draw the hover text
 	sf::Color pxColor;
