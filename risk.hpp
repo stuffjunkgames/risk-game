@@ -177,6 +177,7 @@ public:
     Player* getPlayerID(int id);
     Player* getNextPlayer();
 	void ReadFile(sf::Font& font);
+	void LoadImages();
 	int getSize();
 	int GetBonus(int pNumber);
 	std::string GetBonusName(Territory* t);
@@ -186,6 +187,8 @@ public:
 	int addPlayer(std::string playerName, sf::Color playerColor);
 	int addPlayer(int id, std::string playerName, sf::Color playerColor);
 	void allocateTerritories();
+
+	sf::Sprite mapSprite, normalBordersSprite, greySprite;
 }; // World
 
 

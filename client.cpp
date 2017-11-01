@@ -45,12 +45,23 @@ int RunClient()
 	// get other player configurations and add them to the world
 	// get add commands for assigning territories
 	sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Uncertainty");
-	GameState state;
+	GameState gameState;
 	int myID;
-	myID = StartScreen(window, world, state, socket);
+	myID = StartScreen(window, world, gameState, socket);
 
 
 	//////////// GAMEPLAY ///////////
+
+	for (unsigned int i = 0; i < world.PlayerNumber(); i++) {
+		gameState.playerLabels.push_back(Label(armyFont));
+		gameState.playerLabels.at(i).setFillColor(world.getPlayer(i)->getColor());
+		gameState.playerLabels.at(i).setOutlineThickness(3);
+		gameState.playerLabels.at(i).setCharacterSize(30);
+		gameState.playerLabels.at(i).setString(world.getPlayer(i)->getName() + ":");
+		gameState.playerLabels.at(i).setPosition(sf::Vector2f(GAME_WIDTH - 300, 40 * i));
+	}
+
+	gameState.dashedLine = DashedLine();
 
 	std::vector<Button> buttons;
 	buttons.push_back(Button(armyFont, "+", sf::Vector2f(0, 0)));// plus
@@ -58,7 +69,7 @@ int RunClient()
 	buttons.push_back(Button(armyFont, "Attack", sf::Vector2f(0, 0), 80, 30)); // attack
 	buttons.push_back(Button(armyFont, "PLACE", sf::Vector2f(0, 0), 275, 60)); // phase
 	buttons.back().setCharacterSize(40);
-	buttons.back().setFillColor(world.getPlayerID(state.currentPlayerID)->getColor());
+	buttons.back().setFillColor(world.getPlayerID(gameState.currentPlayerID)->getColor());
 	buttons.push_back(Button(armyFont, ">", sf::Vector2f(0, 0), 60, 60));// change phase
 	buttons.back().setCharacterSize(40);
 	buttons.back().moveToPosition(sf::Vector2f(275, 0));
@@ -72,10 +83,10 @@ int RunClient()
 
 	while (window.isOpen())
 	{
-		GetGameEvents(window, world, buttons, state, hoverText);
+		GetGameEvents(window, world, buttons, gameState, hoverText);
 		// TODO: call this draw function at 60fps
-		DrawGameScreen(window, world, buttons, hoverText);
-		GameLogic(world, initialWorld, buttons, state);
+		DrawGameScreen(window, world, buttons, gameState, hoverText);
+		GameLogic(world, initialWorld, buttons, gameState);
 		
 	}
 	

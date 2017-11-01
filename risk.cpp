@@ -479,6 +479,7 @@ World::World(sf::Font& font)
 	// make the world.
 	nullPlayer = Player(-1, "NULLIE-WOOLIE", sf::Color(127, 127, 127, 255));// grey
 
+	LoadImages();
 	ReadFile(font);
 
 	playerTurn = -1;
@@ -494,6 +495,7 @@ World::World(sf::Font& font, std::vector<std::string> playerNames, std::vector<s
 
 	nullPlayer = Player(-1, "NULLIE-WOOLIE", sf::Color(127, 127, 127, 255));// grey
 
+	LoadImages();
 	ReadFile(font);
 	allocateTerritories();
 
@@ -739,6 +741,26 @@ void World::ReadFile(sf::Font& font)
 
 	}
 
+}
+
+void World::LoadImages()
+{
+	sf::Texture texture;
+
+	if (!texture.loadFromFile("new_map.png"))
+		return;
+	this->mapSprite = sf::Sprite(texture);
+	this->mapSprite.setScale(1.5, 1.5);
+
+	if (!texture.loadFromFile("grey.png"))
+		return;
+	this->greySprite = sf::Sprite(texture);
+	this->greySprite.setScale(1.5, 1.5);
+
+	if (!texture.loadFromFile("normal_borders.png"))
+		return;
+	this->normalBordersSprite = sf::Sprite(texture);
+	this->normalBordersSprite.setScale(1.5, 1.5);
 }
 
 void World::allocateTerritories()

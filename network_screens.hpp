@@ -46,6 +46,10 @@ public:
 
     std::vector<Transfer> transfers;
     Transfer *activeTransfer;
+
+	std::vector<Label> playerLabels;
+
+	DashedLine dashedLine;
 };
 
 sf::Font loadFont(std::string path);
