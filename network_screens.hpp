@@ -32,8 +32,12 @@ enum ButtonValues {
 class GameState
 {
 public:
+	// constructor
 	GameState();
 
+	// functions
+
+	// members
     int currentPlayerID;
     TurnPhase phase;
 
@@ -54,6 +58,7 @@ public:
 
 sf::Font loadFont(std::string path);
 bool loadImages(World *world);
+void ResetForNextPhase(TurnPhase nextPhase, World &world, std::vector<Button> &buttons, GameState &state);
 
 // return player number
 int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::TcpSocket &socket);

@@ -81,11 +81,23 @@ int RunClient()
 	HoverText hoverText(armyFont);
 	World initialWorld = world;
 
+	std::srand(std::time(0));
+
+	sf::Time dt;
+	sf::Time t;
+	sf::Clock clock;
+
 	while (window.isOpen())
 	{
 		GetGameEvents(window, world, buttons, gameState, hoverText);
-		// TODO: call this draw function at 60fps
-		DrawGameScreen(window, world, buttons, gameState, hoverText);
+		// draw function called at 60fps
+		dt = clock.restart();
+		t += dt;
+		if (t.asMilliseconds() >= 16)
+		{
+			t = sf::Time::Zero;
+			DrawGameScreen(window, world, buttons, gameState, hoverText);
+		}
 		GameLogic(world, initialWorld, buttons, gameState);
 		
 	}

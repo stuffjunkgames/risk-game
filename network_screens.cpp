@@ -648,6 +648,290 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 
 int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons, GameState & gameState)
 {
+	Player* currentPlayer = world.getPlayerID(gameState.currentPlayerID);
+
+	switch (gameState.phase)
+	{
+	case place:
+	{
+		// get number of armies and place them
+		if (currentPlayer->getNumTerritories() <= 0)
+		{
+			currentPlayer = world.getNextPlayer();
+			buttonPhase.setFillColor(currentPlayer->getColor());
+			break;
+		}
+
+		// first time through, count the number of armies player gets
+		if (armyCount == 0)
+		{
+			// FIXME: get rid of these "magic numbers"
+			//armyCount = 3 + currentPlayer->getNumTerritories();
+			initialWorld = world;
+			armyCount = 3 + world.GetBonus(currentPlayer->getID());
+			placedArmies = 0;
+			std::cout << "Placeable count: " << armyCount << std::endl;
+		}
+
+		// if they are all placed, move on.
+		if (placedArmies == armyCount)
+		{
+			armyCount = 0;
+			if (activeTerritory >= 0)
+			{
+				// no more active territory
+				world.getTerritory(activeTerritory)->setOutlineColor(sf::Color::Black);
+				std::cout << "changing phase" << std::endl;
+				activeTerritory = -1;
+			}
+			ResetForNextPhase(TurnPhase::attack, world, buttons, gameState);
+			break;
+		}
+
+		// active is valid and owned by current player
+		if (activeTerritory >= 0 && *(world.getTerritory(activeTerritory)->GetOwner()) == *currentPlayer)
+		{
+			buttonPlus.moveToPosition(world.getTerritory(activeTerritory)->centerPos + sf::Vector2f(30, -25));
+			buttonMinus.moveToPosition(world.getTerritory(activeTerritory)->centerPos + sf::Vector2f(30, 7));
+			//add or remove armies
+			// FIXME: suggest not using numpad.  May be fine to just add armies when you click
+			// FIXME: maybe add/remove to/from a buffer and apply when changing phase, so the territories aren't directly altered
+			if (keyPressed == sf::Keyboard::Add || keyPressed == sf::Keyboard::Equal || buttonPressed == BUTTON_PLUS) // + key
+			{
+				placedArmies += Place(&world, &initialWorld, currentPlayer, activeTerritory, 1, armyCount - placedArmies);
+				//world.getTerritory(activeTerritory)->AddArmies(1);
+				if (buttonPressed == BUTTON_PLUS)
+				{
+					keyPressed = NO_KEY_PRESSED;
+				}
+				else
+				{
+					keyPressed = KEY_PRESSED_ONCE;
+				}
+				buttonPressed = NO_BUTTON_PRESSED;
+				//placedArmies = placedArmies + 1;
+			}
+			else if (keyPressed == sf::Keyboard::Subtract || keyPressed == sf::Keyboard::Dash || buttonPressed == BUTTON_MINUS) // - key
+			{
+				placedArmies += Place(&world, &initialWorld, currentPlayer, activeTerritory, -1, armyCount - placedArmies);
+
+				if (buttonPressed == BUTTON_MINUS)
+				{
+					keyPressed = NO_KEY_PRESSED;
+				}
+				else
+				{
+					keyPressed = KEY_PRESSED_ONCE;
+				}
+
+				//                        if(world.getTerritory(activeTerritory)->GetArmies() > initialWorld.getTerritory(activeTerritory)->GetArmies())
+				//						{
+				//						    world.getTerritory(activeTerritory)->AddArmies(-1);
+				//                            placedArmies = placedArmies - 1;
+				//						}
+
+				buttonPressed = NO_BUTTON_PRESSED;
+			}
+		}
+		break;
+	}
+	case attack:
+	{
+		// attack territories
+
+		if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
+		{
+			if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
+				!(*(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer) &&
+				world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
+			{
+				defendingTerritory = clickedTerritory;
+				buttonAttack.moveToPosition(dLine.getCenter());
+				textBox.moveToPosition(sf::Vector2f(buttonAttack.getLocalBounds().left + buttonAttack.getLocalBounds().width, buttonAttack.getLocalBounds().top));
+			}
+			else
+			{
+				defendingTerritory = -1;
+			}
+		}
+		else if (mouseDown)
+		{
+			defendingTerritory = -1;
+		}
+		if (defendingTerritory >= 0)
+		{
+			if ((keyPressed == sf::Keyboard::Space || buttonPressed == BUTTON_ATTACK) && world.getTerritory(previousTerritory)->GetArmies() > 1) // spacebar key
+			{
+
+				Attack(&world, currentPlayer, previousTerritory, defendingTerritory, 1);
+
+				if (buttonPressed == BUTTON_ATTACK)
+				{
+					keyPressed = NO_KEY_PRESSED;
+				}
+				else
+				{
+					keyPressed = KEY_PRESSED_ONCE;
+				}
+				buttonPressed = NO_BUTTON_PRESSED;
+			}
+			else if (world.getTerritory(previousTerritory)->GetArmies() <= 1)
+			{
+				defendingTerritory = -1;
+			}
+			else if (buttonPressed == BUTTON_TEXTBOX)
+			{
+				isTyping = true;
+				textBox.setIsTyping(isTyping);
+			}
+		}
+
+		if (keyPressed == sf::Keyboard::Return || buttonPressed == BUTTON_CHANGE_PHASE)
+		{
+			std::cout << "Ending attack phase and entering reposition" << std::endl;
+
+			initialWorld = world;
+			ResetForNextPhase(TurnPhase::reposition, world, buttons, gameState);
+			break;
+		}
+
+		break;
+	}
+	case reposition:
+	{
+		// reposition armies
+
+		// need to track which armies have moved so they can't move again in this phase
+
+		// make copy of world object for initial states (maybe just copy territory vector)
+		// When unit moves:
+		// move unit in real world
+		// remove unit from initial state copy
+		// if initial state is at 1, can't move any more from that territory
+
+		// enter key exits reposition phase and starts next player's turn
+
+		// track which armies have moved
+
+
+		// valid territories have been clicked on... Draw arrows
+		if (mouseDown && clickedTerritory >= 0 && previousTerritory >= 0)
+		{
+			if (*(world.getTerritory(previousTerritory)->GetOwner()) == *currentPlayer &&
+				*(world.getTerritory(clickedTerritory)->GetOwner()) == *currentPlayer &&
+				world.getTerritory(clickedTerritory)->isConnected(world.getTerritory(previousTerritory)))
+			{
+				for (std::vector<Transfer>::iterator it = transfers.begin(); it != transfers.end(); it++)
+				{
+					if (it->getAmount() <= 0)
+					{
+						transfers.erase(it);
+					}
+				}
+				for (unsigned int i = 0; i < transfers.size(); i++)
+				{
+					if (transfers.at(i).donor == previousTerritory && transfers.at(i).receiver == clickedTerritory) {
+						activeTransfer = &transfers.at(i);
+
+						Arrow tmpArrow = Arrow(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(clickedTerritory)->centerPos);
+						buttonPlus.moveToPosition(tmpArrow.Centroid() + sf::Vector2f(30, -25));
+						buttonMinus.moveToPosition(tmpArrow.Centroid() + sf::Vector2f(30, 7));
+
+						std::cout << "found a match, from " << activeTransfer->donor << " to " << activeTransfer->receiver << std::endl;
+						break;
+					}
+					else
+					{
+						activeTransfer = nullptr;
+					}
+				}
+				if (activeTransfer == nullptr) {
+					buttonPlus.moveToPosition(dLine.getCenter() + sf::Vector2f(30, -25));
+					buttonMinus.moveToPosition(dLine.getCenter() + sf::Vector2f(30, 7));
+					transfers.push_back(Transfer(armyFont, previousTerritory, clickedTerritory, dLine));
+					transfers.back().setLinePoints(world.getTerritory(previousTerritory)->centerPos, world.getTerritory(activeTerritory)->centerPos);
+					activeTransfer = &transfers.back();
+				}
+
+				targetTerritory = clickedTerritory;
+				activeTerritory = -1;
+				clickedTerritory = -1;
+			}
+			else
+			{
+				targetTerritory = -1;
+				activeTransfer = nullptr;
+			}
+		}
+		else if (mouseDown)  // invalid territory.  Clear target
+		{
+			std::vector<Transfer>::iterator it = transfers.begin();
+			while (transfers.size() > 0 && it != transfers.end())
+			{
+				if (it->getAmount() <= 0)
+				{
+					transfers.erase(it);
+				}
+				else
+				{
+					it++;
+				}
+			}
+			activeTransfer = nullptr;
+			targetTerritory = -1;
+		}
+
+		if ((keyPressed == sf::Keyboard::Add || keyPressed == sf::Keyboard::Equal || buttonPressed == BUTTON_PLUS) // + pressed
+			&& targetTerritory >= 0 // target territory exists
+			&& initialWorld.getTerritory(previousTerritory)->GetArmies() > 1)  // source territory has unmoved armies
+		{
+			initialWorld.getTerritory(previousTerritory)->AddArmies(-1);    // remove army from initial distribution
+			activeTransfer->increaseAmount(1);
+			if (buttonPressed == BUTTON_PLUS)
+			{
+				keyPressed = NO_KEY_PRESSED;
+			}
+			else
+			{
+				keyPressed = KEY_PRESSED_ONCE;
+			}
+			buttonPressed = NO_BUTTON_PRESSED;
+		}
+		if ((keyPressed == sf::Keyboard::Dash || keyPressed == sf::Keyboard::Subtract || buttonPressed == BUTTON_MINUS) // + pressed
+			&& targetTerritory >= 0 // target territory exists
+			&& activeTransfer->getAmount() > 0)  // a transfer has been commanded
+		{
+			initialWorld.getTerritory(previousTerritory)->AddArmies(1);    // remove army from initial distribution
+			activeTransfer->increaseAmount(-1);
+			if (buttonPressed == BUTTON_MINUS)
+			{
+				keyPressed = NO_KEY_PRESSED;
+			}
+			else
+			{
+				keyPressed = KEY_PRESSED_ONCE;
+			}
+			buttonPressed = NO_BUTTON_PRESSED;
+		}
+		else if (keyPressed == sf::Keyboard::Return || buttonPressed == BUTTON_CHANGE_PHASE)
+		{
+			for (Transfer t : transfers)
+			{
+				world.getTerritory(t.donor)->AddArmies(-t.getAmount());		// remove army from source
+				world.getTerritory(t.receiver)->AddArmies(t.getAmount());	// add army to target
+			}
+			ResetForNextPhase(TurnPhase::place, world, buttons, gameState);
+			break;
+		}
+
+		break;
+	}
+	default:
+	{
+		// something broke...
+		break;
+	}
+	}
 	return 0;
 }
 
@@ -662,4 +946,51 @@ GameState::GameState()
 	activeTerritory = -1;
 	targetTerritory = -1;
 	activeTransfer = nullptr;
+}
+
+// This is for resetting variables between phases
+void ResetForNextPhase(TurnPhase nextPhase, World &world, std::vector<Button> &buttons, GameState &gameState)
+{
+	switch (nextPhase)
+	{
+	case TurnPhase::place:
+	{
+		gameState.transfers.clear();
+		gameState.currentPlayerID = world.getNextPlayer()->getID();
+		gameState.phase = TurnPhase::place;
+		buttons.at(PhaseButton).setString("PLACE");
+		buttons.at(PhaseButton).setFillColor(world.getPlayerID(gameState.currentPlayerID)->getColor());
+		gameState.activeTerritory = -1;
+		gameState.targetTerritory = -1;
+		buttons.at(PlusButton).isActive = false;
+		buttons.at(MinusButton).isActive = false;
+		gameState.activeTransfer = nullptr;
+		gameState.buttonVal = ButtonValues::NoButton;
+		break;
+	}
+	case TurnPhase::attack:
+	{
+		gameState.phase = TurnPhase::attack;
+		buttons.at(PhaseButton).setString("ATTACK");
+		gameState.activeTerritory = -1;
+		gameState.targetTerritory = -1;
+		buttons.at(PlusButton).isActive = false;
+		buttons.at(MinusButton).isActive = false;
+		gameState.buttonVal = ButtonValues::NoButton;
+		break;
+	}
+	case TurnPhase::reposition:
+	{
+		gameState.phase = TurnPhase::reposition;
+		buttons.at(PhaseButton).setString("REPOSITION");
+		gameState.activeTerritory = -1;
+		gameState.targetTerritory = -1;
+		buttons.at(AttackButton).isActive = false;
+		buttons.at(TextBox).isActive = false;
+		gameState.buttonVal = ButtonValues::NoButton;
+		break;
+	}
+	default:
+		break;
+	}
 }
