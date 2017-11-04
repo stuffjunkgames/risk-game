@@ -98,7 +98,7 @@ int RunClient()
 			t = sf::Time::Zero;
 			DrawGameScreen(window, world, buttons, gameState, hoverText);
 		}
-		GameLogic(world, initialWorld, buttons, gameState);
+		GameLogic(world, initialWorld, buttons, gameState, socket);
 		
 	}
 	

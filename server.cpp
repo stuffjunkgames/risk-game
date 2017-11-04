@@ -57,6 +57,7 @@ int RunServer()
         {
             clients.pop_back();
 			readyStatus.pop_back();
+			continue;
         }
 		started = true;
         for(unsigned int i = 0; i < clients.size(); i++)
@@ -152,7 +153,7 @@ int RunServer()
 						SendAllClients(sendPacket, clients);
 					}
 				}
-				else if (s == "move" && phase == TurnPhase::attack)
+				else if (s == "move" && phase == TurnPhase::attack)// client is requesting to attack a territory
 				{
 					int source, target, army;
 					if (receivePacket >> source >> target >> army)
@@ -162,7 +163,7 @@ int RunServer()
 						SendAllClients(sendPacket, clients);
 					}
 				}
-				else if (s == "move" && phase == TurnPhase::reposition)
+				else if (s == "move" && phase == TurnPhase::reposition)// client is requesting to move armies
 				{
 					int source, target, army;
 					if (receivePacket >> source >> target >> army)

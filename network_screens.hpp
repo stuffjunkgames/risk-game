@@ -70,6 +70,6 @@ int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> &
 int GetGameEvents(sf::RenderWindow &window, World & world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText);
 
 // game logic
-int GameLogic(World &world, World &initialWorld, std::vector<Button> &buttons, GameState &gameState);
+int GameLogic(World &world, World &initialWorld, std::vector<Button> &buttons, GameState &gameState, sf::TcpSocket &socket);
 
 #endif // NETWORK_SCREENS_HPP_INCLUDED
