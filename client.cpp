@@ -17,7 +17,7 @@
 
 // client code
 
-int RunClient()
+int main()
 {
 	// do client stuff...
 
@@ -34,10 +34,11 @@ int RunClient()
 	sf::TcpSocket socket;
 	sf::Socket::Status status = socket.connect(address, port);
 	if(status != sf::Socket::Done)
-    {
-        // error
-        return -1;
-    }
+  {
+      // error
+			std::cout << "Could not connect to the server!" << std::endl;
+      return -1;
+  }
 
     // set socket to non-blocking?
 
@@ -98,8 +99,8 @@ int RunClient()
 			DrawGameScreen(window, world, buttons, gameState, hoverText);
 		}
 		GameLogic(world, initialWorld, buttons, gameState, socket);
-		
+
 	}
-	
+
 	return 0;
 }

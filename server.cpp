@@ -9,7 +9,7 @@
 
 // server code
 
-int RunServer()
+int main()
 {
     // do server stuff...
 

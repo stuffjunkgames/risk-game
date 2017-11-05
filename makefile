@@ -1,16 +1,23 @@
+LDFLAGS := -Wall -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
+CPPFLAGS := -c -std=c++11
 
+all: risk server client
+	make clean
 
-risk: main.o risk.o sfvm.o
-	g++ -g main.o risk.o sfvm.o -o risk -Wall -lsfml-graphics -lsfml-window -lsfml-system
+risk: main.o risk.o sfvm.o movement.o screens.o
+	if [ ! -d "bin" ]; then mkdir bin; fi
+	g++ -g main.o risk.o sfvm.o movement.o screens.o -o bin/risk $(LDFLAGS)
 
-main.o: main.cpp sfvm.hpp risk.hpp
-	g++ -c -std=c++11 main.cpp -o main.o
+server: server.o risk.o sfvm.o movement.o network_screens.o networking.o
+	if [ ! -d "bin" ]; then mkdir bin; fi
+	g++ -g server.o risk.o sfvm.o movement.o network_screens.o networking.o -o bin/server $(LDFLAGS)
 
-risk.o: risk.cpp risk.hpp
-	g++ -c -std=c++11 risk.cpp -o risk.o
+client: client.o risk.o sfvm.o movement.o network_screens.o networking.o
+	if [ ! -d "bin" ]; then mkdir bin; fi
+	g++ -g client.o risk.o sfvm.o movement.o network_screens.o networking.o -o bin/client $(LDFLAGS)
 
-sfvm.o: sfvm.cpp sfvm.hpp
-	g++ -c -std=c++11 sfvm.cpp -o sfvm.o
+%.o: %.cpp
+	g++ $(CPPFLAGS) $< -o $@
 
 clean:
-	rm -f *.o *~ risk
+	rm -f *.o *~
