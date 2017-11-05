@@ -41,11 +41,13 @@ int main()
 
     // listen for client connections
     // wait for start signal from clients (all, just host, something else?)
+    std::cout << "Listening for players..." << std::endl;
     while(!started)
     {
-        clients.push_back(std::unique_ptr<sf::TcpSocket>());
+        clients.push_back(std::make_unique<sf::TcpSocket>());
+
 		readyStatus.push_back(false);
-        if(listener.accept(*clients.back()) == sf::Socket::Status::Done)
+        if(listener.accept(*(clients.back().get())) == sf::Socket::Status::Done)
         {
             std::cout << "Player connected! " << clients.size() << " players have connected\n";
 
@@ -96,6 +98,7 @@ int main()
         }
     }
 
+    std::cout << "Sending player information to clients..." << std::endl;
 	for (int i = 0; i < world.PlayerNumber(); i++)
 	{
 		int id = world.getPlayer(i)->getID();
@@ -103,15 +106,19 @@ int main()
 		sf::Color color = world.getPlayerID(id)->getColor();
 		sf::Packet packet = ServerCommandReady(id, name, color);
 		SendAllClients(packet, clients);
+		std::cout << "Player " << id << std::endl;
 	}
 
     // assign territories to players
+    std::cout << "Allocating territories..." << std::endl;
     world.allocateTerritories();
     for(int i = 0; i < world.TerritoryNumber(); i++)
     {
         packet = ServerCommandAdd(i, world.getTerritory(i)->GetArmies(), world.getTerritory(i)->GetOwner()->getID());
 
 		SendAllClients(packet, clients);
+
+		std::cout << "Territory " << i << "; Player " << world.getTerritory(i)->GetOwner()->getID() << std::endl;
     }
 
     // pick starting player, send to clients
@@ -119,6 +126,8 @@ int main()
 	int currentPlayer = world.getNextPlayer()->getID();
 	packet = ServerCommandPhaseChange(TurnPhase::place, currentPlayer);
 	SendAllClients(packet, clients);
+
+	std::cout << "Player " << currentPlayer << " starts!" << std::endl;
 
 
     //////////// GAMEPLAY ///////////

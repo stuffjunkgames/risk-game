@@ -30,7 +30,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 // main
 
-int main()
+int LocalRisk()
 {
     sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Risk");
 
@@ -49,7 +49,7 @@ int main()
 	playerColors.push_back(sf::Color(176, 59, 110, 255));// red
 	playerNames.push_back("Green Spleen");
 	playerColors.push_back(sf::Color(114, 181, 60, 255));// green
-	
+
 
 	if (playerName != "")
 	{
@@ -57,7 +57,7 @@ int main()
 		playerColors.push_back(playerColor);
 		gameScreen(&window, playerNames, playerColors);
 	}
-	
+
     return 0;
 } // main
 

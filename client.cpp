@@ -17,7 +17,7 @@
 
 // client code
 
-int main()
+int RunClient()
 {
 	// do client stuff...
 
@@ -34,11 +34,11 @@ int main()
 	sf::TcpSocket socket;
 	sf::Socket::Status status = socket.connect(address, port);
 	if(status != sf::Socket::Done)
-  {
-      // error
-			std::cout << "Could not connect to the server!" << std::endl;
-      return -1;
-  }
+    {
+        // error
+        std::cout << "Could not connect to the server!" << std::endl;
+        return -1;
+    }
 
     // set socket to non-blocking?
 
