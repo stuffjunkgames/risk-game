@@ -57,9 +57,11 @@ int RunServer()
         {
             clients.pop_back();
 			readyStatus.pop_back();
-			continue;
         }
-		started = true;
+		if (clients.size() > 0)
+		{
+			started = true;
+		}
         for(unsigned int i = 0; i < clients.size(); i++)
         {
             sf::Packet packet;

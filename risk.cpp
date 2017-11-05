@@ -1277,7 +1277,7 @@ void TextEntry::appendString(std::string str)
 	}
 }
 
-void TextEntry::subtractString()
+void TextEntry::remove()
 {
 	if (getLabel()->getString().getSize() > 0)
 	{

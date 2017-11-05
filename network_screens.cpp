@@ -1,5 +1,7 @@
 #include "network_screens.hpp"
 
+#include <sstream>
+
 #define GAME_TOP 0
 #define GAME_LEFT 0
 #define GAME_WIDTH 1800
@@ -7,39 +9,39 @@
 #define NO_KEY_PRESSED -1
 #define KEY_PRESSED_ONCE -2
 
-//sf::Font loadFont(std::string path)
-//{
-//	sf::Font font;
-//	if (!font.loadFromFile(path))
-//	{
-//		// error
-//		exit(EXIT_FAILURE);
-//	}
-//
-//	return font;
-//}
-//
-//bool loadImages(World *world)
-//{
-//	std::string filename{ "" };
-//	std::ifstream file("borderImagesList.txt");
-//
-//	for (int i = 0; file >> filename; i++) {
-//		world->getTerritory(i)->borderTexture = sf::Texture();
-//		if (!world->getTerritory(i)->borderTexture.loadFromFile(filename))
-//			return 0;
-//	}
-//
-//	file = std::ifstream("territoryImagesList.txt");
-//
-//	for (int i = 0; file >> filename; i++) {
-//		world->getTerritory(i)->territoryTexture = sf::Texture();
-//		if (!world->getTerritory(i)->territoryTexture.loadFromFile(filename))
-//			return 0;
-//	}
-//
-//	return 1;
-//}
+sf::Font loadFont(std::string path)
+{
+	sf::Font font;
+	if (!font.loadFromFile(path))
+	{
+		// error
+		exit(EXIT_FAILURE);
+	}
+
+	return font;
+}
+
+bool loadImages(World *world)
+{
+	std::string filename{ "" };
+	std::ifstream file("borderImagesList.txt");
+
+	for (int i = 0; file >> filename; i++) {
+		world->getTerritory(i)->borderTexture = sf::Texture();
+		if (!world->getTerritory(i)->borderTexture.loadFromFile(filename))
+			return 0;
+	}
+
+	file = std::ifstream("territoryImagesList.txt");
+
+	for (int i = 0; file >> filename; i++) {
+		world->getTerritory(i)->territoryTexture = sf::Texture();
+		if (!world->getTerritory(i)->territoryTexture.loadFromFile(filename))
+			return 0;
+	}
+
+	return 1;
+}
 
 // return player number
 int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::TcpSocket &socket)
@@ -186,7 +188,7 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 			}
 			else if (keyPressed == 8)//backspace
 			{
-				textBox.subtractString();
+				textBox.remove();
 				keyPressed = NO_KEY_PRESSED;
 			}
 			/*else
@@ -391,7 +393,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 		gameState.playerLabels.at(i).setString(world.getPlayer(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
 		window.draw(gameState.playerLabels.at(i));
 	}
-	buttons.at(PhaseButton).Draw&(window);
+	buttons.at(PhaseButton).Draw(&window);
 	buttons.at(ChangePhaseButton).Draw(&window);
 	buttons.at(ExitButton).Draw(&window);
 
@@ -415,7 +417,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	return 0;
 }
 
-int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText)
+int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText, sf::Font &armyFont)
 {
 	sf::Vector2f mousePosition;
 	bool mouseDown = false, isTyping = false;
@@ -483,6 +485,14 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 					isTyping = false;
 					tmpBox->setIsTyping(isTyping);
 					gameState.buttonVal = ButtonValues::NoButton;
+					gameState.activeTransfer = nullptr;
+					for (std::vector<Transfer>::iterator it = gameState.transfers.begin(); it != gameState.transfers.end(); it++)
+					{
+						if (it->getAmount() <= 0)
+						{
+							gameState.transfers.erase(it);
+						}
+					}
 				}
 			}
 		}
@@ -492,7 +502,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		}
 	}
 
-	if (mouseDown)// mouse was clicked, but not on any buttons
+	if (mouseDown && gameState.myID == gameState.currentPlayerID)// mouse was clicked, but not on any buttons
 	{
 		// Check the territory images for non-zero alpha value at mousePosition
 		sf::Color pxColor;
@@ -531,7 +541,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 			}
 			case TurnPhase::attack:
 			{
-				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.currentPlayerID))// player clicked their own territory
+				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.myID))// player clicked their own territory
 				{
 					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
 					{
@@ -562,11 +572,26 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 						gameState.targetTerritory = -1;
 					}
 				}
+				if (gameState.activeTerritory >= 0)
+				{
+					if (gameState.targetTerritory >= 0)
+					{
+						gameState.dashedLine.setPoints(world.getTerritory(gameState.activeTerritory)->centerPos, world.getTerritory(gameState.targetTerritory)->centerPos);
+						buttons.at(AttackButton).moveToPosition(gameState.dashedLine.getCenter());
+						buttons.at(TextBox).moveToPosition(sf::Vector2f(buttons.at(AttackButton).getLocalBounds().left + buttons.at(AttackButton).getLocalBounds().width, buttons.at(AttackButton).getLocalBounds().top));
+						buttons.at(TextBox).clearText();
+						buttons.at(TextBox).appendString("1");
+					}
+					else
+					{
+						gameState.dashedLine.setPoints(world.getTerritory(gameState.activeTerritory)->centerPos, gameState.mouseHoverPosition);
+					}					
+				}
 				break;
 			}
 			case TurnPhase::reposition:
 			{
-				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.currentPlayerID))// player clicked their own territory
+				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.myID))// player clicked their own territory
 				{
 					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
 					{
@@ -606,6 +631,34 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 					gameState.activeTerritory = -1;
 					gameState.targetTerritory = -1;
 				}
+
+				if (gameState.activeTerritory >= 0)
+				{
+					if (gameState.targetTerritory >= 0)
+					{
+						gameState.dashedLine.setPoints(world.getTerritory(gameState.activeTerritory)->centerPos, world.getTerritory(gameState.targetTerritory)->centerPos);
+						buttons.at(PlusButton).moveToPosition(gameState.dashedLine.getCenter() + sf::Vector2f(30, -25));
+						buttons.at(MinusButton).moveToPosition(gameState.dashedLine.getCenter() + sf::Vector2f(30, 7));
+
+						for (unsigned int i = 0; i < gameState.transfers.size(); i++)
+						{
+							if (gameState.transfers.at(i).donor == gameState.activeTerritory && gameState.transfers.at(i).receiver == gameState.targetTerritory) {
+								gameState.activeTransfer = &gameState.transfers.at(i);
+								break;
+							}
+						}
+						if (gameState.activeTransfer == nullptr)
+						{
+							gameState.transfers.push_back(Transfer(armyFont, gameState.activeTerritory, gameState.targetTerritory, gameState.dashedLine));
+							gameState.transfers.back().setLinePoints(world.getTerritory(gameState.activeTerritory)->centerPos, world.getTerritory(gameState.targetTerritory)->centerPos);
+							gameState.activeTransfer = &gameState.transfers.back();
+						}
+					}
+					else
+					{
+						gameState.dashedLine.setPoints(world.getTerritory(gameState.activeTerritory)->centerPos, gameState.mouseHoverPosition);
+					}
+				}
 				break;
 			}
 			default:
@@ -621,7 +674,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		}
 	}
 
-	if (isTyping)
+	if (isTyping && gameState.myID == gameState.currentPlayerID)
 	{
 		if (gameState.keyPressed >= sf::Keyboard::Num0 && gameState.keyPressed <= sf::Keyboard::Num9)
 		{
@@ -637,7 +690,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		}
 		else if (gameState.keyPressed == sf::Keyboard::BackSpace)
 		{
-			tmpBox->subtractString();
+			tmpBox->remove();
 
 			gameState.keyPressed = KEY_PRESSED_ONCE;
 		}
@@ -656,17 +709,101 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 	{
 	case place:
 	{
+		if (gameState.activeTerritory >= 0 && world.getTerritory(gameState.activeTerritory)->GetOwner()->getID() == gameState.myID)
+		{
+			buttons.at(PlusButton).moveToPosition(world.getTerritory(gameState.activeTerritory)->centerPos + sf::Vector2f(30, -25));
+			buttons.at(MinusButton).moveToPosition(world.getTerritory(gameState.activeTerritory)->centerPos + sf::Vector2f(30, 7));
+
+			if (gameState.keyPressed == sf::Keyboard::Add || gameState.keyPressed == sf::Keyboard::Equal || gameState.buttonVal == ButtonValues::PlusButton) // + key
+			{
+				packet = ClientRequestAdd(gameState.activeTerritory, 1);
+				socket.send(packet);
+				
+				if (gameState.buttonVal == ButtonValues::PlusButton)
+				{
+					gameState.keyPressed = NO_KEY_PRESSED;
+				}
+				else
+				{
+					gameState.keyPressed = KEY_PRESSED_ONCE;
+				}
+				gameState.buttonVal = ButtonValues::NoButton;
+			}
+			else if (gameState.keyPressed == sf::Keyboard::Subtract || gameState.keyPressed == sf::Keyboard::Dash || gameState.buttonVal == ButtonValues::MinusButton) // - key
+			{
+				packet = ClientRequestAdd(gameState.activeTerritory, -1);
+				socket.send(packet);
+
+				if (gameState.buttonVal == ButtonValues::MinusButton)
+				{
+					gameState.keyPressed = NO_KEY_PRESSED;
+				}
+				else
+				{
+					gameState.keyPressed = KEY_PRESSED_ONCE;
+				}
+				gameState.buttonVal = ButtonValues::NoButton;
+			}
+		}
+
+		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
+		{
+			packet = ClientRequestPhaseChange();
+			socket.send(packet);
+		}
 
 		break;
 	}
 	case attack:
 	{
-		
+		if (gameState.buttonVal == ButtonValues::AttackButton)
+		{
+			std::stringstream ss((buttons.at(TextBox).getLabel()->getString()));
+			int attackNumber;
+			if (ss >> attackNumber)
+			{
+				packet = ClientRequestMove(gameState.activeTerritory, gameState.targetTerritory, attackNumber);
+				socket.send(packet);
+			}			
+		}
+
+		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
+		{
+			packet = ClientRequestPhaseChange();
+			socket.send(packet);
+		}
+
 		break;
 	}
 	case reposition:
 	{
-		
+		if ((gameState.keyPressed == sf::Keyboard::Add || gameState.keyPressed == sf::Keyboard::Equal || gameState.buttonVal == ButtonValues::PlusButton) // + pressed
+			&& gameState.targetTerritory >= 0 // target territory exists
+			&& initialWorld.getTerritory(gameState.activeTerritory)->GetArmies() > 1)  // source territory has unmoved armies
+		{
+			initialWorld.getTerritory(gameState.activeTerritory)->AddArmies(-1);    // remove army from initial distribution
+			gameState.activeTransfer->increaseAmount(1);
+		}
+		if ((gameState.keyPressed == sf::Keyboard::Dash || gameState.keyPressed == sf::Keyboard::Subtract || gameState.buttonVal == ButtonValues::PlusButton) // + pressed
+			&& gameState.targetTerritory >= 0 // target territory exists
+			&& gameState.activeTransfer->getAmount() > 0)  // a transfer has been commanded
+		{
+			initialWorld.getTerritory(gameState.activeTerritory)->AddArmies(1);    // remove army from initial distribution
+			gameState.activeTransfer->increaseAmount(-1);
+		}
+
+		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
+		{
+			for (Transfer t : gameState.transfers)
+			{
+				packet = ClientRequestMove(t.donor, t.receiver, t.getAmount());
+				socket.send(packet);
+			}
+
+			packet = ClientRequestPhaseChange();
+			socket.send(packet);
+		}
+
 		break;
 	}
 	default:
@@ -675,6 +812,47 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		break;
 	}
 	}
+
+	
+
+	// listen for any command signals from server
+	if (socket.receive(packet) == sf::Socket::Status::Done)
+	{
+		// decode packet
+		std::string s;
+		if (packet >> s)
+		{
+			if (s == "add")
+			{
+				int target, army, owner;
+				if (packet >> target >> army >> owner)
+				{
+					world.getTerritory(target)->AddArmies(army);
+				}
+			}
+			else if (s == "move")
+			{
+				int source, sourceRemaining, target, targetRemaining, targetOwner;
+				if (packet >> source >> sourceRemaining >> target >> targetRemaining >> targetOwner)
+				{
+					world.getPlayerID(targetOwner)->CaptureTerritory(world.getTerritory(target), targetRemaining);
+					world.getTerritory(source)->AddArmies(sourceRemaining - world.getTerritory(source)->GetArmies());
+				}
+			}
+			else if (s == "phase")
+			{
+				int phase, player;
+				if (packet >> phase >> player)
+				{
+					gameState.currentPlayerID = player;
+					gameState.phase = (TurnPhase)phase;
+					ResetForNextPhase(world, buttons, gameState);
+					initialWorld = world;
+				}
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -692,15 +870,14 @@ GameState::GameState()
 }
 
 // This is for resetting variables between phases
-void ResetForNextPhase(TurnPhase nextPhase, World &world, std::vector<Button> &buttons, GameState &gameState)
+void ResetForNextPhase(World &world, std::vector<Button> &buttons, GameState &gameState)
 {
-	switch (nextPhase)
+	switch (gameState.phase)
 	{
 	case TurnPhase::place:
 	{
 		gameState.transfers.clear();
 		gameState.currentPlayerID = world.getNextPlayer()->getID();
-		gameState.phase = TurnPhase::place;
 		buttons.at(PhaseButton).setString("PLACE");
 		buttons.at(PhaseButton).setFillColor(world.getPlayerID(gameState.currentPlayerID)->getColor());
 		gameState.activeTerritory = -1;
@@ -713,7 +890,6 @@ void ResetForNextPhase(TurnPhase nextPhase, World &world, std::vector<Button> &b
 	}
 	case TurnPhase::attack:
 	{
-		gameState.phase = TurnPhase::attack;
 		buttons.at(PhaseButton).setString("ATTACK");
 		gameState.activeTerritory = -1;
 		gameState.targetTerritory = -1;
@@ -724,7 +900,6 @@ void ResetForNextPhase(TurnPhase nextPhase, World &world, std::vector<Button> &b
 	}
 	case TurnPhase::reposition:
 	{
-		gameState.phase = TurnPhase::reposition;
 		buttons.at(PhaseButton).setString("REPOSITION");
 		gameState.activeTerritory = -1;
 		gameState.targetTerritory = -1;

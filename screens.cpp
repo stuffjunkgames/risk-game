@@ -192,7 +192,7 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 			}
 			else if (keyPressed == 8)//backspace
 			{
-				textBox.subtractString();
+				textBox.remove();
 				keyPressed = NO_KEY_PRESSED;
 			}
 			/*else
@@ -591,7 +591,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 			}
 			else if (keyPressed == sf::Keyboard::BackSpace)
 			{
-				textBox.subtractString();
+				textBox.remove();
 
 				keyPressed = KEY_PRESSED_ONCE;
 			}

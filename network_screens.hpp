@@ -38,7 +38,7 @@ public:
 	// functions
 
 	// members
-    int currentPlayerID;
+    int currentPlayerID, myID;
     TurnPhase phase;
 
     ButtonValues buttonVal;
@@ -58,7 +58,7 @@ public:
 
 sf::Font loadFont(std::string path);
 bool loadImages(World *world);
-void ResetForNextPhase(TurnPhase nextPhase, World &world, std::vector<Button> &buttons, GameState &state);
+void ResetForNextPhase(World &world, std::vector<Button> &buttons, GameState &state);
 
 // return player number
 int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::TcpSocket &socket);
@@ -67,7 +67,7 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText);
 
 // Event polling for game screen
-int GetGameEvents(sf::RenderWindow &window, World & world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText);
+int GetGameEvents(sf::RenderWindow &window, World & world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText, sf::Font &armyFont);
 
 // game logic
 int GameLogic(World &world, World &initialWorld, std::vector<Button> &buttons, GameState &gameState, sf::TcpSocket &socket);

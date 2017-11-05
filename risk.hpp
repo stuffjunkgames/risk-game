@@ -278,7 +278,7 @@ class TextEntry : public Button
 public:
 	TextEntry(sf::Font& font, sf::Vector2f position, int w, int h, int maxChars);
 	void appendString(std::string str);
-	void subtractString();
+	void remove();
 	void setIsTyping(bool isTyping);
 };
 

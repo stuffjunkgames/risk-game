@@ -46,8 +46,7 @@ int RunClient()
 	// get add commands for assigning territories
 	sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Uncertainty");
 	GameState gameState;
-	int myID;
-	myID = StartScreen(window, world, gameState, socket);
+	gameState.myID = StartScreen(window, world, gameState, socket);
 
 
 	//////////// GAMEPLAY ///////////
@@ -89,7 +88,7 @@ int RunClient()
 
 	while (window.isOpen())
 	{
-		GetGameEvents(window, world, buttons, gameState, hoverText);
+		GetGameEvents(window, world, buttons, gameState, hoverText, armyFont);
 		// draw function called at 60fps
 		dt = clock.restart();
 		t += dt;
