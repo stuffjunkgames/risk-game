@@ -159,9 +159,12 @@ int main()
 					int target, army;
 					if (receivePacket >> target >> army)
 					{
-						armyCount -= Place(&world, &initialWorld, world.getPlayerID(currentPlayer), target, army, armyCount);
-						sendPacket = ServerCommandAdd(target, world.getTerritory(target)->GetArmies(), currentPlayer);
+						int placed = Place(&world, &initialWorld, world.getPlayerID(currentPlayer), target, army, armyCount);
+						armyCount -= placed;
+						sendPacket = ServerCommandAdd(target, placed, currentPlayer);
 						SendAllClients(sendPacket, clients);
+						std::cout << "Adding " << army << " units to territory " << target << std::endl;
+						std::cout << "Territory " << target << " now has " << world.getTerritory(target)->GetArmies() << " units" << std::endl;
 					}
 				}
 				else if (s == "move" && phase == TurnPhase::attack)// client is requesting to attack a territory
