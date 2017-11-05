@@ -479,7 +479,6 @@ World::World(sf::Font& font)
 	// make the world.
 	nullPlayer = Player(-1, "NULLIE-WOOLIE", sf::Color(127, 127, 127, 255));// grey
 
-	LoadImages();
 	ReadFile(font);
 
 	playerTurn = -1;
@@ -495,7 +494,6 @@ World::World(sf::Font& font, std::vector<std::string> playerNames, std::vector<s
 
 	nullPlayer = Player(-1, "NULLIE-WOOLIE", sf::Color(127, 127, 127, 255));// grey
 
-	LoadImages();
 	ReadFile(font);
 	allocateTerritories();
 
@@ -1196,6 +1194,11 @@ Button::Button(sf::Font& font, std::string string, sf::Vector2f position, int w,
 	text.setPosition(position + sf::Vector2f((w / 2), (h / 2)));
 }
 
+Button::Button(sf::Font& font, sf::Vector2f position, int w, int h, int maxChars) : Button(font, "", position, w, h)
+{
+	this->maxChars = maxChars;
+}
+
 void Button::Draw(sf::RenderWindow* window)
 {
 	if (this->getPointCount() > 0)
@@ -1236,7 +1239,10 @@ void Button::setString(std::string str)
 
 void Button::appendString(std::string str)
 {
-	setString(text.getString() + str);
+	if (text.getString().getSize() < maxChars)
+	{
+		setString(text.getString() + str);
+	}
 }
 
 void Button::clearText()
@@ -1258,6 +1264,28 @@ Label* Button::getLabel()
 {
 	return &text;
 }
+
+void Button::remove()
+{
+	if (getLabel()->getString().getSize() > 0)
+	{
+		setString(getLabel()->getString().substring(0, getLabel()->getString().getSize() - 1));
+	}
+}
+
+void Button::setIsTyping(bool isTyping)
+{
+	this->isTyping = isTyping;
+	if (isTyping)
+	{
+		setOutlineColor(sf::Color::Yellow);
+	}
+	else
+	{
+		setOutlineColor(sf::Color::Black);
+	}
+}
+
 // Button
 ////////////////////////////////////////////////////////////////////////////////////////////
 

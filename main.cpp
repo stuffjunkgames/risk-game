@@ -30,36 +30,36 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 // main
 
-int main()
-{
-    sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Risk");
-
-	sf::Color playerColor;
-	std::string playerName;
-	std::vector<sf::Color> playerColors;
-	std::vector<std::string> playerNames;
-
-	playerName = startScreen(&window, &playerColor);
-
-	// This will be replaced with Networking handling getting other player names and colors
-
-	playerNames.push_back("Blue Goo");
-	playerColors.push_back(sf::Color(59, 160, 176, 255));// blue
-	playerNames.push_back("Red Dread");
-	playerColors.push_back(sf::Color(176, 59, 110, 255));// red
-	playerNames.push_back("Green Spleen");
-	playerColors.push_back(sf::Color(114, 181, 60, 255));// green
-	
-
-	if (playerName != "")
-	{
-		playerNames.push_back(playerName);
-		playerColors.push_back(playerColor);
-		gameScreen(&window, playerNames, playerColors);
-	}
-	
-    return 0;
-} // main
+//int main()
+//{
+//    sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Risk");
+//
+//	sf::Color playerColor;
+//	std::string playerName;
+//	std::vector<sf::Color> playerColors;
+//	std::vector<std::string> playerNames;
+//
+//	playerName = startScreen(&window, &playerColor);
+//
+//	// This will be replaced with Networking handling getting other player names and colors
+//
+//	playerNames.push_back("Blue Goo");
+//	playerColors.push_back(sf::Color(59, 160, 176, 255));// blue
+//	playerNames.push_back("Red Dread");
+//	playerColors.push_back(sf::Color(176, 59, 110, 255));// red
+//	playerNames.push_back("Green Spleen");
+//	playerColors.push_back(sf::Color(114, 181, 60, 255));// green
+//	
+//
+//	if (playerName != "")
+//	{
+//		playerNames.push_back(playerName);
+//		playerColors.push_back(playerColor);
+//		gameScreen(&window, playerNames, playerColors);
+//	}
+//	
+//    return 0;
+//} // main
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
