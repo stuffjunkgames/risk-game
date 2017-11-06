@@ -1,3 +1,5 @@
+#define SERVER
+
 #include "risk.hpp"
 #include "sfvm.hpp"
 #include "movement.hpp"
@@ -50,6 +52,7 @@ int main()
         if(listener.accept(*(clients.back().get())) == sf::Socket::Status::Done)
         {
             std::cout << "Player connected! " << clients.size() << " players have connected\n";
+            clients.back().get()->setBlocking(false);
 
             // generate player number and send to all connected clients
 
@@ -175,6 +178,9 @@ int main()
 						Attack(&world, world.getPlayerID(currentPlayer), source, target, army);
 						sendPacket = ServerCommandMove(source, world.getTerritory(source)->GetArmies(), target, world.getTerritory(target)->GetArmies(), world.getTerritory(target)->GetOwner()->getID());
 						SendAllClients(sendPacket, clients);
+
+						std::cout << "Moving " << army << " from territory " << source << " to territory " << target << std::endl;
+						std::cout << "Territory " << source << " now has " << world.getTerritory(source)->GetArmies() << " armies and territory " << target << " now has " << world.getTerritory(target)->GetArmies() << " armies." << std::endl;
 					}
 				}
 				else if (s == "move" && phase == TurnPhase::reposition)// client is requesting to move armies
@@ -185,6 +191,9 @@ int main()
 						Reposition(&world, &initialWorld, world.getPlayerID(currentPlayer), source, target, army);
 						sendPacket = ServerCommandMove(source, world.getTerritory(source)->GetArmies(), target, world.getTerritory(target)->GetArmies(), world.getTerritory(target)->GetOwner()->getID());
 						SendAllClients(sendPacket, clients);
+
+						std::cout << "Moving " << army << " from territory " << source << " to territory " << target << std::endl;
+						std::cout << "Territory " << source << " now has " << world.getTerritory(source)->GetArmies() << " armies and territory " << target << " now has " << world.getTerritory(target)->GetArmies() << " armies." << std::endl;
 					}
 				}
 				else if (s == "phase")
@@ -216,6 +225,8 @@ int main()
 					sendPacket = ServerCommandPhaseChange(phase, currentPlayer);
 					SendAllClients(sendPacket, clients);
 					initialWorld = world;
+
+					std::cout << "Changing phase to " << phase << " for player " << currentPlayer << std::endl;
 				}
 			}
 		}
