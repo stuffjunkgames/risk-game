@@ -52,7 +52,8 @@ int main()
 	if(status != sf::Socket::Done)
     {
         // error
-        return EXIT_FAILURE;
+        std::cout << "Could not connect to the server!" << std::endl;
+		return EXIT_FAILURE;
     }
 	std::cout << "Connected to Server!" << std::endl;
 	socket.setBlocking(false);
@@ -135,8 +136,8 @@ int main()
 			DrawGameScreen(window, world, buttons, gameState, hoverText);
 		}
 		GameLogic(world, initialWorld, buttons, gameState, socket);
-		
+
 	}
-	
+
 	return 0;
 }

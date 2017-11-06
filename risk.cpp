@@ -1333,6 +1333,11 @@ void TextEntry::setIsTyping(bool isTyping)
 
 ColorPalette::ColorPalette(sf::Vector2f position, int nColors) : ExtendedShape(4)
 {
+	colors.push_back(sf::Color(59, 160, 176, 255));
+	colors.push_back(sf::Color(176, 59, 110, 255));
+	colors.push_back(sf::Color(114, 181, 60, 255));
+	colors.push_back(sf::Color(176, 90, 59, 255));
+
 	for (int i = 0; i < nColors; i++)
 	{
 		shapes.push_back(ExtendedShape(4));

@@ -294,10 +294,7 @@ class ColorPalette : public ExtendedShape
 	int size = 100;
 	int colorSelected;
 
-	std::vector<sf::Color> colors{ sf::Color(59, 160, 176, 255),
-		sf::Color(176, 59, 110, 255),
-		sf::Color(114, 181, 60, 255),
-		sf::Color(176, 90, 59, 255) };
+	std::vector<sf::Color> colors;
 
 public:
 	ColorPalette(sf::Vector2f position, int nColors);
