@@ -339,12 +339,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 			buttons.at(AttackButton).Draw(&window);
 			buttons.at(TextBox).Draw(&window);
 		}
-		else
-		{
-			buttons.at(AttackButton).isActive = false;
-			buttons.at(TextBox).isActive = false;
-		}
-		if (gameState.activeTerritory >= 0)
+		else if (gameState.activeTerritory >= 0)
 		{
 			window.draw(world.greySprite);
 			for (unsigned int i = 0; i < world.getTerritory(gameState.activeTerritory)->getConnected()->size(); i++)
@@ -356,7 +351,18 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 			}
 			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
 			window.draw(world.normalBordersSprite);
+			// draw the active territory's yellow border
+			if (gameState.activeTerritory >= 0 && gameState.activeTerritory < (int)world.TerritoryNumber()) {
+				window.draw(world.getTerritory(gameState.activeTerritory)->borderSprite);
+			}
 			gameState.dashedLine.Draw(&window, world.getTerritory(gameState.activeTerritory)->centerPos, gameState.mouseHoverPosition);
+			buttons.at(AttackButton).isActive = false;
+			buttons.at(TextBox).isActive = false;
+		}
+		else
+		{
+			buttons.at(AttackButton).isActive = false;
+			buttons.at(TextBox).isActive = false;
 		}
 	}
 	else if (gameState.phase == reposition)
@@ -379,6 +385,10 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 			}
 			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
 			window.draw(world.normalBordersSprite);
+			// draw the active territory's yellow border
+			if (gameState.activeTerritory >= 0 && gameState.activeTerritory < (int)world.TerritoryNumber()) {
+				window.draw(world.getTerritory(gameState.activeTerritory)->borderSprite);
+			}
 			gameState.dashedLine.Draw(&window, world.getTerritory(gameState.activeTerritory)->centerPos, gameState.mouseHoverPosition);
 			buttons.at(PlusButton).isActive = false;
 			buttons.at(MinusButton).isActive = false;
@@ -426,7 +436,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText, sf::Font &armyFont)
 {
 	sf::Vector2f mousePosition;
-	bool mouseDown = false, isTyping = false;
+	bool mouseDown = false;
 	sf::Event event;
 
 	while (window.pollEvent(event))
@@ -456,6 +466,8 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 				// left mouse pressed
 				mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
 
+				buttons.at(TextBox).setIsTyping(false);
+
 				// Set flags for button presses
 				if (buttons.at(ButtonValues::PlusButton).isInside(mousePosition) && buttons.at(ButtonValues::PlusButton).isActive)
 				{
@@ -476,20 +488,18 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 				else if (buttons.at(ButtonValues::TextBox).isInside(mousePosition) && buttons.at(ButtonValues::TextBox).isActive)
 				{
 					gameState.buttonVal = ButtonValues::TextBox;
-					isTyping = true;
-					buttons.at(TextBox).setIsTyping(isTyping);
+					buttons.at(TextBox).setIsTyping(true);
 				}
 				else if (buttons.at(ButtonValues::ExitButton).isInside(mousePosition) && buttons.at(ButtonValues::ExitButton).isActive)
 				{
 					gameState.buttonVal = ButtonValues::ExitButton;
 
-					return EXIT_FAILURE;
+					return -1;
 				}
 				else
 				{
 					mouseDown = true;
-					isTyping = false;
-					buttons.at(TextBox).setIsTyping(isTyping);
+					buttons.at(TextBox).setIsTyping(false);
 					gameState.buttonVal = ButtonValues::NoButton;
 					gameState.activeTransfer = nullptr;
 					for (std::vector<Transfer>::iterator it = gameState.transfers.begin(); it != gameState.transfers.end(); it++)
@@ -756,6 +766,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		{
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
+			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
 		break;
@@ -770,13 +781,15 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 			{
 				packet = ClientRequestMove(gameState.activeTerritory, gameState.targetTerritory, attackNumber);
 				socket.send(packet);
-			}			
+			}
+			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
 		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
 		{
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
+			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
 		break;
@@ -789,6 +802,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		{
 			initialWorld.getTerritory(gameState.activeTerritory)->AddArmies(-1);    // remove army from initial distribution
 			gameState.activeTransfer->increaseAmount(1);
+			gameState.buttonVal = ButtonValues::NoButton;
 		}
 		if ((gameState.keyPressed == sf::Keyboard::Dash || gameState.keyPressed == sf::Keyboard::Subtract || gameState.buttonVal == ButtonValues::PlusButton) // + pressed
 			&& gameState.targetTerritory >= 0 // target territory exists
@@ -796,6 +810,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		{
 			initialWorld.getTerritory(gameState.activeTerritory)->AddArmies(1);    // remove army from initial distribution
 			gameState.activeTransfer->increaseAmount(-1);
+			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
 		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
@@ -808,6 +823,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
+			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
 		break;
