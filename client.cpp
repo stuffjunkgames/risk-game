@@ -17,7 +17,7 @@
 
 // client code
 
-int RunClient()
+int main()
 {
 	// do client stuff...
 
@@ -26,6 +26,22 @@ int RunClient()
 	// create world
 	sf::Font armyFont = loadFont("arial.ttf");
 	World world(armyFont);
+	sf::Texture mapTexture;
+	if (!mapTexture.loadFromFile("new_map.png"))
+		return EXIT_FAILURE;
+	world.mapSprite = sf::Sprite(mapTexture);
+	world.mapSprite.setScale(1.5, 1.5);
+	sf::Texture greyTexture;
+	if (!greyTexture.loadFromFile("grey.png"))
+		return EXIT_FAILURE;
+	world.greySprite = sf::Sprite(greyTexture);
+	world.greySprite.setScale(1.5, 1.5);
+	sf::Texture normalBordersTexture;
+	if (!normalBordersTexture.loadFromFile("normal_borders.png"))
+		return EXIT_FAILURE;
+	world.normalBordersSprite = sf::Sprite(normalBordersTexture);
+	world.normalBordersSprite.setScale(1.5, 1.5);
+
 
 	unsigned int port = 12345;
 	std::string address = "msquared169.ddns.net";
@@ -37,8 +53,10 @@ int RunClient()
     {
         // error
         std::cout << "Could not connect to the server!" << std::endl;
-        return -1;
+		return EXIT_FAILURE;
     }
+	std::cout << "Connected to Server!" << std::endl;
+	socket.setBlocking(false);
 
     // set socket to non-blocking?
 
@@ -47,7 +65,10 @@ int RunClient()
 	// get add commands for assigning territories
 	sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Uncertainty");
 	GameState gameState;
-	gameState.myID = StartScreen(window, world, gameState, socket);
+	if (gameState.myID = StartScreen(window, world, gameState, socket) < 0)
+	{
+		return EXIT_FAILURE;
+	}
 
 
 	//////////// GAMEPLAY ///////////
@@ -73,10 +94,23 @@ int RunClient()
 	buttons.push_back(Button(armyFont, ">", sf::Vector2f(0, 0), 60, 60));// change phase
 	buttons.back().setCharacterSize(40);
 	buttons.back().moveToPosition(sf::Vector2f(275, 0));
-	buttons.push_back(TextEntry(armyFont, sf::Vector2f(0, 0), 60, 30, 3));// textbox
+	buttons.push_back(Button(armyFont, sf::Vector2f(0, 0), 60, 30, 3));// textbox
 	buttons.push_back(Button());// start
 	buttons.push_back(Button());// color picker
 	buttons.push_back(Button(armyFont, "EXIT", sf::Vector2f(GAME_WIDTH - 100, GAME_HEIGHT - 40), 100, 40));// exit
+
+	if (!loadImages(&world))
+	{
+		return EXIT_FAILURE;
+	}
+	for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
+	{
+		world.getTerritory(i)->borderSprite = sf::Sprite(world.getTerritory(i)->borderTexture);
+		world.getTerritory(i)->borderSprite.setScale(1.5, 1.5);
+		world.getTerritory(i)->territorySprite = sf::Sprite(world.getTerritory(i)->territoryTexture);
+		world.getTerritory(i)->territorySprite.setScale(1.5, 1.5);
+		world.getTerritory(i)->territoryImage = world.getTerritory(i)->territoryTexture.copyToImage();
+	}
 
 	HoverText hoverText(armyFont);
 	World initialWorld = world;
@@ -89,7 +123,10 @@ int RunClient()
 
 	while (window.isOpen())
 	{
-		GetGameEvents(window, world, buttons, gameState, hoverText, armyFont);
+		if (GetGameEvents(window, world, buttons, gameState, hoverText, armyFont) < 0)
+		{
+			return EXIT_FAILURE;
+		}
 		// draw function called at 60fps
 		dt = clock.restart();
 		t += dt;

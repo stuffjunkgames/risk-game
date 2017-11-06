@@ -11,7 +11,7 @@
 
 // server code
 
-int main()
+int RunServer()
 {
     // do server stuff...
 
