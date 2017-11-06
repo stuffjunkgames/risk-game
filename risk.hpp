@@ -252,12 +252,15 @@ class Button : public ExtendedShape
 	int defaultWidth = 30;
 	int defaultHeight = 30;
 	sf::Color fillColor = sf::Color(255, 255, 255, 127);
+	int maxChars = 100;
+	
 
 public:
 	// constructor
 	Button();
 	Button(sf::Font& font, std::string string, sf::Vector2f position);
 	Button(sf::Font& font, std::string string, sf::Vector2f position, int w, int h);
+	Button(sf::Font& font, sf::Vector2f position, int w, int h, int maxChars);
 
 	// public functions
 	void Draw(sf::RenderWindow* window);
@@ -266,9 +269,12 @@ public:
 	void appendString(std::string str);
 	void clearText();
 	void setCharacterSize(int charSize);
-	Label* getLabel();
+	void remove();
+	void setIsTyping(bool isTyping);
 
+	Label* getLabel();
 	bool isActive = false;
+	bool isTyping = false;
 };
 
 class TextEntry : public Button
@@ -288,10 +294,7 @@ class ColorPalette : public ExtendedShape
 	int size = 100;
 	int colorSelected;
 
-	std::vector<sf::Color> colors{ sf::Color(59, 160, 176, 255),
-		sf::Color(176, 59, 110, 255),
-		sf::Color(114, 181, 60, 255),
-		sf::Color(176, 90, 59, 255) };
+	std::vector<sf::Color> colors;
 
 public:
 	ColorPalette(sf::Vector2f position, int nColors);
