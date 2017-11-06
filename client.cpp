@@ -17,7 +17,7 @@
 
 // client code
 
-int RunClient()
+int main()
 {
 	// do client stuff...
 
