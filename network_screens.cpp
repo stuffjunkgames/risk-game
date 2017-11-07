@@ -300,7 +300,7 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 	return -1;
 }
 
-int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState &gameState, HoverText &hoverText)
+int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat)
 {
 	// clear the window
 	window.clear();
@@ -413,6 +413,8 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	buttons.at(ChangePhaseButton).Draw(&window);
 	buttons.at(ExitButton).Draw(&window);
 
+	chat.Draw(&window);
+
 	// draw the hover text
 	sf::Color pxColor;
 	for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
@@ -433,7 +435,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	return 0;
 }
 
-int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText, sf::Font &armyFont)
+int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText, ChatBox &chat, sf::Font &armyFont)
 {
 	sf::Vector2f mousePosition;
 	bool mouseDown = false;
@@ -444,6 +446,14 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		if (event.type == sf::Event::Closed)
 			window.close();
 		
+		if (event.type == sf::Event::TextEntered)
+		{
+			if (gameState.keyPressed == NO_KEY_PRESSED)
+			{
+				gameState.keyPressed = event.text.unicode;
+			}
+		}
+
 		// get key presses, respond to them
 		if (event.type == sf::Event::KeyPressed)
 		{
@@ -496,10 +506,15 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 
 					return -1;
 				}
+				else if (chat.isInside(mousePosition))
+				{
+					gameState.buttonVal = ButtonValues::ChatButton;
+				}
 				else
 				{
 					mouseDown = true;
 					buttons.at(TextBox).setIsTyping(false);
+					chat.textField.isTyping = false;
 					gameState.buttonVal = ButtonValues::NoButton;
 					gameState.activeTransfer = nullptr;
 					for (std::vector<Transfer>::iterator it = gameState.transfers.begin(); it != gameState.transfers.end(); it++)
@@ -708,6 +723,20 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		{
 			buttons.at(TextBox).remove();
 
+			gameState.keyPressed = KEY_PRESSED_ONCE;
+		}
+	}
+
+	if (chat.textField.isTyping)
+	{
+		if (gameState.keyPressed < 127 && gameState.keyPressed >= 32)
+		{
+			chat.textField.appendString(std::string() + static_cast<char>(gameState.keyPressed));
+			gameState.keyPressed = KEY_PRESSED_ONCE;
+		}
+		else if (gameState.keyPressed == 8)//backspace
+		{
+			chat.textField.remove();
 			gameState.keyPressed = KEY_PRESSED_ONCE;
 		}
 	}

@@ -306,16 +306,17 @@ public:
 
 class ChatBox : public ExtendedShape
 {
+	Player* player;
 	sf::Font* font;
 	std::vector<Label> messages;
 	int sendButtonW = 100, sendButtonH = 60;
 	int maxMessages, messageH = 30;
 
 public:
-	ChatBox(sf::Font& font, sf::Vector2f position, int w, int h);
+	ChatBox(Player* player, sf::Font& font, sf::Vector2f position, int w, int h);
 
 	void Draw(sf::RenderWindow* window);
-	void AddMessage(Player* player, std::string message);
+	void AddMessage(std::string message);
 	bool isInside(sf::Vector2f point);
 
 	Button textField, sendButton;

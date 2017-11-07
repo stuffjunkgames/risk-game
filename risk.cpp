@@ -1409,8 +1409,10 @@ void ColorPalette::chooseColor(int n)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // ChatBox class definitions
 
-ChatBox::ChatBox(sf::Font& font, sf::Vector2f position, int w, int h) : ExtendedShape(4)
+ChatBox::ChatBox(Player* player, sf::Font& font, sf::Vector2f position, int w, int h) : ExtendedShape(4)
 {
+	this->player = player;
+
 	this->setPoint(0, position);
 	this->setPoint(1, position + sf::Vector2f(0, h));
 	this->setPoint(2, position + sf::Vector2f(w, h));
@@ -1438,7 +1440,7 @@ void ChatBox::Draw(sf::RenderWindow* window)
 	}
 }
 
-void ChatBox::AddMessage(Player* player, std::string message)
+void ChatBox::AddMessage(std::string message)
 {
 	messages.push_back(Label(*font));
 	messages.back().setString(player->getName() + ": " + message);
@@ -1468,6 +1470,7 @@ bool ChatBox::isInside(sf::Vector2f point)
 	}
 	if (sendButton.isInside(point))
 	{
+		AddMessage(textField.getLabel()->getString());
 		return true;
 	}
 

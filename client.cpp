@@ -123,6 +123,7 @@ int main()
 	}
 
 	HoverText hoverText(armyFont);
+	ChatBox chat(world.getPlayerID(gameState.myID), armyFont, sf::Vector2f(0, GAME_HEIGHT - 500), 200, 500);
 	World initialWorld = world;
 
 	std::srand(std::time(0));
@@ -133,7 +134,7 @@ int main()
 
 	while (window.isOpen())
 	{
-		if (GetGameEvents(window, world, buttons, gameState, hoverText, armyFont) < 0)
+		if (GetGameEvents(window, world, buttons, gameState, hoverText, chat, armyFont) < 0)
 		{
 			return EXIT_FAILURE;
 		}
@@ -143,7 +144,7 @@ int main()
 		if (t.asMilliseconds() >= 16)
 		{
 			t = sf::Time::Zero;
-			DrawGameScreen(window, world, buttons, gameState, hoverText);
+			DrawGameScreen(window, world, buttons, gameState, hoverText, chat);
 		}
 		GameLogic(world, initialWorld, buttons, gameState, socket);
 
