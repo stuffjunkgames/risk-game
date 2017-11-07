@@ -477,6 +477,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 				mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
 
 				buttons.at(TextBox).setIsTyping(false);
+				chat.textField.setIsTyping(false);
 
 				// Set flags for button presses
 				if (buttons.at(ButtonValues::PlusButton).isInside(mousePosition) && buttons.at(ButtonValues::PlusButton).isActive)
@@ -514,7 +515,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 				{
 					mouseDown = true;
 					buttons.at(TextBox).setIsTyping(false);
-					chat.textField.isTyping = false;
+					chat.textField.setIsTyping(false);
 					gameState.buttonVal = ButtonValues::NoButton;
 					gameState.activeTransfer = nullptr;
 					for (std::vector<Transfer>::iterator it = gameState.transfers.begin(); it != gameState.transfers.end(); it++)
