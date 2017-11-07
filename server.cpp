@@ -20,22 +20,20 @@ int RunServer()
     unsigned int port = 12345;
     std::string address = "msquared169.ddns.net";
 
-    // CLI configurations? (later)
+	// create listener
+	sf::TcpListener listener;
+	sf::Packet packet;
+	if (listener.listen(port) != sf::Socket::Done)
+	{
+		std::cout << "Error listening to port!\n";
+		return 1;
+	}
+
+	listener.setBlocking(false);
 
     // create world
     sf::Font armyFont = loadFont("arial.ttf");
     World world(armyFont);
-
-    // create listener
-    sf::TcpListener listener;
-    sf::Packet packet;
-    if(listener.listen(port) != sf::Socket::Done)
-    {
-        std::cout << "Error listening to port!\n";
-        return 1;
-    }
-
-    listener.setBlocking(false);
 
     std::vector<std::unique_ptr<sf::TcpSocket>> clients;
 	std::vector<bool> readyStatus;

@@ -46,6 +46,16 @@ int main()
 	unsigned int port = 12345;
 	std::string address = "msquared169.ddns.net";
 
+	// let user choose to use a different address
+	std::cout << "Use default address \"msquared169.ddns.net\"? (Y/N): ";
+	std::string input;
+	std::cin >> input;
+	if (input == "n" || input == "N")
+	{
+		std::cout << "Enter new address: ";
+		std::cin >> address;
+	}
+
 	// connect to server
 	sf::TcpSocket socket;
 	sf::Socket::Status status = socket.connect(address, port);
