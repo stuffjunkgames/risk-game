@@ -455,7 +455,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		}
 
 		// get key presses, respond to them
-		if (event.type == sf::Event::KeyPressed)
+		if (event.type == sf::Event::KeyPressed && !chat.textField.isTyping)
 		{
 			//this is only working for one key pressed at a time
 			if (gameState.keyPressed == NO_KEY_PRESSED)
