@@ -17,7 +17,7 @@
 
 // client code
 
-int main()
+int RunClient()
 {
 	// do client stuff...
 
@@ -123,7 +123,8 @@ int main()
 	}
 
 	HoverText hoverText(armyFont);
-	ChatBox chat(world.getPlayerID(gameState.myID), armyFont, sf::Vector2f(0, GAME_HEIGHT - 500), 200, 500);
+	int chatH = 400;
+	ChatBox chat(world.getPlayerID(gameState.myID), armyFont, sf::Vector2f(0, GAME_HEIGHT - chatH), 300, chatH);
 	World initialWorld = world;
 
 	std::srand(std::time(0));
@@ -146,7 +147,7 @@ int main()
 			t = sf::Time::Zero;
 			DrawGameScreen(window, world, buttons, gameState, hoverText, chat);
 		}
-		GameLogic(world, initialWorld, buttons, gameState, socket);
+		GameLogic(world, initialWorld, buttons, gameState, socket, chat);
 
 	}
 

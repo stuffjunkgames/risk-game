@@ -11,7 +11,7 @@
 
 // server code
 
-int RunServer()
+int main()
 {
     // do server stuff...
 
@@ -225,6 +225,18 @@ int RunServer()
 					initialWorld = world;
 
 					std::cout << "Changing phase to " << phase << " for player " << currentPlayer << std::endl;
+				}
+				else if (s == "chat")
+				{
+					int playerID;
+					std::string message;
+					if (receivePacket >> playerID >> message)
+					{
+						sendPacket = ServerCommandMessage(playerID, message);
+						SendAllClients(sendPacket, clients);
+
+						std::cout << "Player " << playerID << " says: " << message << std::endl;
+					}
 				}
 			}
 		}

@@ -745,7 +745,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 	return 0;
 }
 
-int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons, GameState & gameState, sf::TcpSocket &socket)
+int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons, GameState & gameState, sf::TcpSocket &socket, ChatBox &chat)
 {
 	Player* currentPlayer = world.getPlayerID(gameState.currentPlayerID);
 	sf::Packet packet;
@@ -865,6 +865,13 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 	}
 	}
 
+	if (gameState.buttonVal = ButtonValues::ChatButton)
+	{
+		packet = ClientRequestMessage(gameState.myID, chat.textField.getLabel()->getString());
+		socket.send(packet);
+
+		gameState.buttonVal = ButtonValues::NoButton;
+	}
 	
 
 	// listen for any command signals from server
@@ -900,6 +907,15 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 					gameState.phase = (TurnPhase)phase;
 					ResetForNextPhase(world, buttons, gameState);
 					initialWorld = world;
+				}
+			}
+			else if (s == "chat")
+			{
+				int playerID;
+				std::string message;
+				if (packet >> playerID >> message)
+				{
+					chat.AddMessage(world.getPlayerID(playerID), message);
 				}
 			}
 		}
