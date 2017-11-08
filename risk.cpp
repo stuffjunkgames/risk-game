@@ -1471,12 +1471,14 @@ bool ChatBox::isInside(sf::Vector2f point)
 	if (textField.isInside(point))
 	{
 		textField.setIsTyping(true);
+		return true;
 	}
 	if (sendButton.isInside(point))
 	{
 		//AddMessage(textField.getLabel()->getString());
+		//textField.getLabel()->setString("");
 
-		textField.getLabel()->setString("");
+		textField.setIsTyping(false);
 		return true;
 	}
 

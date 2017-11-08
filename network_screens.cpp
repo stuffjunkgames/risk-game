@@ -476,9 +476,6 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 				// left mouse pressed
 				mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
 
-				buttons.at(TextBox).setIsTyping(false);
-				chat.textField.setIsTyping(false);
-
 				// Set flags for button presses
 				if (buttons.at(ButtonValues::PlusButton).isInside(mousePosition) && buttons.at(ButtonValues::PlusButton).isActive)
 				{
@@ -865,10 +862,12 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 	}
 	}
 
-	if (gameState.buttonVal = ButtonValues::ChatButton)
+	if (gameState.buttonVal == ButtonValues::ChatButton && !chat.textField.isTyping)
 	{
 		packet = ClientRequestMessage(gameState.myID, chat.textField.getLabel()->getString());
 		socket.send(packet);
+
+		chat.textField.getLabel()->setString("");
 
 		gameState.buttonVal = ButtonValues::NoButton;
 	}
