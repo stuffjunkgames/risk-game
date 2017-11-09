@@ -86,7 +86,7 @@ int main()
 						{
 							id = world.addPlayer(name, sf::Color(color));
 						}
-                        std::cout << "Player " << i << " is ready :P" << std::endl;
+                        std::cout << "Player " << i << " is ready :P with name \"" << name << "\" and color \"" << std::to_string(color) << "\"" << std::endl;
                         sf::Packet sendPacket = ServerCommandID(id);
                         clients[i].get()->send(sendPacket);
                     }
@@ -124,11 +124,11 @@ int main()
 
     // pick starting player, send to clients
     //int currentPlayer = rand() % clients.size() + 1;
-	int currentPlayer = world.getNextPlayer()->getID();
-	packet = ServerCommandPhaseChange(TurnPhase::place, currentPlayer);
+	int currentPlayerID = world.getNextPlayer()->getID();
+	packet = ServerCommandPhaseChange(TurnPhase::place, currentPlayerID);
 	SendAllClients(packet, clients);
 
-	std::cout << "Player " << currentPlayer << " starts!" << std::endl;
+	std::cout << "Player " << currentPlayerID << " starts!" << std::endl;
 
 
     //////////// GAMEPLAY ///////////
@@ -138,14 +138,14 @@ int main()
     // send turn changes to all clients, including next player
 
 	TurnPhase phase = place;
-	int armyCount = 3 + world.GetBonus(currentPlayer);
+	int armyCount = 3 + world.GetBonus(currentPlayerID);
 	int placedArmies = 0;
 	World initialWorld = world;
 	while (started)
 	{
 		// receive packet from the current player
 		sf::Packet receivePacket, sendPacket;
-		sf::Socket::Status status = clients[currentPlayer].get()->receive(receivePacket);
+		sf::Socket::Status status = clients[currentPlayerID].get()->receive(receivePacket);
 
 		// do something with the packet
 		if (status == sf::Socket::Status::Done)
@@ -160,9 +160,9 @@ int main()
 					int target, army;
 					if (receivePacket >> target >> army)
 					{
-						int placed = Place(&world, &initialWorld, world.getPlayerID(currentPlayer), target, army, armyCount);
+						int placed = Place(&world, &initialWorld, world.getPlayerID(currentPlayerID), target, army, armyCount);
 						armyCount -= placed;
-						sendPacket = ServerCommandAdd(target, placed, currentPlayer);
+						sendPacket = ServerCommandAdd(target, placed, currentPlayerID);
 						SendAllClients(sendPacket, clients);
 						std::cout << "Adding " << army << " units to territory " << target << std::endl;
 						std::cout << "Territory " << target << " now has " << world.getTerritory(target)->GetArmies() << " units" << std::endl;
@@ -173,7 +173,7 @@ int main()
 					int source, target, army;
 					if (receivePacket >> source >> target >> army)
 					{
-						Attack(&world, world.getPlayerID(currentPlayer), source, target, army);
+						Attack(&world, world.getPlayerID(currentPlayerID), source, target, army);
 						sendPacket = ServerCommandMove(source, world.getTerritory(source)->GetArmies(), target, world.getTerritory(target)->GetArmies(), world.getTerritory(target)->GetOwner()->getID());
 						SendAllClients(sendPacket, clients);
 
@@ -186,7 +186,7 @@ int main()
 					int source, target, army;
 					if (receivePacket >> source >> target >> army)
 					{
-						Reposition(&world, &initialWorld, world.getPlayerID(currentPlayer), source, target, army);
+						Reposition(&world, &initialWorld, world.getPlayerID(currentPlayerID), source, target, army);
 						sendPacket = ServerCommandMove(source, world.getTerritory(source)->GetArmies(), target, world.getTerritory(target)->GetArmies(), world.getTerritory(target)->GetOwner()->getID());
 						SendAllClients(sendPacket, clients);
 
@@ -211,8 +211,8 @@ int main()
 					case TurnPhase::reposition:
 					{
 						phase = TurnPhase::place;
-						currentPlayer = world.getNextPlayer()->getID();
-						armyCount = 3 + world.GetBonus(currentPlayer);
+						currentPlayerID = world.getNextPlayer()->getID();
+						armyCount = 3 + world.GetBonus(currentPlayerID);
 						break;
 					}
 					default:
@@ -220,11 +220,11 @@ int main()
 						break;
 					}
 					}
-					sendPacket = ServerCommandPhaseChange(phase, currentPlayer);
+					sendPacket = ServerCommandPhaseChange(phase, currentPlayerID);
 					SendAllClients(sendPacket, clients);
 					initialWorld = world;
 
-					std::cout << "Changing phase to " << phase << " for player " << currentPlayer << std::endl;
+					std::cout << "Changing phase to " << phase << " for player " << currentPlayerID << std::endl;
 				}
 				else if (s == "chat")
 				{

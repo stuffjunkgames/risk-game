@@ -406,7 +406,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 
 	for (unsigned int i = 0; i < gameState.playerLabels.size(); i++)
 	{
-		gameState.playerLabels.at(i).setString(world.getPlayer(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
+		gameState.playerLabels.at(i).setString(world.getPlayerID(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
 		window.draw(gameState.playerLabels.at(i));
 	}
 	buttons.at(PhaseButton).Draw(&window);
@@ -475,6 +475,9 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 			{
 				// left mouse pressed
 				mousePosition = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+				buttons.at(TextBox).setIsTyping(false);
+				chat.textField.setIsTyping(false);
 
 				// Set flags for button presses
 				if (buttons.at(ButtonValues::PlusButton).isInside(mousePosition) && buttons.at(ButtonValues::PlusButton).isActive)
@@ -551,7 +554,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 			{
 			case TurnPhase::place:
 			{
-				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.currentPlayerID))// player clicked their own territory
+				if ((world.getTerritory(clickedTerritory)->GetOwner()) == world.getPlayerID(gameState.currentPlayerID))// player clicked their own territory
 				{
 					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
 					{
@@ -570,7 +573,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 			}
 			case TurnPhase::attack:
 			{
-				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.myID))// player clicked their own territory
+				if ((world.getTerritory(clickedTerritory)->GetOwner()) == world.getPlayerID(gameState.myID))// player clicked their own territory
 				{
 					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
 					{
@@ -620,7 +623,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 			}
 			case TurnPhase::reposition:
 			{
-				if (*(world.getTerritory(clickedTerritory)->GetOwner()) == *world.getPlayerID(gameState.myID))// player clicked their own territory
+				if ((world.getTerritory(clickedTerritory)->GetOwner()) == world.getPlayerID(gameState.myID))// player clicked their own territory
 				{
 					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
 					{
