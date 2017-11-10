@@ -24,17 +24,17 @@ sf::Font loadFont(std::string path)
 bool loadImages(World *world)
 {
 	std::string filename{ "" };
-	std::ifstream file("borderImagesList.txt");
+	std::ifstream borderImagesFile("borderImagesList.txt");
 
-	for (int i = 0; file >> filename; i++) {
+	for (int i = 0; borderImagesFile >> filename; i++) {
 		world->getTerritory(i)->borderTexture = sf::Texture();
 		if (!world->getTerritory(i)->borderTexture.loadFromFile(filename))
 			return 0;
 	}
 
-	file = std::ifstream("territoryImagesList.txt");
+	std::ifstream territoryImagesFile("territoryImagesList.txt");
 
-	for (int i = 0; file >> filename; i++) {
+	for (int i = 0; territoryImagesFile >> filename; i++) {
 		world->getTerritory(i)->territoryTexture = sf::Texture();
 		if (!world->getTerritory(i)->territoryTexture.loadFromFile(filename))
 			return 0;
