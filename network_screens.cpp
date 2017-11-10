@@ -137,7 +137,6 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 					}
 					else if (colorPalette.isInside(mousePosition))
 					{
-						std::cout << std::to_string(colorPalette.getSelectedColor().r) << ", " << std::to_string(colorPalette.getSelectedColor().g) << ", " << std::to_string(colorPalette.getSelectedColor().b) << std::endl;
 						buttonPressed = ButtonValues::ColorPicker;
 						mouseDown = false;
 					}
@@ -302,6 +301,8 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 
 int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat)
 {
+	std::ostringstream ss;
+
 	// clear the window
 	window.clear();
 	// draw the underlying map image
@@ -406,7 +407,10 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 
 	for (unsigned int i = 0; i < gameState.playerLabels.size(); i++)
 	{
-		gameState.playerLabels.at(i).setString(world.getPlayerID(i)->getName() + ": " + std::to_string(3 + world.GetBonus(i)));
+		ss.str(std::string());
+		ss.clear();
+		ss << (3 + world.GetBonus(i));
+		gameState.playerLabels.at(i).setString(world.getPlayerID(i)->getName() + ": " + ss.str());
 		window.draw(gameState.playerLabels.at(i));
 	}
 	buttons.at(PhaseButton).Draw(&window);
@@ -421,8 +425,15 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	{
 		pxColor = world.getTerritory(i)->territoryImage.getPixel(gameState.mouseHoverPosition.x / 1.5, gameState.mouseHoverPosition.y / 1.5); // division by 1.5 because everything is scaled up by 1.5
 		if (pxColor.a > 0) {
-			hoverText.setText(world.getTerritory(i)->getName() + " " + std::to_string(i) +
-				"\n" + world.GetBonusName(i) + " " + std::to_string(world.GetBonusIncome(i)),
+			ss.str(std::string());
+			ss.clear();
+			ss << i;
+			std::string index = ss.str();
+			ss.str(std::string());
+			ss.clear();
+			ss << world.GetBonusIncome(i);
+			hoverText.setText(world.getTerritory(i)->getName() + " " + index +
+				"\n" + world.GetBonusName(i) + " " + ss.str(),
 				gameState.mouseHoverPosition.x, gameState.mouseHoverPosition.y);
 			hoverText.Draw(&window);
 			break;
@@ -708,15 +719,23 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 
 	if (buttons.at(TextBox).isTyping && gameState.myID == gameState.currentPlayerID)
 	{
+		std::ostringstream ss;
+
 		if (gameState.keyPressed >= sf::Keyboard::Num0 && gameState.keyPressed <= sf::Keyboard::Num9)
 		{
-			buttons.at(TextBox).appendString(std::to_string(gameState.keyPressed - sf::Keyboard::Num0));
+			ss.str(std::string());
+			ss.clear();
+			ss << (gameState.keyPressed - sf::Keyboard::Num0);
+			buttons.at(TextBox).appendString(ss.str());
 
 			gameState.keyPressed = KEY_PRESSED_ONCE;
 		}
 		else if (gameState.keyPressed >= sf::Keyboard::Numpad0 && gameState.keyPressed <= sf::Keyboard::Numpad9)
 		{
-			buttons.at(TextBox).appendString(std::to_string(gameState.keyPressed - sf::Keyboard::Numpad0));
+			ss.str(std::string());
+			ss.clear();
+			ss << (gameState.keyPressed - sf::Keyboard::Numpad0);
+			buttons.at(TextBox).appendString(ss.str());
 
 			gameState.keyPressed = KEY_PRESSED_ONCE;
 		}
