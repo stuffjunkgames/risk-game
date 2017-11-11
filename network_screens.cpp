@@ -456,7 +456,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 	{
 		if (event.type == sf::Event::Closed)
 			window.close();
-		
+
 		if (event.type == sf::Event::TextEntered)
 		{
 			if (gameState.keyPressed == NO_KEY_PRESSED)
@@ -634,7 +634,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 					else
 					{
 						gameState.dashedLine.setPoints(world.getTerritory(gameState.activeTerritory)->centerPos, gameState.mouseHoverPosition);
-					}					
+					}
 				}
 				break;
 			}
@@ -722,6 +722,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 			gameState.activeTransfer = nullptr;
 			gameState.activeTerritory = -1;
 			gameState.targetTerritory = -1;
+			gameState.activeTransfer = nullptr;
 		}
 	}
 
@@ -791,7 +792,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 			{
 				packet = ClientRequestAdd(gameState.activeTerritory, 1);
 				socket.send(packet);
-				
+
 				if (gameState.buttonVal == ButtonValues::PlusButton)
 				{
 					gameState.keyPressed = NO_KEY_PRESSED;
@@ -942,7 +943,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 
 		gameState.buttonVal = ButtonValues::NoButton;
 	}
-	
+
 
 	// listen for any command signals from server
 	if (socket.receive(packet) == sf::Socket::Status::Done)

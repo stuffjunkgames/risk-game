@@ -1,5 +1,5 @@
 LDFLAGS := -Wall -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
-CPPFLAGS := -c -std=c++11
+CPPFLAGS := -c -std=c++14
 
 all: risk server client
 	make clean
