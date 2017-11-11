@@ -19,7 +19,7 @@ public:
 	ClientsList();
 
 	void AddClient(std::shared_ptr<sf::TcpSocket> socket);
-	sf::Socket::Status ClientsList::ReceivePacket(sf::Packet &packet, int &id);
+	sf::Socket::Status ReceivePacket(sf::Packet &packet, int &id);
 	bool Ready(int id);
 	void SendAll(sf::Packet &packet);
 };
