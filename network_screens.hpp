@@ -26,7 +26,8 @@ enum ButtonValues {
     StartButton,
     ColorPicker,
     ExitButton,
-    NoButton
+    NoButton,
+	ChatButton
 };
 
 class GameState
@@ -64,12 +65,12 @@ void ResetForNextPhase(World &world, std::vector<Button> &buttons, GameState &st
 int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::TcpSocket &socket);
 
 // can we contain all the necessary drawing information in world and a button vector?
-int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText);
+int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat);
 
 // Event polling for game screen
-int GetGameEvents(sf::RenderWindow &window, World & world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText, sf::Font &armyFont);
+int GetGameEvents(sf::RenderWindow &window, World & world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat, sf::Font &armyFont);
 
 // game logic
-int GameLogic(World &world, World &initialWorld, std::vector<Button> &buttons, GameState &gameState, sf::TcpSocket &socket);
+int GameLogic(World &world, World &initialWorld, std::vector<Button> &buttons, GameState &gameState, sf::TcpSocket &socket, ChatBox &chat);
 
 #endif // NETWORK_SCREENS_HPP_INCLUDED

@@ -37,4 +37,9 @@ sf::Packet ServerCommandReady(int playerID, std::string name, sf::Color color);
 // send player ID, only to that player
 sf::Packet ServerCommandID(int playerID);
 
+// syncronizing messages in chat
+sf::Packet ClientRequestMessage(std::string message);
+
+sf::Packet ServerCommandMessage(int playerID, std::string message);
+
 #endif // NETWORKING_HPP_INCLUDED

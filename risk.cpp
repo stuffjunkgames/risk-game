@@ -827,7 +827,7 @@ Player* World::getNextPlayer()
 
     playerTurn = (playerTurn + 1) % playerList.size();
 
-    return getPlayerID(tempTurn);
+    return getPlayer(tempTurn);
 }
 
 int World::getSize()
@@ -1089,6 +1089,7 @@ Label::Label(sf::Font& font)
 	this->setOutlineColor(sf::Color::Black);
 	this->setOutlineThickness(3);
 }
+
 // Label
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1402,4 +1403,87 @@ void ColorPalette::chooseColor(int n)
 }
 
 // ColorPalette
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// ChatBox class definitions
+
+ChatBox::ChatBox(Player* player, sf::Font& font, sf::Vector2f position, int w, int h) : ExtendedShape(4)
+{
+	myPlayerPtr = player;
+
+	this->setPoint(0, position);
+	this->setPoint(1, position + sf::Vector2f(0, h));
+	this->setPoint(2, position + sf::Vector2f(w, h));
+	this->setPoint(3, position + sf::Vector2f(w, 0));
+	this->setFillColor(sf::Color(0, 0, 0, 127));
+	this->setOutlineColor(sf::Color::Black);
+	this->setOutlineThickness(2);
+
+	sendButton = Button(font, "Send", this->getPoint(2) + sf::Vector2f(-sendButtonW, -sendButtonH), sendButtonW, sendButtonH);
+	textField = Button(font, this->getPoint(1) + sf::Vector2f(0, -sendButtonH), this->getLocalBounds().width - sendButtonW, sendButtonH, 20);
+
+	this->font = &font;
+
+	maxMessages = (h - sendButtonH) / messageH;
+}
+
+void ChatBox::Draw(sf::RenderWindow* window)
+{
+	window->draw(*this);
+	sendButton.Draw(window);
+	textField.Draw(window);
+	for (int i = 0; i < messages.size(); i++)
+	{
+		window->draw(messages.at(i));
+	}
+}
+
+void ChatBox::AddMessage(Player* player, std::string message)
+{
+	messages.push_back(Label(*font));
+	messages.back().setString(player->getName() + ": " + message);
+	messages.back().setFillColor(player->getColor());
+	messages.back().setPosition(this->getPoint(1) + sf::Vector2f(0, -sendButtonH - messageH));
+
+	// erase oldest message
+	if (messages.size() > maxMessages)
+	{
+		messages.erase(messages.begin());
+	}
+
+	// shift message Labels upward so this message appears on the bottom
+	for (int i = 0; i < messages.size(); i++)
+	{
+		messages.at(i).move(sf::Vector2f(0, -messageH));
+	}
+
+}
+
+void ChatBox::AddMessage(std::string message)
+{
+	AddMessage(myPlayerPtr, message);
+}
+
+bool ChatBox::isInside(sf::Vector2f point)
+{
+	if (textField.isInside(point))
+	{
+		textField.setIsTyping(true);
+		return true;
+	}
+	if (sendButton.isInside(point))
+	{
+		//AddMessage(textField.getLabel()->getString());
+		//textField.getLabel()->setString("");
+
+		textField.setIsTyping(false);
+		return true;
+	}
+
+	return false;
+}
+
+// ChatBox
 ////////////////////////////////////////////////////////////////////////////////////////////

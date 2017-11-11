@@ -46,6 +46,16 @@ int main()
 	unsigned int port = 12345;
 	std::string address = "msquared169.ddns.net";
 
+	// let user choose to use a different address
+	std::cout << "Use default address \"msquared169.ddns.net\"? (Y/N): ";
+	std::string input;
+	std::cin >> input;
+	if (input == "n" || input == "N")
+	{
+		std::cout << "Enter new address: ";
+		std::cin >> address;
+	}
+
 	// connect to server
 	sf::TcpSocket socket;
 	sf::Socket::Status status = socket.connect(address, port);
@@ -65,7 +75,8 @@ int main()
 	// get add commands for assigning territories
 	sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Uncertainty");
 	GameState gameState;
-	if (gameState.myID = StartScreen(window, world, gameState, socket) < 0)
+	gameState.myID = StartScreen(window, world, gameState, socket);
+	if (gameState.myID < 0)
 	{
 		return EXIT_FAILURE;
 	}
@@ -113,6 +124,8 @@ int main()
 	}
 
 	HoverText hoverText(armyFont);
+	int chatH = 400;
+	ChatBox chat(world.getPlayerID(gameState.myID), armyFont, sf::Vector2f(0, GAME_HEIGHT - chatH), 300, chatH);
 	World initialWorld = world;
 
 	std::srand(std::time(0));
@@ -123,7 +136,7 @@ int main()
 
 	while (window.isOpen())
 	{
-		if (GetGameEvents(window, world, buttons, gameState, hoverText, armyFont) < 0)
+		if (GetGameEvents(window, world, buttons, gameState, hoverText, chat, armyFont) < 0)
 		{
 			return EXIT_FAILURE;
 		}
@@ -133,9 +146,9 @@ int main()
 		if (t.asMilliseconds() >= 16)
 		{
 			t = sf::Time::Zero;
-			DrawGameScreen(window, world, buttons, gameState, hoverText);
+			DrawGameScreen(window, world, buttons, gameState, hoverText, chat);
 		}
-		GameLogic(world, initialWorld, buttons, gameState, socket);
+		GameLogic(world, initialWorld, buttons, gameState, socket, chat);
 
 	}
 
