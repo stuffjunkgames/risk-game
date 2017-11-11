@@ -529,11 +529,16 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 					chat.textField.setIsTyping(false);
 					gameState.buttonVal = ButtonValues::NoButton;
 					gameState.activeTransfer = nullptr;
-					for (std::vector<Transfer>::iterator it = gameState.transfers.begin(); it != gameState.transfers.end(); it++)
+					std::vector<Transfer>::iterator it = gameState.transfers.begin();
+					while (gameState.transfers.size() > 0 && it != gameState.transfers.end())
 					{
 						if (it->getAmount() <= 0)
 						{
 							gameState.transfers.erase(it);
+						}
+						else
+						{
+							it++;
 						}
 					}
 				}
@@ -714,6 +719,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 		}
 		else// clicked ouside all valid territories
 		{
+			gameState.activeTransfer = nullptr;
 			gameState.activeTerritory = -1;
 			gameState.targetTerritory = -1;
 		}
