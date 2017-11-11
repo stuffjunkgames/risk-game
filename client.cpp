@@ -75,7 +75,8 @@ int main()
 	// get add commands for assigning territories
 	sf::RenderWindow window(sf::VideoMode(GAME_WIDTH, GAME_HEIGHT), "Uncertainty");
 	GameState gameState;
-	if (gameState.myID = StartScreen(window, world, gameState, socket) < 0)
+	gameState.myID = StartScreen(window, world, gameState, socket);
+	if (gameState.myID < 0)
 	{
 		return EXIT_FAILURE;
 	}

@@ -88,11 +88,11 @@ sf::Packet ServerCommandID(int playerID)
     return packet;
 }
 
-sf::Packet ClientRequestMessage(int playerID, std::string message)
+sf::Packet ClientRequestMessage(std::string message)
 {
 	sf::Packet packet;
 
-	packet << "chat" << playerID << message;
+	packet << "chat" << message;
 
 	return packet;
 }

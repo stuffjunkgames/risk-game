@@ -589,6 +589,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 					if (clickedTerritory != gameState.activeTerritory)// clicked territory is not already active
 					{
 						gameState.activeTerritory = clickedTerritory;
+						gameState.targetTerritory = -1;
 					}
 					else
 					{
@@ -661,6 +662,7 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 						else
 						{
 							gameState.activeTerritory = clickedTerritory;
+							gameState.targetTerritory = -1;
 						}
 					}
 					else
@@ -815,7 +817,16 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		{
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
+			if (gameState.buttonVal == ButtonValues::ChangePhaseButton)
+			{
+				gameState.keyPressed = NO_KEY_PRESSED;
+			}
+			else
+			{
+				gameState.keyPressed = KEY_PRESSED_ONCE;
+			}
 			gameState.buttonVal = ButtonValues::NoButton;
+
 		}
 
 		break;
@@ -838,6 +849,14 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		{
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
+			if (gameState.buttonVal == ButtonValues::ChangePhaseButton)
+			{
+				gameState.keyPressed = NO_KEY_PRESSED;
+			}
+			else
+			{
+				gameState.keyPressed = KEY_PRESSED_ONCE;
+			}
 			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
@@ -851,14 +870,30 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		{
 			initialWorld.getTerritory(gameState.activeTerritory)->AddArmies(-1);    // remove army from initial distribution
 			gameState.activeTransfer->increaseAmount(1);
+			if (gameState.buttonVal == ButtonValues::PlusButton)
+			{
+				gameState.keyPressed = NO_KEY_PRESSED;
+			}
+			else
+			{
+				gameState.keyPressed = KEY_PRESSED_ONCE;
+			}
 			gameState.buttonVal = ButtonValues::NoButton;
 		}
-		if ((gameState.keyPressed == sf::Keyboard::Dash || gameState.keyPressed == sf::Keyboard::Subtract || gameState.buttonVal == ButtonValues::PlusButton) // + pressed
+		if ((gameState.keyPressed == sf::Keyboard::Dash || gameState.keyPressed == sf::Keyboard::Subtract || gameState.buttonVal == ButtonValues::MinusButton) // - pressed
 			&& gameState.targetTerritory >= 0 // target territory exists
 			&& gameState.activeTransfer->getAmount() > 0)  // a transfer has been commanded
 		{
 			initialWorld.getTerritory(gameState.activeTerritory)->AddArmies(1);    // remove army from initial distribution
 			gameState.activeTransfer->increaseAmount(-1);
+			if (gameState.buttonVal == ButtonValues::MinusButton)
+			{
+				gameState.keyPressed = NO_KEY_PRESSED;
+			}
+			else
+			{
+				gameState.keyPressed = KEY_PRESSED_ONCE;
+			}
 			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
@@ -872,6 +907,14 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
+			if (gameState.buttonVal == ButtonValues::ChangePhaseButton)
+			{
+				gameState.keyPressed = NO_KEY_PRESSED;
+			}
+			else
+			{
+				gameState.keyPressed = KEY_PRESSED_ONCE;
+			}
 			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
@@ -886,7 +929,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 
 	if (gameState.buttonVal == ButtonValues::ChatButton && !chat.textField.isTyping)
 	{
-		packet = ClientRequestMessage(gameState.myID, chat.textField.getLabel()->getString());
+		packet = ClientRequestMessage(chat.textField.getLabel()->getString());
 		socket.send(packet);
 
 		chat.textField.getLabel()->setString("");
@@ -966,7 +1009,6 @@ void ResetForNextPhase(World &world, std::vector<Button> &buttons, GameState &ga
 	case TurnPhase::place:
 	{
 		gameState.transfers.clear();
-		gameState.currentPlayerID = world.getNextPlayer()->getID();
 		buttons.at(PhaseButton).setString("PLACE");
 		buttons.at(PhaseButton).setFillColor(world.getPlayerID(gameState.currentPlayerID)->getColor());
 		gameState.activeTerritory = -1;

@@ -827,7 +827,7 @@ Player* World::getNextPlayer()
 
     playerTurn = (playerTurn + 1) % playerList.size();
 
-    return getPlayerID(tempTurn);
+    return getPlayer(tempTurn);
 }
 
 int World::getSize()

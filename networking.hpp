@@ -38,7 +38,7 @@ sf::Packet ServerCommandReady(int playerID, std::string name, sf::Color color);
 sf::Packet ServerCommandID(int playerID);
 
 // syncronizing messages in chat
-sf::Packet ClientRequestMessage(int playerID, std::string message);
+sf::Packet ClientRequestMessage(std::string message);
 
 sf::Packet ServerCommandMessage(int playerID, std::string message);
 
