@@ -299,7 +299,7 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 	return -1;
 }
 
-int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat)
+int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat, sf::Text &fps)
 {
 	std::ostringstream ss;
 
@@ -440,13 +440,15 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 		}
 	}
 
+	window.draw(fps);
+
 	// display everything that was drawn
 	window.display();
 
 	return 0;
 }
 
-int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText, ChatBox &chat, sf::Font &armyFont)
+int GetGameEvents(sf::RenderWindow& window, World& world, std::vector<Button>& buttons, GameState & gameState, HoverText & hoverText, ChatBox &chat, sf::Font &armyFont)
 {
 	sf::Vector2f mousePosition;
 	bool mouseDown = false;
@@ -459,9 +461,14 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 
 		if (event.type == sf::Event::TextEntered)
 		{
-			if (gameState.keyPressed == NO_KEY_PRESSED)
+			if (gameState.textEntered == NO_KEY_PRESSED)
 			{
-				gameState.keyPressed = event.text.unicode;
+				gameState.textEntered = event.text.unicode;
+				std::cout << "Key pressed: " << gameState.textEntered << std::endl;
+			}
+			else
+			{
+				std::cout << "Key is pressed, not getting new key..." << std::endl;
 			}
 		}
 
@@ -757,16 +764,26 @@ int GetGameEvents(sf::RenderWindow & window, World & world, std::vector<Button>&
 
 	if (chat.textField.isTyping)
 	{
-		if (gameState.keyPressed < 127 && gameState.keyPressed >= 32)
+		if (gameState.textEntered < 127 && gameState.textEntered >= 32)
 		{
-			chat.textField.appendString(std::string() + static_cast<char>(gameState.keyPressed));
-			gameState.keyPressed = KEY_PRESSED_ONCE;
+			chat.textField.appendString(std::string() + static_cast<char>(gameState.textEntered));
+			gameState.textEntered = NO_KEY_PRESSED;
 		}
-		else if (gameState.keyPressed == 8)//backspace
+		else if (gameState.textEntered == 8)//backspace
 		{
 			chat.textField.remove();
-			gameState.keyPressed = KEY_PRESSED_ONCE;
+			gameState.textEntered = NO_KEY_PRESSED;
 		}
+		else if (gameState.textEntered == 13) // Return
+		{
+			// keep gamestate as return
+		}
+		else
+		{
+			// ignore other inputs
+			gameState.textEntered = NO_KEY_PRESSED;
+		}
+
 	}
 
 	return 0;
@@ -933,7 +950,8 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 	}
 	}
 
-	if (gameState.buttonVal == ButtonValues::ChatButton && !chat.textField.isTyping)
+	if ((gameState.buttonVal == ButtonValues::ChatButton && !chat.textField.isTyping)
+		|| (gameState.textEntered == 13 && chat.textField.isTyping))
 	{
 		packet = ClientRequestMessage(chat.textField.getLabel()->getString());
 		socket.send(packet);
@@ -941,7 +959,13 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 		chat.textField.getLabel()->setString("");
 
 		gameState.buttonVal = ButtonValues::NoButton;
+		gameState.textEntered = NO_KEY_PRESSED;
 	}
+	else if(gameState.textEntered == 13 && !chat.textField.isTyping)
+	{
+		gameState.textEntered = NO_KEY_PRESSED;
+	}
+
 
 
 	// listen for any command signals from server
@@ -1002,6 +1026,7 @@ GameState::GameState()
 	phase = TurnPhase::place;
 	buttonVal = ButtonValues::NoButton;
 	keyPressed = NO_KEY_PRESSED;
+	textEntered = NO_KEY_PRESSED;
 	activeTerritory = -1;
 	targetTerritory = -1;
 	activeTransfer = nullptr;

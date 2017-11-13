@@ -90,6 +90,11 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 	bool mouseDown = false;
 	int keyPressed = NO_KEY_PRESSED;
 
+	sf::Text fps;
+	fps.setFont(armyFont);
+	fps.setCharacterSize(15);
+	fps.setPosition(sf::Vector2f(400, 0));
+
 	std::srand(std::time(0));
 
 	sf::Vector2f mousePosition;
@@ -159,6 +164,8 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 		t += dt;
 		if (t.asMilliseconds() >= 16)
 		{
+			fps.setString("UPS: " + std::to_string(1000.0/dt.asMilliseconds()) +
+				"  FPS: " + std::to_string(1000.0/t.asMilliseconds()));
 
 			t = sf::Time::Zero;
 
@@ -174,6 +181,8 @@ std::string startScreen(sf::RenderWindow* window, sf::Color* playerColor)
 
 			colorPalette.Draw(window);
 			window->draw(paletteLabel);
+
+			window->draw(fps);
 
 			window->display();
 		}
@@ -320,6 +329,11 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 	bool mouseDown = false;
 	int keyPressed = NO_KEY_PRESSED;
 
+	sf::Text fps;
+	fps.setFont(armyFont);
+	fps.setCharacterSize(15);
+	fps.setPosition(sf::Vector2f(400, 0));
+
 	std::srand(std::time(0));
 
 	sf::Vector2f mousePosition;
@@ -412,6 +426,9 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 		t += dt;
 		if (t.asMilliseconds() >= 16)
 		{
+			fps.setString("UPS: " + std::to_string(1000000.0/dt.asMicroseconds()) +
+				"  FPS: " + std::to_string(1000.0/t.asMilliseconds()));
+
 			t = sf::Time::Zero;
 
 			window->clear();
@@ -525,6 +542,7 @@ int gameScreen(sf::RenderWindow* window, std::vector<std::string> playerNames, s
 					break;
 				}
 			}
+			window->draw(fps);
 
 			window->display();
 		}

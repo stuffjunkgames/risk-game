@@ -44,6 +44,7 @@ public:
 
     ButtonValues buttonVal;
     int keyPressed;
+    int textEntered;
 	sf::Vector2f mouseHoverPosition;
 
     int activeTerritory;
@@ -65,7 +66,7 @@ void ResetForNextPhase(World &world, std::vector<Button> &buttons, GameState &st
 int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::TcpSocket &socket);
 
 // can we contain all the necessary drawing information in world and a button vector?
-int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat);
+int DrawGameScreen(sf::RenderWindow &window, World &world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat, sf::Text &fps);
 
 // Event polling for game screen
 int GetGameEvents(sf::RenderWindow &window, World & world, std::vector<Button> &buttons, GameState &gameState, HoverText &hoverText, ChatBox &chat, sf::Font &armyFont);
