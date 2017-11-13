@@ -128,6 +128,12 @@ int main()
 	ChatBox chat(world.getPlayerID(gameState.myID), armyFont, sf::Vector2f(0, GAME_HEIGHT - chatH), 300, chatH);
 	World initialWorld = world;
 
+	sf::Text fpsText;
+	fpsText.setFont(armyFont);
+	fpsText.setCharacterSize(15);
+	fpsText.setPosition(sf::Vector2f(400,0));
+	fpsText.setFillColor(sf::Color::White);
+
 	std::srand(std::time(0));
 
 	sf::Time dt;
@@ -147,8 +153,10 @@ int main()
 		t += dt;
 		if (t.asMilliseconds() >= 16)
 		{
+			fpsText.setString("UPS: " + std::to_string(1000000.0/dt.asMicroseconds()) +
+				"  FPS: " + std::to_string(1000.0/t.asMilliseconds()));
 			t = sf::Time::Zero;
-			DrawGameScreen(window, world, buttons, gameState, hoverText, chat);
+			DrawGameScreen(window, world, buttons, gameState, hoverText, chat, fpsText);
 		}
 		GameLogic(world, initialWorld, buttons, gameState, socket, chat);
 

@@ -1,22 +1,33 @@
-LDFLAGS := -Wall -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
-CPPFLAGS := -c -std=c++14
+LDFLAGS := -Wall -g -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network
+CPPFLAGS := -c -std=c++14 -g
+
+OBJDIR := obj
+
+CLIENT_SRC := client.cpp risk.cpp sfvm.cpp movement.cpp network_screens.cpp networking.cpp
+SERVER_SRC := server.cpp risk.cpp sfvm.cpp movement.cpp network_screens.cpp networking.cpp
+RISK_SRC := main.cpp risk.cpp sfvm.cpp movement.cpp screens.cpp
+
+CLIENT_OBJ := $(CLIENT_SRC:%.cpp=$(OBJDIR)/%.o)
+SERVER_OBJ := $(SERVER_SRC:%.cpp=$(OBJDIR)/%.o)
+RISK_OBJ := $(RISK_SRC:%.cpp=$(OBJDIR)/%.o)
+
 
 all: risk server client
-	make clean
 
-risk: main.o risk.o sfvm.o movement.o screens.o
+risk: $(RISK_OBJ)
 	if [ ! -d "bin" ]; then mkdir bin; fi
-	g++ -g main.o risk.o sfvm.o movement.o screens.o -o bin/risk $(LDFLAGS)
+	g++ $(RISK_OBJ) -o bin/risk $(LDFLAGS)
 
-server: server.o risk.o sfvm.o movement.o network_screens.o networking.o
+server: $(SERVER_OBJ)
 	if [ ! -d "bin" ]; then mkdir bin; fi
-	g++ -g server.o risk.o sfvm.o movement.o network_screens.o networking.o -o bin/server $(LDFLAGS)
+	g++ $(SERVER_OBJ) -o bin/server $(LDFLAGS)
 
-client: client.o risk.o sfvm.o movement.o network_screens.o networking.o
+client: $(CLIENT_OBJ)
 	if [ ! -d "bin" ]; then mkdir bin; fi
-	g++ -g client.o risk.o sfvm.o movement.o network_screens.o networking.o -o bin/client $(LDFLAGS)
+	g++ $(CLIENT_OBJ) -o bin/client $(LDFLAGS)
 
-%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp
+	if [ ! -d "obj" ]; then mkdir obj; fi
 	g++ $(CPPFLAGS) $< -o $@
 
 clean:
