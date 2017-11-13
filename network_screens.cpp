@@ -726,6 +726,7 @@ int GetGameEvents(sf::RenderWindow& window, World& world, std::vector<Button>& b
 		}
 		else// clicked ouside all valid territories
 		{
+			gameState.activeTransfer = nullptr;
 			gameState.activeTerritory = -1;
 			gameState.targetTerritory = -1;
 			gameState.activeTransfer = nullptr;
