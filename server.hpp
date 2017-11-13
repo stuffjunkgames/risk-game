@@ -9,11 +9,6 @@
 
 class ClientsList
 {
-	std::vector<std::shared_ptr<sf::TcpSocket>> clients;
-	std::vector<bool> readyStatus;
-	std::vector<int> playerIDs;
-	// last client you received a packet from
-	int lastClient;
 
 public:
 	ClientsList();
@@ -22,9 +17,20 @@ public:
 	sf::Socket::Status ReceivePacket(sf::Packet &packet, int &id);
 	bool Ready(int id);
 	void SendAll(sf::Packet &packet);
+	void ResignPlayerID(int id);
+	void SkipResignedClients(World &world, int &id);
+	int CheckForWinner();
+
+	std::vector<std::shared_ptr<sf::TcpSocket>> clients;
+	std::vector<bool> readyStatus;
+	std::vector<int> playerIDs;
+	std::vector<int> resignedClients;
+	// last client you received a packet from
+	int lastClient;
 };
 
-int RunServer();
+int main();
+
 void SendAllClients(sf::Packet &packet, std::vector<std::unique_ptr<sf::TcpSocket>> &clients);
 
 

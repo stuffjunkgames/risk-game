@@ -105,3 +105,13 @@ sf::Packet ServerCommandMessage(int playerID, std::string message)
 
 	return packet;
 }
+
+sf::Packet ClientRequestResign()
+{
+	sf::Packet packet;
+
+	packet << "resign";
+
+	return packet;
+}
+

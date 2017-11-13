@@ -115,8 +115,16 @@ int main()
 	int armyCount = 3 + world.GetBonus(currentPlayerID);
 	int placedArmies = 0;
 	World initialWorld = world;
+	int winner;
 	while (started)
 	{
+		// check win conditions (only one player/client left)
+		winner = clientsList.CheckForWinner();
+		if (winner >= 0)
+		{
+			// TODO: do something here
+		}
+
 		// receive packet from the current player
 		sf::Packet receivePacket, sendPacket;
 		int id;
@@ -156,6 +164,12 @@ int main()
 
 							std::cout << "Moving " << army << " from territory " << source << " to territory " << target << std::endl;
 							std::cout << "Territory " << source << " now has " << world.getTerritory(source)->GetArmies() << " armies and territory " << target << " now has " << world.getTerritory(target)->GetArmies() << " armies." << std::endl;
+							
+							if (world.getTerritory(target)->GetOwner()->getNumTerritories() <= 0)
+							{
+								clientsList.ResignPlayerID(world.getTerritory(target)->GetOwner()->getID());
+							}
+
 						}
 					}
 					else if (s == "move" && phase == TurnPhase::reposition)// client is requesting to move armies
@@ -189,6 +203,8 @@ int main()
 						{
 							phase = TurnPhase::place;
 							currentPlayerID = world.getNextPlayer()->getID();
+							// skip players if they've resigned
+							clientsList.SkipResignedClients(world, currentPlayerID);							
 							armyCount = 3 + world.GetBonus(currentPlayerID);
 							break;
 						}
@@ -215,6 +231,12 @@ int main()
 
 						std::cout << "Player " << id << " says: " << message << std::endl;
 					}
+				}
+				else if (s == "resign")
+				{
+					std::cout << "Player " << id << " has resigned." << std::endl;
+					// The player has exited, and their turn will be skipped for the rest of the game
+					clientsList.ResignPlayerID(id);
 				}
 			}
 		}
@@ -287,3 +309,53 @@ void ClientsList::SendAll(sf::Packet &packet)
 	}
 }
 
+void ClientsList::ResignPlayerID(int id)
+{
+	for (unsigned int i = 0; i < playerIDs.size(); i++)
+	{
+		if (playerIDs[i] == id)
+		{
+			resignedClients.push_back(i);
+			break;
+		}
+	}	
+}
+
+void ClientsList::SkipResignedClients(World &world, int &id)
+{
+	int currentPlayerID = id;
+	bool skipping = true;
+	while (skipping)
+	{
+		skipping = false;
+		for (int i = 0; i < resignedClients.size(); i++)
+		{
+			// Check if the player has resigned
+			if (playerIDs.at(resignedClients.at(i)) == currentPlayerID)
+			{
+				// Skip to next player
+				std::cout << "Skipping Player " << currentPlayerID << std::endl;
+				currentPlayerID = world.getNextPlayer()->getID();
+				skipping = true;
+				break;
+			}
+		}
+	}
+	id = currentPlayerID;
+}
+
+int ClientsList::CheckForWinner()
+{
+	if (clients.size() - resignedClients.size() > 1)
+	{
+		// still at least 2 players
+		return -1;
+	}
+	int total = clients.size() * (clients.size() + 1) / 2;
+	for (unsigned int i = 0; i < resignedClients.size(); i++)
+	{
+		total -= resignedClients.at(i) + 1;
+	}
+
+	return total - 1;
+}

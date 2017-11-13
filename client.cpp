@@ -138,6 +138,8 @@ int main()
 	{
 		if (GetGameEvents(window, world, buttons, gameState, hoverText, chat, armyFont) < 0)
 		{
+			sf::Packet packet = ClientRequestResign();
+			socket.send(packet);
 			return EXIT_FAILURE;
 		}
 		// draw function called at 60fps

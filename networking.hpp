@@ -42,4 +42,7 @@ sf::Packet ClientRequestMessage(std::string message);
 
 sf::Packet ServerCommandMessage(int playerID, std::string message);
 
+// sending exit signal
+sf::Packet ClientRequestResign();
+
 #endif // NETWORKING_HPP_INCLUDED
