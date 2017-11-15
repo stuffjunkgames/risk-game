@@ -108,6 +108,7 @@ public:
     void SetOwner(Player *newOwner, unsigned int newArmy);
     void ChangeOwner(Player *newOwner, unsigned int newArmy);
     void drawTerritory(sf::RenderWindow* window);
+	void UpdateColor();
     void setFont();     // should be able to remove this
 	void AddArmies(int nArmies);
 	void makeArrows();

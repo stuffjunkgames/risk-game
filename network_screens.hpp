@@ -8,9 +8,11 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+
 #include <SFML/Window.hpp>
 #include <SFML/Network.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -56,6 +58,9 @@ public:
 	std::vector<Label> playerLabels;
 
 	DashedLine dashedLine;
+
+	sf::RenderTexture territoryCombo;
+	sf::Sprite territoryComboSprite;
 };
 
 sf::Font loadFont(std::string path);

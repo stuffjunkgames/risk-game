@@ -305,9 +305,14 @@ void Territory::setFont()
 // setFont MUST be called BEFORE calling draw, or drawing text will not work (probably segfault)
 void Territory::drawTerritory(sf::RenderWindow* window)
 {
-	this->territorySprite.setColor(this->owner->getColor());
-	window->draw(this->territorySprite);
+	//this->territorySprite.setColor(this->owner->getColor());
+	//window->draw(this->territorySprite);
     window->draw(armyDisplay);
+}
+
+void Territory::UpdateColor()
+{
+	this->territorySprite.setColor(this->owner->getColor());
 }
 
 void Territory::addConnection(Territory *connection)

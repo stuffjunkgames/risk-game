@@ -308,6 +308,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	// draw the underlying map image
 	window.draw(world.mapSprite);
 	// draw all of the territory images
+	window.draw(gameState.territoryComboSprite);
 	for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
 	{
 		world.getTerritory(i)->drawTerritory(&window);
@@ -991,6 +992,12 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 				{
 					world.getPlayerID(targetOwner)->CaptureTerritory(world.getTerritory(target), targetRemaining);
 					world.getTerritory(source)->AddArmies(sourceRemaining - world.getTerritory(source)->GetArmies());
+
+					// This is the only case when the territoryCombo RenderTexture gets updated
+					world.getTerritory(target)->UpdateColor();
+					gameState.territoryCombo.draw(world.getTerritory(target)->territorySprite);
+					gameState.territoryCombo.display();
+					gameState.territoryComboSprite.setTexture(gameState.territoryCombo.getTexture());
 				}
 			}
 			else if (s == "phase")

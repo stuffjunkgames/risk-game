@@ -110,6 +110,8 @@ int main()
 	buttons.push_back(Button());// color picker
 	buttons.push_back(Button(armyFont, "EXIT", sf::Vector2f(GAME_WIDTH - 100, GAME_HEIGHT - 40), 100, 40));// exit
 
+	gameState.territoryCombo.create(GAME_WIDTH, GAME_HEIGHT);
+
 	if (!loadImages(&world))
 	{
 		return EXIT_FAILURE;
@@ -121,7 +123,12 @@ int main()
 		world.getTerritory(i)->territorySprite = sf::Sprite(world.getTerritory(i)->territoryTexture);
 		world.getTerritory(i)->territorySprite.setScale(1.5, 1.5);
 		world.getTerritory(i)->territoryImage = world.getTerritory(i)->territoryTexture.copyToImage();
+
+		world.getTerritory(i)->UpdateColor();
+		gameState.territoryCombo.draw(world.getTerritory(i)->territorySprite);
 	}
+	gameState.territoryCombo.display();
+	gameState.territoryComboSprite.setTexture(gameState.territoryCombo.getTexture());
 
 	HoverText hoverText(armyFont);
 	int chatH = 400;
