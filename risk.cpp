@@ -306,13 +306,18 @@ void Territory::setFont()
 void Territory::drawTerritory(sf::RenderWindow* window)
 {
 	//this->territorySprite.setColor(this->owner->getColor());
-	//window->draw(this->territorySprite);
-    window->draw(armyDisplay);
+	window->draw(this->territorySprite);
+    //window->draw(armyDisplay);
 }
 
 void Territory::UpdateColor()
 {
 	this->territorySprite.setColor(this->owner->getColor());
+}
+
+void Territory::DrawLabel(sf::RenderWindow* window)
+{
+	window->draw(armyDisplay);
 }
 
 void Territory::addConnection(Territory *connection)

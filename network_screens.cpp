@@ -311,7 +311,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	window.draw(gameState.territoryComboSprite);
 	for (unsigned int i = 0; i < world.TerritoryNumber(); i++)
 	{
-		world.getTerritory(i)->drawTerritory(&window);
+		world.getTerritory(i)->DrawLabel(&window);
 	}
 	// draw the black borders image
 	window.draw(world.normalBordersSprite);
@@ -349,6 +349,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 				if (world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->GetOwner() != world.getTerritory(gameState.activeTerritory)->GetOwner())
 				{
 					world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->drawTerritory(&window);
+					world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->DrawLabel(&window);
 				}
 			}
 			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
@@ -383,6 +384,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 				if (world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->GetOwner() == world.getTerritory(gameState.activeTerritory)->GetOwner())
 				{
 					world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->drawTerritory(&window);
+					world.getTerritory(gameState.activeTerritory)->getConnected()->at(i)->DrawLabel(&window);
 				}
 			}
 			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
