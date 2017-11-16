@@ -95,6 +95,8 @@ int main()
 
 	gameState.dashedLine = DashedLine();
 
+	gameState.winnerLabel = Label(armyFont);
+
 	std::vector<Button> buttons;
 	buttons.push_back(Button(armyFont, "+", sf::Vector2f(0, 0)));// plus
 	buttons.push_back(Button(armyFont, "-", sf::Vector2f(0, 0)));// minus

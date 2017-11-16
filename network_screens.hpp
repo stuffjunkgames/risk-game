@@ -61,6 +61,9 @@ public:
 
 	sf::RenderTexture territoryCombo;
 	sf::Sprite territoryComboSprite;
+
+	Label winnerLabel;
+	bool winnerExists;
 };
 
 sf::Font loadFont(std::string path);

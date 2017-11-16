@@ -45,4 +45,7 @@ sf::Packet ServerCommandMessage(int playerID, std::string message);
 // sending exit signal
 sf::Packet ClientRequestResign();
 
+
+sf::Packet ServerCommandWinner(int playerID);
+
 #endif // NETWORKING_HPP_INCLUDED

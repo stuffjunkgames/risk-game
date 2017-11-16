@@ -115,3 +115,12 @@ sf::Packet ClientRequestResign()
 	return packet;
 }
 
+sf::Packet ServerCommandWinner(int playerID)
+{
+	sf::Packet packet;
+
+	packet << "win" << playerID;
+
+	return packet;
+}
+

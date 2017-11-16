@@ -116,18 +116,22 @@ int main()
 	int placedArmies = 0;
 	World initialWorld = world;
 	int winner;
+	bool winnerSent = false;
 	while (started)
 	{
+		sf::Packet receivePacket, sendPacket;
+		int id;
+
 		// check win conditions (only one player/client left)
 		winner = clientsList.CheckForWinner();
-		if (winner >= 0)
+		if (winner >= 0 && !winnerSent)
 		{
-			// TODO: do something here
+			sendPacket = ServerCommandWinner(clientsList.playerIDs.at(winner));
+			clientsList.SendAll(sendPacket);
+			winnerSent = true;
 		}
 
 		// receive packet from the current player
-		sf::Packet receivePacket, sendPacket;
-		int id;
 		sf::Socket::Status status = clientsList.ReceivePacket(receivePacket, id);
 
 		// do something with the packet
@@ -344,6 +348,7 @@ void ClientsList::SkipResignedClients(World &world, int &id)
 	id = currentPlayerID;
 }
 
+// Returns index of winning client
 int ClientsList::CheckForWinner()
 {
 	if (clients.size() - resignedClients.size() > 1)

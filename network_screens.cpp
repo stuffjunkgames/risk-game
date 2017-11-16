@@ -67,7 +67,7 @@ int StartScreen(sf::RenderWindow &window, World &world, GameState &state, sf::Tc
 	paletteLabel.setString("Choose a Color:");
 	sf::FloatRect bounds = colorPalette.getLocalBounds();
 	paletteLabel.setPosition(sf::Vector2f(bounds.left + bounds.width / 2 - paletteLabel.getLocalBounds().width / 2, bounds.top - paletteLabel.getLocalBounds().height));
-	TextEntry textBox(armyFont, sf::Vector2f(GAME_WIDTH / 2 - 150, GAME_HEIGHT / 4 + 200), 300, 30, 20);
+	TextEntry textBox(armyFont, sf::Vector2f(GAME_WIDTH / 2 - 150, GAME_HEIGHT / 4 + 200), 300, 30, 12);
 	Label textBoxLabel(armyFont);
 	textBoxLabel.setString("Choose a Name:");
 	bounds = textBox.getLocalBounds();
@@ -353,6 +353,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 				}
 			}
 			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
+			world.getTerritory(gameState.activeTerritory)->DrawLabel(&window);
 			window.draw(world.normalBordersSprite);
 			// draw the active territory's yellow border
 			if (gameState.activeTerritory >= 0 && gameState.activeTerritory < (int)world.TerritoryNumber()) {
@@ -388,6 +389,7 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 				}
 			}
 			world.getTerritory(gameState.activeTerritory)->drawTerritory(&window);
+			world.getTerritory(gameState.activeTerritory)->DrawLabel(&window);
 			window.draw(world.normalBordersSprite);
 			// draw the active territory's yellow border
 			if (gameState.activeTerritory >= 0 && gameState.activeTerritory < (int)world.TerritoryNumber()) {
@@ -444,6 +446,11 @@ int DrawGameScreen(sf::RenderWindow & window, World & world, std::vector<Button>
 	}
 
 	window.draw(fps);
+
+	if (gameState.winnerExists)
+	{
+		window.draw(gameState.winnerLabel);
+	}
 
 	// display everything that was drawn
 	window.display();
@@ -840,7 +847,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 			}
 		}
 
-		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
+		if (gameState.keyPressed == sf::Keyboard::Tab || gameState.buttonVal == ButtonValues::ChangePhaseButton)
 		{
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
@@ -872,7 +879,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
-		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
+		if (gameState.keyPressed == sf::Keyboard::Tab || gameState.buttonVal == ButtonValues::ChangePhaseButton)
 		{
 			packet = ClientRequestPhaseChange();
 			socket.send(packet);
@@ -924,7 +931,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 			gameState.buttonVal = ButtonValues::NoButton;
 		}
 
-		if (gameState.keyPressed == sf::Keyboard::Return || gameState.buttonVal == ButtonValues::ChangePhaseButton)
+		if (gameState.keyPressed == sf::Keyboard::Tab || gameState.buttonVal == ButtonValues::ChangePhaseButton)
 		{
 			for (Transfer t : gameState.transfers)
 			{
@@ -954,6 +961,7 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 	}
 	}
 
+	// Checking for click of send-button or for pressing Enter while typing
 	if ((gameState.buttonVal == ButtonValues::ChatButton && !chat.textField.isTyping)
 		|| (gameState.textEntered == 13 && chat.textField.isTyping))
 	{
@@ -1022,6 +1030,18 @@ int GameLogic(World & world, World & initialWorld, std::vector<Button>& buttons,
 					chat.AddMessage(world.getPlayerID(playerID), message);
 				}
 			}
+			else if (s == "win")
+			{
+				int playerID;
+				if (packet >> playerID)
+				{
+					gameState.winnerLabel.setString(world.getPlayerID(playerID)->getName() + " is the Winner");
+					gameState.winnerLabel.setCharacterSize(100);
+					sf::FloatRect bounds = gameState.winnerLabel.getLocalBounds();
+					gameState.winnerLabel.setPosition(sf::Vector2f((GAME_WIDTH / 2) - (bounds.width / 2), (GAME_HEIGHT / 2) - (bounds.height / 2)));
+					gameState.winnerExists = true;
+				}
+			}
 		}
 	}
 
@@ -1040,6 +1060,7 @@ GameState::GameState()
 	activeTerritory = -1;
 	targetTerritory = -1;
 	activeTransfer = nullptr;
+	winnerExists = false;
 }
 
 // This is for resetting variables between phases
